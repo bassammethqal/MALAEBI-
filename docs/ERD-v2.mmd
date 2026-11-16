@@ -1,0 +1,172 @@
+erDiagram
+    USERS ||--o{ VENUES : owns
+    USERS ||--o{ VENUE_MEMBERS : assigned
+    VENUES ||--o{ VENUE_MEMBERS : has
+    GOVERNORATES ||--o{ DISTRICTS : contains
+    DISTRICTS ||--o{ AREAS : contains
+    AREAS ||--o{ VENUES : located_in
+    VENUES ||--o{ FIELDS : contains
+    VENUES ||--o{ VENUE_IMAGES : has
+    FIELDS ||--o{ FIELD_IMAGES : has
+    FIELDS ||--o{ FIELD_AMENITIES : offers
+    AMENITIES ||--o{ FIELD_AMENITIES : assigned
+    FIELDS ||--o{ OPENING_HOURS : schedules
+    FIELDS ||--o{ PRICING_RULES : prices
+    FIELDS ||--|| BOOKING_SETTINGS : configures
+    FIELDS ||--o{ FIELD_OCCUPANCIES : occupied_by
+    USERS ||--o{ BOOKINGS : creates
+    BOOKINGS ||--|| FIELD_OCCUPANCIES : reserves
+    PAYMENTS ||--o{ PAYMENT_EVENTS : receives
+    BOOKINGS ||--o{ PAYMENTS : paid_by
+    PAYMENTS ||--o{ REFUNDS : refunded_by
+    BOOKINGS ||--o| REVIEWS : reviewed
+    BOOKINGS ||--o{ DISPUTES : disputed
+    USERS ||--o{ NOTIFICATIONS : receives
+    USERS ||--o{ AUDIT_LOGS : performs
+    VENUES ||--o{ AUDIT_LOGS : scope
+
+    USERS {
+      uuid id PK
+      varchar phone UK
+      varchar full_name
+      varchar status
+      timestamptz created_at
+    }
+    VENUES {
+      uuid id PK
+      uuid owner_user_id FK
+      uuid area_id FK
+      varchar name
+      varchar status
+    }
+    VENUE_MEMBERS {
+      uuid id PK
+      uuid venue_id FK
+      uuid user_id FK
+      varchar role
+      jsonb permissions
+      varchar status
+    }
+    GOVERNORATES {
+      uuid id PK
+      varchar name UK
+    }
+    DISTRICTS {
+      uuid id PK
+      uuid governorate_id FK
+      varchar name
+    }
+    AREAS {
+      uuid id PK
+      uuid district_id FK
+      varchar name
+    }
+    FIELDS {
+      uuid id PK
+      uuid venue_id FK
+      varchar name
+      varchar sport_type
+      varchar status
+    }
+    VENUE_IMAGES {
+      uuid id PK
+      uuid venue_id FK
+      text image_url
+      int sort_order
+    }
+    FIELD_IMAGES {
+      uuid id PK
+      uuid field_id FK
+      text image_url
+      int sort_order
+    }
+    AMENITIES {
+      uuid id PK
+      varchar name UK
+    }
+    FIELD_AMENITIES {
+      uuid field_id PK,FK
+      uuid amenity_id PK,FK
+    }
+    OPENING_HOURS {
+      uuid id PK
+      uuid field_id FK
+      int weekday
+      time opens_at
+      time closes_at
+    }
+    PRICING_RULES {
+      uuid id PK
+      uuid field_id FK
+      int weekday
+      time starts_at
+      time ends_at
+      numeric price
+    }
+    BOOKING_SETTINGS {
+      uuid id PK
+      uuid field_id FK,UK
+      varchar confirmation_mode
+      varchar deposit_mode
+      numeric deposit_value
+    }
+    BOOKINGS {
+      uuid id PK
+      varchar booking_no UK
+      uuid player_user_id FK
+      varchar status
+      numeric total_price
+    }
+    FIELD_OCCUPANCIES {
+      uuid id PK
+      uuid field_id FK
+      uuid booking_id FK,UK
+      timestamptz starts_at
+      timestamptz ends_at
+      varchar occupancy_type
+      varchar status
+    }
+    PAYMENTS {
+      uuid id PK
+      uuid booking_id FK
+      varchar payment_type
+      numeric amount
+      varchar status
+    }
+    PAYMENT_EVENTS {
+      uuid id PK
+      uuid payment_id FK
+      varchar provider_event_id UK
+      jsonb payload
+    }
+    REFUNDS {
+      uuid id PK
+      uuid payment_id FK
+      numeric amount
+      varchar status
+    }
+    REVIEWS {
+      uuid id PK
+      uuid booking_id FK,UK
+      uuid player_user_id FK
+      int rating
+    }
+    DISPUTES {
+      uuid id PK
+      uuid booking_id FK
+      uuid opened_by FK
+      varchar status
+    }
+    NOTIFICATIONS {
+      uuid id PK
+      uuid user_id FK
+      varchar channel
+      varchar status
+    }
+    AUDIT_LOGS {
+      uuid id PK
+      uuid actor_user_id FK
+      uuid venue_id FK
+      varchar action
+      timestamptz created_at
+    }

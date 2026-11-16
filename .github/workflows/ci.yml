@@ -1,0 +1,28 @@
+name: MALAEBI CI
+on:
+  push:
+  pull_request:
+jobs:
+  api-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm install
+      - run: npm run build
+  pwa-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check player-pwa/MALAEBI_Player_PWA/app.js
+      - run: node --check player-pwa/MALAEBI_Player_PWA/api-client.js

@@ -1,0 +1,43 @@
+
+(() => {
+ const C=window.MALAEBI_CONFIG||{}, base=(C.API_BASE_URL||'').replace(/\/$/,'');
+ const accessKey='malaebi_access_token', refreshKey='malaebi_refresh_token';
+ async function raw(path,options={},token=null){
+  const headers={'Content-Type':'application/json',...(options.headers||{})};
+  if(token) headers.Authorization=`Bearer ${token}`;
+  const response=await fetch(base+path,{...options,headers});
+  const body=response.status===204?null:await response.json().catch(()=>null);
+  return {response,body};
+ }
+ async function request(path,options={}) {
+  if(!base) throw new Error('عنوان API غير مضبوط في config.js');
+  let token=sessionStorage.getItem(accessKey);
+  let {response,body}=await raw(path,options,token);
+  if(response.status===401 && sessionStorage.getItem(refreshKey) && !path.startsWith('/auth/')){
+   const refreshed=await raw('/auth/refresh',{method:'POST',body:JSON.stringify({refresh_token:sessionStorage.getItem(refreshKey)})});
+   if(refreshed.response.ok && refreshed.body?.access_token){
+    saveSession(refreshed.body);token=refreshed.body.access_token;
+    ({response,body}=await raw(path,options,token));
+   }else clearSession();
+  }
+  if(!response.ok) throw new Error(body?.message||`API error ${response.status}`);
+  return body;
+ }
+ function saveSession(r){sessionStorage.setItem(accessKey,r.access_token);if(r.refresh_token)sessionStorage.setItem(refreshKey,r.refresh_token)}
+ function clearSession(){sessionStorage.removeItem(accessKey);sessionStorage.removeItem(refreshKey)}
+ window.MalaebiAPI={
+  enabled:()=>!C.DEMO_MODE&&!!base,
+  requestOtp:phone=>request('/auth/otp/request',{method:'POST',body:JSON.stringify({phone})}),
+  verifyOtp:async(phone,code)=>{const r=await request('/auth/otp/verify',{method:'POST',body:JSON.stringify({phone,code})});saveSession(r);return r;},
+  venues:async()=>{const r=await request('/venues');return r.data||[];},
+  fields:id=>request(`/venues/${encodeURIComponent(id)}/fields`),
+  availability:(id,date)=>request(`/fields/${encodeURIComponent(id)}/availability?date=${encodeURIComponent(date)}`),
+  createBooking:(fieldId,startsAt)=>request('/bookings',{method:'POST',headers:{'Idempotency-Key':crypto.randomUUID()},body:JSON.stringify({field_id:fieldId,starts_at:startsAt})}),
+  myBookings:()=>request('/bookings/mine'),
+  notifications:()=>request('/notifications'),
+  bookingDetail:id=>request(`/bookings/${encodeURIComponent(id)}`),
+  cancelBooking:id=>request(`/bookings/${encodeURIComponent(id)}/cancel`,{method:'POST'}),
+  review:(id,rating,comment)=>request(`/bookings/${encodeURIComponent(id)}/reviews`,{method:'POST',body:JSON.stringify({rating,comment})}),
+  logout:async()=>{try{let token=sessionStorage.getItem(accessKey);if(!token)return;let r=await raw('/auth/logout',{method:'POST'},token);if(r.response.status===401&&sessionStorage.getItem(refreshKey)){const fresh=await raw('/auth/refresh',{method:'POST',body:JSON.stringify({refresh_token:sessionStorage.getItem(refreshKey)})});if(fresh.response.ok&&fresh.body?.access_token){saveSession(fresh.body);r=await raw('/auth/logout',{method:'POST'},fresh.body.access_token)}}if(!r.response.ok)throw new Error(r.body?.message||'تعذر إنهاء الجلسة')}finally{clearSession()}}
+ };
+})();
