@@ -42,7 +42,7 @@ export class DbService implements OnModuleDestroy {
       await c.query('COMMIT');
       return out;
     } catch (e) {
-      try { await c.query('ROLLBACK'); } catch (_) {}
+      try { await c.query('ROLLBACK'); } catch (_) { }
       throw e;
     } finally {
       c.release();
