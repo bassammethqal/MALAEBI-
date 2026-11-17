@@ -12,7 +12,11 @@ const venues = [
  {id:'venue-marib-02',name:'ملعب الوحدة',area:'شارع صنعاء، مدينة مأرب',price:6000,rating:4.6,reviews:24,photo:photos.b,features:['عشب صناعي','غرف تبديل','دورات مياه'],description:'مساحة لعب مريحة مناسبة للأصدقاء والفرق الصغيرة، مع مرافق أساسية وخيارات متعددة للمواعيد.',mode:'approval',deposit:0},
  {id:'venue-marib-03',name:'ملعب الأبطال',area:'المجمع، مدينة مأرب',price:9000,rating:4.9,reviews:51,photo:photos.c,features:['عشب صناعي','إضاءة ليلية','مواقف سيارات','دورات مياه'],description:'ملعب مجهز للمباريات التنافسية، مع أرضية جيدة وإضاءة ليلية ومرافق مساندة.',mode:'instant',deposit:0}
 ];
-const times=['16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
+const times=[
+  '06:00','07:00','08:00','09:00','10:00','11:00',
+  '12:00','13:00','14:00','15:00','16:00','17:00',
+  '18:00','19:00','20:00','21:00','22:00','23:00'
+];
 const state={
   page:'home',
   venue:null,
@@ -489,7 +493,10 @@ function toggleFavorite(id){
 function renderBooking(){
   const v=state.venue;
   if(!v) return;
-  $('#bookingVenueMini').innerHTML=`<div class="mini-thumb" style="background-image:url('${v.photo}')"></div><div><b>${v.name}</b><small>${v.area}</small></div>`;
+  const mini = $('#bookingVenueMini');
+  if(mini){
+    mini.innerHTML=`<div class="mini-thumb" style="background-image:url('${v.photo}')"></div><div class="mini-info"><b>${v.name}</b><small>⌖ ${v.area}</small></div>`;
+  }
   $('#bookingPrice').textContent=money(v.price);
   $('#bookingTotal').textContent=money(v.price);
   $('#confirmMethod').innerHTML=v.mode==='instant'?'هذا الملعب يعتمد <b>التأكيد الفوري</b> بعد نجاح إنشاء الحجز.':'هذا الملعب يعتمد <b>موافقة المنشأة</b> خلال المهلة المحددة في سياسة الحجز.';
@@ -637,7 +644,7 @@ async function openBooking(id){
   if(!state.venue) return;
   const now = new Date();
   state.date = new Date();
-  if(now.getHours() >= 22){
+  if(now.getHours() >= 23){
     state.date.setDate(state.date.getDate() + 1);
   }
   state.date.setHours(0,0,0,0);

@@ -104,11 +104,23 @@ export class PlayerService {
   const h=hours.rows[0]; const rules=await this.db.query<any>(`SELECT * FROM pricing_rules WHERE field_id=$1 AND active=true AND (weekday IS NULL OR weekday=EXTRACT(DOW FROM $2::date)::int) ORDER BY priority DESC`,[fieldId,date]);
   const occupied=await this.db.query<any>(`SELECT starts_at,ends_at FROM field_occupancies WHERE field_id=$1 AND status='active' AND starts_at < (($2::date + $3::time) AT TIME ZONE 'Asia/Aden') + interval '1 day' AND ends_at > ($2::date AT TIME ZONE 'Asia/Aden')`,[fieldId,date,h.closes_at]);
   const busy=occupied.rows.map(x=>[new Date(x.starts_at).getTime(),new Date(x.ends_at).getTime()]);
-  const slots:any[]=[]; let cursor=new Date(`${date}T${h.opens_at}+03:00`); const close=new Date(`${date}T${h.closes_at}+03:00`);
+  const slots:any[]=[];
+  let cursor=new Date(`${date}T${h.opens_at}+03:00`);
+  let close: Date;
+  if(String(h.closes_at).startsWith('24:') || String(h.closes_at) === '24:00:00'){
+    close = new Date(`${date}T00:00:00+03:00`);
+    close.setDate(close.getDate() + 1);
+  } else {
+    close = new Date(`${date}T${h.closes_at}+03:00`);
+  }
   const timeFormatter=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Aden',hour:'2-digit',minute:'2-digit',hour12:false});
   while(cursor.getTime()+3600000<=close.getTime()){
    const end=new Date(cursor.getTime()+3600000); const time=timeFormatter.format(cursor);
-   const rule=rules.rows.find(x=>time>=String(x.starts_at).slice(0,5)&&time<String(x.ends_at).slice(0,5));
+   const rule=rules.rows.find(x=>{
+     const s=String(x.starts_at).slice(0,5);
+     const e=String(x.ends_at).slice(0,5);
+     return time>=s && (e==='24:00'||e==='00:00' ? true : time<e);
+   });
    const price=rule?Number(rule.price):null; const startMs=cursor.getTime();
    const isBusy=busy.some(([s,e])=>startMs<e&&startMs+3600000>s);
    const isPast=startMs<=Date.now();
@@ -133,9 +145,26 @@ export class PlayerService {
     if(!field.rowCount) throw new NotFoundException('Field unavailable');
     const local=await c.query<any>(`SELECT EXTRACT(DOW FROM $1::timestamptz AT TIME ZONE 'Asia/Aden')::int weekday,($1::timestamptz AT TIME ZONE 'Asia/Aden')::time local_time`,[start.toISOString()]);
     const day=local.rows[0];
-    const opening=await c.query<any>(`SELECT 1 FROM opening_hours WHERE field_id=$1 AND weekday=$2 AND is_closed=false AND opens_at <= $3 AND closes_at >= ($3::time + interval '60 minutes')`,[dto.field_id,day.weekday,day.local_time]);
+    const opening=await c.query<any>(`SELECT 1 FROM opening_hours 
+      WHERE field_id=$1 AND weekday=$2 AND is_closed=false 
+        AND opens_at <= $3::time 
+        AND (
+          CASE 
+            WHEN $3::time >= '23:00:00'::time THEN closes_at = '24:00:00'::time
+            ELSE closes_at >= ($3::time + interval '60 minutes')
+          END
+        )`,[dto.field_id,day.weekday,day.local_time]);
     if(!opening.rowCount) throw new ConflictException('Field closed at selected time');
-    const price=await c.query<any>(`SELECT price,currency FROM pricing_rules WHERE field_id=$1 AND active=true AND (weekday IS NULL OR weekday=$2) AND starts_at <= $3 AND ends_at >= ($3::time + interval '60 minutes') ORDER BY priority DESC LIMIT 1`,[dto.field_id,day.weekday,day.local_time]);
+    const price=await c.query<any>(`SELECT price,currency FROM pricing_rules 
+      WHERE field_id=$1 AND active=true AND (weekday IS NULL OR weekday=$2) 
+        AND starts_at <= $3::time 
+        AND (
+          CASE 
+            WHEN $3::time >= '23:00:00'::time THEN (ends_at = '24:00:00'::time OR ends_at = '00:00:00'::time)
+            ELSE ends_at >= ($3::time + interval '60 minutes')
+          END
+        ) 
+      ORDER BY priority DESC LIMIT 1`,[dto.field_id,day.weekday,day.local_time]);
     if(!price.rowCount) throw new ConflictException('No price configured for selected time');
     const settings=field.rows[0]; if(settings.deposit_enabled) throw new ServiceUnavailableException('العربون الإلكتروني غير متاح حالياً؛ لا يمكن إتمام حجز يتطلب عربوناً حتى ربط مزود الدفع.'); const instant=settings.confirmation_mode==='instant' && settings.instant_booking_enabled===true;
     const status=instant?'confirmed':'pending'; const minutes=instant?null:10;

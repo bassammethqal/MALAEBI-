@@ -263,25 +263,29 @@ async function seed() {
         }
       }
 
-      // Opening hours (Sunday=0 to Saturday=6: 16:00 to 23:00)
+      // Opening hours (Sunday=0 to Saturday=6: 06:00 to 24:00)
+      await client.query(
+        `DELETE FROM opening_hours WHERE field_id = $1`,
+        [fieldId]
+      );
       for (let day = 0; day <= 6; day++) {
         await client.query(
           `INSERT INTO opening_hours(field_id, weekday, opens_at, closes_at, is_closed)
-           VALUES ($1, $2, '16:00:00', '23:00:00', false)
+           VALUES ($1, $2, '06:00:00', '24:00:00', false)
            ON CONFLICT (field_id, weekday, opens_at) DO UPDATE
-           SET closes_at = '23:00:00', is_closed = false`,
+           SET closes_at = '24:00:00', is_closed = false`,
           [fieldId, day]
         );
       }
 
-      // Pricing rules (16:00 to 23:00 daily)
+      // Pricing rules (06:00 to 24:00 daily)
       await client.query(
         `DELETE FROM pricing_rules WHERE field_id = $1`,
         [fieldId]
       );
       await client.query(
         `INSERT INTO pricing_rules(field_id, weekday, starts_at, ends_at, price, currency, priority, active)
-         VALUES ($1, NULL, '16:00:00', '23:00:00', $2, 'YER', 0, true)`,
+         VALUES ($1, NULL, '06:00:00', '24:00:00', $2, 'YER', 0, true)`,
         [fieldId, vd.price]
       );
 
