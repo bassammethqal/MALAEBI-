@@ -75,10 +75,11 @@ function showPage(name){
     }
   }
   if(name==='bookings'){
-    if(window.MalaebiAPI?.enabled()&&sessionStorage.getItem('malaebi_access_token')) loadMyBookings();
+    if(window.MalaebiAPI?.enabled()&&localStorage.getItem('malaebi_access_token')) loadMyBookings();
     else renderBookings();
   }
   if(name==='account') renderAccount();
+  if(name==='settings') renderSettings();
   if(name==='booking-detail') renderBookingDetail();
   if(name==='payment'){
     const el=$('#paymentAmount');
@@ -320,8 +321,6 @@ function openCheckout(){
   const v=state.venue;
   if(!v||!state.time) return;
   $('#checkoutSummary').innerHTML=`<h3>${v.name}</h3><div class="checkout-line"><span>التاريخ</span><b>${dateLabel(state.date)}</b></div><div class="checkout-line"><span>الوقت</span><b>${state.time} — ${String((Number(state.time.slice(0,2))+1)%24).padStart(2,'0')}:00</b></div><div class="checkout-line"><span>مدة الحجز</span><b>ساعة واحدة</b></div><div class="checkout-line"><span>طريقة التأكيد</span><b>${v.mode==='instant'?'فوري':'بموافقة المنشأة'}</b></div><div class="checkout-line"><span>الإجمالي</span><b style="color:var(--green)">${money(v.price)}</b></div>`;
-  const phoneInput=$('#phoneInput');
-  if(phoneInput) phoneInput.value=(state.phone||state.user?.phone||'').replace('+967','');
   showPage('checkout');
 }
 
@@ -363,52 +362,286 @@ function renderAccount(){
   const profilePhone = $('#profilePhone');
   const profileName = $('#profileName');
   const loginBtn = $('#loginBtn');
+  const logoutWrap = $('#accountLogoutWrap');
+  const hasToken = !!localStorage.getItem('malaebi_access_token');
+
   if(profilePhone) profilePhone.textContent = displayEmail || 'سجّل الدخول لإدارة حسابك وحجوزاتك';
   if(profileName) profileName.textContent = fullName || (displayEmail ? 'لاعب ملاعبي' : 'مستخدم ضيف');
-  if(loginBtn) loginBtn.textContent = (u || displayEmail) ? 'تبديل الحساب' : 'تسجيل الدخول';
+  if(loginBtn) loginBtn.textContent = (hasToken || u) ? 'تبديل الحساب' : 'تسجيل الدخول';
+  if(logoutWrap) logoutWrap.classList.toggle('hidden', !hasToken && !u);
 }
 
 function openModal(){ const m=$('#modalBackdrop'); if(m) m.classList.remove('hidden'); }
 function closeModal(){ const m=$('#modalBackdrop'); if(m) m.classList.add('hidden'); }
+
+function openPersonalInfoModal(){
+  const u = state.user || JSON.parse(localStorage.getItem('malaebi_user') || 'null');
+  if(!u && !localStorage.getItem('malaebi_access_token')){
+    toast('يرجى تسجيل الدخول أولاً لإدارة بياناتك');
+    showPage('login');
+    return;
+  }
+  const name = u?.full_name || '';
+  const email = u?.email || state.email || '';
+  const phone = (u?.phone || state.phone || '').replace('+967', '');
+  $('#modalContent').innerHTML = `
+    <h2 id="modalTitle">البيانات الشخصية</h2>
+    <p>تعديل اسمك الحقيقي ورقم هاتفك لحسابك وتقييماتك وحجوزاتك.</p>
+    <label class="field-label">الاسم الكامل</label>
+    <input id="editProfileName" class="auth-input" type="text" placeholder="الاسم الكامل" value="${name}">
+    <label class="field-label">البريد الإلكتروني (للقراءة فقط)</label>
+    <input class="auth-input" type="email" value="${email}" disabled style="opacity:.65;cursor:not-allowed">
+    <label class="field-label">رقم الهاتف (اختياري)</label>
+    <div class="phone-input">
+      <span>+967</span>
+      <input id="editProfilePhone" inputmode="tel" maxlength="9" placeholder="7XXXXXXXX" value="${phone}">
+    </div>
+    <button class="primary-btn full" id="saveProfileBtn" type="button" style="margin-top:18px">حفظ التعديلات <span>←</span></button>
+  `;
+  openModal();
+  $('#saveProfileBtn').onclick = async () => {
+    const newName = $('#editProfileName').value.trim();
+    const rawPhone = $('#editProfilePhone').value.trim();
+    if(!newName || newName.length < 2){
+      toast('الاسم الكامل يجب أن يتكون من حرفين على الأقل');
+      return;
+    }
+    if(rawPhone && !/^7\d{8}$/.test(rawPhone)){
+      toast('رقم الهاتف يجب أن يبدأ بالرقم 7 ويتكون من 9 أرقام');
+      return;
+    }
+    const fullPhone = rawPhone ? '+967' + rawPhone : '';
+    if(window.MalaebiAPI?.enabled()){
+      try{
+        const updated = await MalaebiAPI.updateProfile({ full_name: newName, phone: fullPhone });
+        state.user = updated;
+        if(fullPhone) state.phone = fullPhone;
+        localStorage.setItem('malaebi_user', JSON.stringify(updated));
+        if(fullPhone) localStorage.setItem('malaebi_phone', fullPhone);
+        renderAccount();
+        closeModal();
+        toast('تم حفظ البيانات الشخصية بنجاح!');
+      }catch(err){
+        toast(err.message || 'تعذر حفظ البيانات');
+      }
+      return;
+    }
+    state.user = { ...(state.user || {}), full_name: newName, phone: fullPhone };
+    if(fullPhone) state.phone = fullPhone;
+    localStorage.setItem('malaebi_user', JSON.stringify(state.user));
+    if(fullPhone) localStorage.setItem('malaebi_phone', fullPhone);
+    renderAccount();
+    closeModal();
+    toast('تم حفظ البيانات بنجاح (وضع المعاينة)');
+  };
+}
+
+function openFavoritesModal(){
+  const pool = state.remoteVenues || venues;
+  const favVenues = pool.filter(v => state.favoriteIds.has(v.id));
+  if(!favVenues.length){
+    $('#modalContent').innerHTML = `
+      <h2 id="modalTitle">الملاعب المفضلة</h2>
+      <div class="empty-state">
+        <span style="font-size:42px;color:var(--green)">♡</span>
+        <b>قائمة المفضلة فارغة حالياً</b>
+        <small>اضغط على رمز القلب في أي ملعب لحفظه هنا والوصول إليه بسرعة.</small>
+        <button class="primary-btn full" style="margin-top:14px" type="button" id="modalExploreBtn">استكشف الملاعب</button>
+      </div>
+    `;
+    openModal();
+    const btn = $('#modalExploreBtn');
+    if(btn) btn.onclick = () => { closeModal(); showPage('search'); };
+    return;
+  }
+  $('#modalContent').innerHTML = `
+    <h2 id="modalTitle">الملاعب المفضلة (${favVenues.length})</h2>
+    <p>ملاعبك المفضلة لسهولة الوصول والحجز السريع:</p>
+    <div style="display:grid;gap:10px;margin-top:12px;max-height:55vh;overflow-y:auto;padding:2px" id="favModalList">
+      ${favVenues.map(v => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--white)">
+          <div style="width:52px;height:52px;border-radius:10px;background-image:url('${v.photo}');background-size:cover;background-position:center;flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <b style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.name}</b>
+            <small style="color:var(--muted);font-size:10px">${v.area} · ${money(v.price)}</small>
+          </div>
+          <button type="button" class="primary-btn" style="padding:6px 10px;font-size:11px;gap:4px" data-fav-book="${v.id}">حجز</button>
+          <button type="button" style="border:0;background:transparent;color:#e05262;font-size:18px;cursor:pointer;padding:4px" data-fav-remove="${v.id}" title="إزالة من المفضلة">♥</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  openModal();
+  $('#favModalList')?.addEventListener('click', e => {
+    const bookBtn = e.target.closest('[data-fav-book]');
+    if(bookBtn){
+      closeModal();
+      openVenue(bookBtn.dataset.favBook);
+      return;
+    }
+    const remBtn = e.target.closest('[data-fav-remove]');
+    if(remBtn){
+      toggleFavorite(remBtn.dataset.favRemove);
+      openFavoritesModal();
+    }
+  });
+}
+
+async function openNotificationsModal(){
+  $('#modalContent').innerHTML = `
+    <h2 id="modalTitle">الإشعارات والتنبيهات</h2>
+    <div class="empty-state">جاري تحميل الإشعارات...</div>
+  `;
+  openModal();
+  let notifs = [];
+  if(window.MalaebiAPI?.enabled() && localStorage.getItem('malaebi_access_token')){
+    try{
+      notifs = await MalaebiAPI.notifications();
+    }catch(err){
+      $('#modalContent').innerHTML = `
+        <h2 id="modalTitle">الإشعارات والتنبيهات</h2>
+        <div class="empty-state"><b>تعذر جلب الإشعارات</b><small>${err.message}</small></div>
+      `;
+      return;
+    }
+  } else {
+    notifs = [
+      { id: '1', title: 'مرحباً بك في ملاعبي', message: 'اكتشف أفضل ملاعب كرة القدم في مأرب واحجز موعدك بسهولة وسرعة.', created_at: new Date().toISOString() }
+    ];
+  }
+
+  if(!notifs || !notifs.length){
+    $('#modalContent').innerHTML = `
+      <h2 id="modalTitle">الإشعارات والتنبيهات</h2>
+      <div class="empty-state">
+        <span style="font-size:42px;color:var(--green)">🔔</span>
+        <b>لا توجد إشعارات جديدة حالياً</b>
+        <small>ستظهر هنا تأكيدات الحجوزات والعروض والتحديثات الرياضية.</small>
+      </div>
+    `;
+    return;
+  }
+
+  $('#modalContent').innerHTML = `
+    <h2 id="modalTitle">الإشعارات والتنبيهات (${notifs.length})</h2>
+    <div style="display:grid;gap:10px;margin-top:14px;max-height:55vh;overflow-y:auto;padding:2px">
+      ${notifs.map(n => `
+        <div class="notif-item">
+          <div class="notif-item-head">
+            <span class="notif-item-title">⚽ ${n.title || 'إشعار ملاعبي'}</span>
+            <span class="notif-item-time">${n.created_at ? new Intl.DateTimeFormat('ar-YE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(n.created_at)) : ''}</span>
+          </div>
+          <p class="notif-item-body">${n.body || n.message || ''}</p>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function openContactModal(){
+  $('#modalContent').innerHTML = `
+    <h2 id="modalTitle">تواصل معنا والدعم الفني</h2>
+    <p>نسعد بخدمتك والإجابة على أي استفسارات أو مقترحات عبر القنوات المعتمدة:</p>
+    <div class="contact-cards">
+      <a href="https://wa.me/967773461637" target="_blank" rel="noopener" class="contact-card">
+        <div class="contact-card-icon wa">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </div>
+        <div class="contact-card-info">
+          <b>واتساب مباشر</b>
+          <small>773461637 · محادثة فورية واستفسارات الحجز</small>
+        </div>
+        <span class="contact-card-arrow">←</span>
+      </a>
+
+      <a href="https://instagram.com/bassam.methqal" target="_blank" rel="noopener" class="contact-card">
+        <div class="contact-card-icon ig">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </div>
+        <div class="contact-card-info">
+          <b>إنستغرام</b>
+          <small>@bassam.methqal · أخبار المنصة والأنشطة الرياضية</small>
+        </div>
+        <span class="contact-card-arrow">←</span>
+      </a>
+
+      <a href="mailto:malaebi12@gmail.com" class="contact-card">
+        <div class="contact-card-icon mail">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        </div>
+        <div class="contact-card-info">
+          <b>البريد الإلكتروني</b>
+          <small>malaebi12@gmail.com · الدعم الرسمي والمراسلات</small>
+        </div>
+        <span class="contact-card-arrow">←</span>
+      </a>
+    </div>
+    <button class="primary-btn full" type="button" onclick="closeModal()">إغلاق النافذة</button>
+  `;
+  openModal();
+}
+
+function openAboutModal(){
+  $('#modalContent').innerHTML = `
+    <div style="text-align:center;padding:10px 0 16px">
+      <img src="assets/images/logo.svg" alt="ملاعبي" class="brand-logo" style="width:58px;height:58px;border-radius:18px;margin:0 auto 12px;display:block" />
+      <h2 id="modalTitle" style="font-size:22px;margin:0 0 4px">ملاعبي · MALAEBI</h2>
+      <small style="color:var(--green);font-weight:700">المنصة الأولى لحجز ملاعب كرة القدم في مأرب</small>
+    </div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.8;text-align:right">
+      ملاعبي منصة رياضية رقمية متكاملة تهدف إلى تسهيل حجز ملاعب كرة القدم، وتنظيم المباريات الودية والبطولات بين الفرق واللاعبين، مع توفير تجربة حجز واضحة وشفافة.
+    </p>
+    <div style="background:var(--mint);padding:14px;border-radius:14px;margin:14px 0;text-align:right;font-size:11px;color:var(--ink);line-height:1.7">
+      <div style="margin-bottom:6px">⏱ <b>سياسة الإلغاء:</b> إلغاء مرن متاح حتى <b>6 ساعات</b> قبل موعد المباراة.</div>
+      <div style="margin-bottom:6px">📍 <b>نطاق الخدمة:</b> مدينة مأرب والمناطق المجاورة.</div>
+      <div>⚡ <b>طريقة الحجز:</b> تأكيد فوري أو بموافقة المنشأة مع الدفع عند الملعب.</div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:14px">
+      الإصدار 1.0.0 (الإنتاج الفعلي) · جميع الحقوق محفوظة © ملاعبي
+    </div>
+    <button class="primary-btn full" type="button" onclick="closeModal()">حسناً</button>
+  `;
+  openModal();
+}
+
+function renderSettings(){
+  const darkSwitch = $('#settingDarkMode');
+  const alertBookingSwitch = $('#settingBookingAlerts');
+  const alertMatchSwitch = $('#settingMatchReminder');
+  if(darkSwitch) darkSwitch.checked = localStorage.getItem('malaebi_theme') === 'dark';
+  if(alertBookingSwitch) alertBookingSwitch.checked = localStorage.getItem('malaebi_alert_booking') !== 'false';
+  if(alertMatchSwitch) alertMatchSwitch.checked = localStorage.getItem('malaebi_alert_match') !== 'false';
+}
+
+function performLogout(){
+  if(window.MalaebiAPI?.enabled()) window.MalaebiAPI.logout().catch(()=>{});
+  else window.MalaebiAPI?.logout();
+  state.user=null;
+  state.email='';
+  state.phone='';
+  state.bookings=[];
+  localStorage.removeItem('malaebi_user');
+  localStorage.removeItem('malaebi_email');
+  localStorage.removeItem('malaebi_phone');
+  localStorage.removeItem('malaebi_demo_bookings');
+  localStorage.removeItem('malaebi_access_token');
+  localStorage.removeItem('malaebi_refresh_token');
+  renderAccount();
+  renderBookings();
+  showPage('home');
+  toast('تم تسجيل الخروج بنجاح');
+}
 
 // Event delegation for clicks in main content
 $('#mainContent')?.addEventListener('click',e=>{
   const act=e.target.closest('[data-action]');
   if(act){
     const a=act.dataset.action;
-    if(a==='personal'){
-      const u=state.user||JSON.parse(localStorage.getItem('malaebi_user')||'null');
-      if(u||sessionStorage.getItem('malaebi_access_token')){
-        const name=u?.full_name||'لاعب ملاعبي';
-        const em=u?.email||state.email||'مسجل';
-        toast(`الاسم: ${name} | البريد: ${em}`);
-      }else{
-        toast('يرجى تسجيل الدخول أولاً');
-        showPage('login');
-      }
-      return;
-    }
-    if(a==='favorites'){
-      showPage('search');
-      toast(state.favoriteIds.size?`لديك ${state.favoriteIds.size} ملعب في المفضلة`:'قائمة المفضلة فارغة حالياً');
-      return;
-    }
-    if(a==='notifications'){
-      if(window.MalaebiAPI?.enabled()&&sessionStorage.getItem('malaebi_access_token')){
-        MalaebiAPI.notifications().then(rows=>toast(rows.length?`لديك ${rows.length} إشعاراً`:'لا توجد إشعارات جديدة')).catch(err=>toast(err.message));
-      }else{
-        toast('لا توجد إشعارات جديدة');
-      }
-      return;
-    }
-    if(a==='help'){
-      toast('مركز المساعدة: تواصل عبر واتساب أو الهاتف على 773461637');
-      return;
-    }
-    if(a==='about'){
-      toast('تطبيق ملاعبي v1.0.0 — المنصة الأولى لحجز الملاعب في مأرب');
-      return;
-    }
+    if(a==='personal'){ openPersonalInfoModal(); return; }
+    if(a==='favorites'){ openFavoritesModal(); return; }
+    if(a==='notifications'){ openNotificationsModal(); return; }
+    if(a==='help'){ openContactModal(); return; }
+    if(a==='about'){ openAboutModal(); return; }
   }
   const tabBtn=e.target.closest('[data-detail-tab]');if(tabBtn){renderVenueTab(tabBtn.dataset.detailTab);return;}
   const fav=e.target.closest('[data-fav]');if(fav){e.stopPropagation();toggleFavorite(fav.dataset.fav);return;}
@@ -456,14 +689,20 @@ if(continueBooking) continueBooking.onclick=openCheckout;
 const sendOtpBtn=$('#sendOtpBtn');
 if(sendOtpBtn) {
   sendOtpBtn.onclick=()=>{
+    const hasToken = !!localStorage.getItem('malaebi_access_token');
     if(window.MalaebiAPI?.enabled()){
-      if(!sessionStorage.getItem('malaebi_access_token')){
-        toast('يرجى تسجيل الدخول أولاً لتأكيد الحجز باسمك');
+      if(!hasToken){
+        toast('سجّل الدخول أولاً لإتمام الحجز');
         showPage('login');
         return;
       }
       showPage('payment');
     }else{
+      if(!state.user && !hasToken){
+        toast('سجّل الدخول أولاً لإتمام الحجز');
+        showPage('login');
+        return;
+      }
       showPage('payment');
     }
   };
@@ -485,7 +724,7 @@ const loginBtn=$('#loginBtn');
 if(loginBtn) loginBtn.onclick=()=>showPage('login');
 const notificationsBtn=$('#notificationsBtn');
 if(notificationsBtn) notificationsBtn.onclick=async()=>{
-  if(window.MalaebiAPI?.enabled()&&sessionStorage.getItem('malaebi_access_token')){
+  if(window.MalaebiAPI?.enabled()&&localStorage.getItem('malaebi_access_token')){
     try{
       const rows=await MalaebiAPI.notifications();
       toast(rows.length?`لديك ${rows.length} إشعاراً`:'لا توجد إشعارات جديدة');
@@ -705,7 +944,7 @@ if(completeDemoBooking){
       return;
     }
     if(window.MalaebiAPI?.enabled()){
-      if(!sessionStorage.getItem('malaebi_access_token')){
+      if(!localStorage.getItem('malaebi_access_token')){
         toast('سجّل الدخول أولاً لتأكيد الحجز');
         showPage('login');
         return;
@@ -794,50 +1033,81 @@ if(submitReview){
   };
 }
 
-const settingsNotifications=$('#settingsNotifications');
-if(settingsNotifications){
-  settingsNotifications.onclick=async()=>{
-    if(window.MalaebiAPI?.enabled()&&sessionStorage.getItem('malaebi_access_token')){
-      try{
-        const n=await MalaebiAPI.notifications();
-        toast(n.length?`لديك ${n.length} إشعاراً`:'لا توجد إشعارات جديدة');
-      }catch(e){
-        toast(e.message);
-      }
-    }else{
-      toast('الإشعارات ستُفعّل بعد ربط خدمة الإشعارات');
+// Account Logout Button
+const accountLogoutBtn=$('#accountLogoutBtn');
+if(accountLogoutBtn){
+  accountLogoutBtn.onclick=()=>{
+    if(confirm('هل أنت متأكد من رغبتك في تسجيل الخروج؟')){
+      performLogout();
     }
   };
 }
 
-const settingsHelp=$('#settingsHelp');
-if(settingsHelp) settingsHelp.onclick=()=>toast('مركز المساعدة: تواصل معنا عبر 773461637');
-
 const settingsLogout=$('#settingsLogout');
 if(settingsLogout){
-  settingsLogout.onclick=async()=>{
-    if(window.MalaebiAPI?.enabled()) await window.MalaebiAPI.logout();
-    else window.MalaebiAPI?.logout();
-    state.user=null;
-    state.email='';
-    state.phone='';
-    localStorage.removeItem('malaebi_user');
-    localStorage.removeItem('malaebi_email');
-    localStorage.removeItem('malaebi_phone');
-    sessionStorage.removeItem('malaebi_access_token');
-    sessionStorage.removeItem('malaebi_refresh_token');
-    renderAccount();
-    showPage('home');
-    toast('تم تسجيل الخروج بنجاح');
+  settingsLogout.onclick=()=>{
+    if(confirm('هل أنت متأكد من رغبتك في تسجيل الخروج؟')){
+      performLogout();
+    }
   };
+}
+
+// Settings Controls
+const settingDarkMode=$('#settingDarkMode');
+if(settingDarkMode){
+  settingDarkMode.onchange=e=>{
+    const isDark = e.target.checked;
+    document.body.classList.toggle('dark-mode', isDark);
+    localStorage.setItem('malaebi_theme', isDark ? 'dark' : 'light');
+    toast(isDark ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع الفاتح');
+  };
+}
+
+const settingBookingAlerts=$('#settingBookingAlerts');
+if(settingBookingAlerts){
+  settingBookingAlerts.onchange=e=>{
+    localStorage.setItem('malaebi_alert_booking', e.target.checked ? 'true' : 'false');
+    toast(e.target.checked ? 'تم تفعيل تنبيهات حالة الحجز' : 'تم إيقاف تنبيهات حالة الحجز');
+  };
+}
+
+const settingMatchReminder=$('#settingMatchReminder');
+if(settingMatchReminder){
+  settingMatchReminder.onchange=e=>{
+    localStorage.setItem('malaebi_alert_match', e.target.checked ? 'true' : 'false');
+    toast(e.target.checked ? 'تم تفعيل تذكير موعد المباراة' : 'تم إيقاف تذكير موعد المباراة');
+  };
+}
+
+const settingClearCache=$('#settingClearCache');
+if(settingClearCache){
+  settingClearCache.onclick=async()=>{
+    if(!confirm('هل تريد مسح ملفات الكاش وتحديث التطبيق لأحدث نسخة؟')) return;
+    if('caches' in window){
+      try{
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }catch{}
+    }
+    toast('تم مسح الكاش بنجاح، جاري إعادة تحميل التطبيق...');
+    setTimeout(() => {
+      window.location.reload(true);
+    }, 700);
+  };
+}
+
+// Apply Saved Theme immediately on Startup
+if(localStorage.getItem('malaebi_theme') === 'dark'){
+  document.body.classList.add('dark-mode');
 }
 
 // App Startup & Initialization
 renderHome();
 renderSearch();
 renderAccount();
+renderSettings();
 
-if(window.MalaebiAPI?.enabled()&&sessionStorage.getItem('malaebi_access_token')){
+if(window.MalaebiAPI?.enabled()&&localStorage.getItem('malaebi_access_token')){
   MalaebiAPI.me().then(me=>{
     if(me){
       state.user=me;
@@ -846,6 +1116,7 @@ if(window.MalaebiAPI?.enabled()&&sessionStorage.getItem('malaebi_access_token'))
       renderAccount();
     }
   }).catch(()=>{});
+  loadMyBookings();
 }
 
 // Determine initial page

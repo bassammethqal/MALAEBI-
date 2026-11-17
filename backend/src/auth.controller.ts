@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Headers, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Req, Headers, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import {
@@ -8,7 +8,8 @@ import {
   EmailResendDto,
   OtpRequestDto,
   OtpVerifyDto,
-  RefreshDto
+  RefreshDto,
+  UpdateProfileDto
 } from './dto';
 import { JwtGuard } from './jwt.guard';
 import { DbService } from './db.service';
@@ -72,5 +73,11 @@ export class AuthController {
       [req.user.sub]
     );
     return r.rows[0] || null;
+  }
+
+  @Patch('me')
+  @UseGuards(JwtGuard)
+  async updateProfile(@Req() req: any, @Body() dto: UpdateProfileDto) {
+    return this.auth.updateProfile(req.user.sub, dto);
   }
 }

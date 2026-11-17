@@ -6,6 +6,11 @@ export class RegisterDto {
   @IsString() @MinLength(6) @MaxLength(72) password!: string;
 }
 
+export class UpdateProfileDto {
+  @IsOptional() @IsString() @MinLength(2) @MaxLength(160) full_name?: string;
+  @IsOptional() @IsString() @Matches(/^(\+9677\d{8}|)$/) phone?: string;
+}
+
 export class LoginDto {
   @IsEmail() email!: string;
   @IsString() @MinLength(6) @MaxLength(72) password!: string;

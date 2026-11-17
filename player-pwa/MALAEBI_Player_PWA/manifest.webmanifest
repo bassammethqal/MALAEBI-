@@ -10,5 +10,8 @@
   "orientation": "portrait",
   "background_color": "#f5f8f5",
   "theme_color": "#087b43",
-  "icons": [{"src":"assets/images/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons": [
+    {"src":"assets/images/logo.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"},
+    {"src":"assets/images/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ]
 }

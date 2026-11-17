@@ -1,12 +1,13 @@
-const CACHE = 'malaebi-player-v2.3.0';
+const CACHE = 'malaebi-player-v2.7.0';
 const CORE = [
   './',
   './index.html',
-  './styles.css?v=3',
-  './app.js?v=3',
-  './config.js?v=3',
-  './api-client.js?v=3',
+  './styles.css?v=7',
+  './app.js?v=7',
+  './config.js?v=7',
+  './api-client.js?v=7',
   './manifest.webmanifest',
+  './assets/images/logo.svg',
   './assets/images/icon.svg',
   './assets/fonts/thmanyahsans-Regular.woff2',
   './assets/fonts/thmanyahsans-Light.woff2',

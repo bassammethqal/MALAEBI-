@@ -322,4 +322,55 @@ export class AuthService {
     if (error) throw new BadRequestException(error.message);
     return { success: true };
   }
+
+  async updateProfile(userId: string, dto: { full_name?: string; phone?: string }) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (dto.full_name !== undefined) {
+      const cleanName = dto.full_name.trim();
+      fields.push(`full_name = $${idx++}`);
+      values.push(cleanName || null);
+    }
+
+    if (dto.phone !== undefined) {
+      const cleanPhone = dto.phone.trim();
+      fields.push(`phone = $${idx++}`);
+      values.push(cleanPhone || null);
+    }
+
+    if (!fields.length) {
+      const r = await this.db.query(
+        'SELECT id, full_name, email, phone, status FROM public.users WHERE id = $1',
+        [userId]
+      );
+      return r.rows[0];
+    }
+
+    values.push(userId);
+    const query = `
+      UPDATE public.users
+      SET ${fields.join(', ')}
+      WHERE id = $${idx}
+      RETURNING id, full_name, email, phone, status
+    `;
+
+    const result = await this.db.query(query, values);
+    if (!result.rows.length) {
+      throw new BadRequestException('المستخدم غير موجود');
+    }
+
+    if (dto.full_name) {
+      try {
+        await this.supabase.adminClient.auth.admin.updateUserById(userId, {
+          user_metadata: { full_name: dto.full_name.trim() }
+        });
+      } catch {
+        // Silently ignore auth admin metadata sync error
+      }
+    }
+
+    return result.rows[0];
+  }
 }
