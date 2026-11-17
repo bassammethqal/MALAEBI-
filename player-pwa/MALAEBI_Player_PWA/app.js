@@ -1096,6 +1096,39 @@ if(settingClearCache){
   };
 }
 
+// Check for Supabase Auth tokens in URL (e.g. from email verification link)
+let isEmailVerificationRedirect = false;
+try {
+  const rawHash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+  const rawSearch = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search;
+  let params = new URLSearchParams(rawHash);
+  if (!params.get('access_token') && rawSearch) {
+    const s = new URLSearchParams(rawSearch);
+    if (s.get('access_token')) params = s;
+  }
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+
+  if (accessToken) {
+    localStorage.setItem('malaebi_access_token', accessToken);
+    if (refreshToken) {
+      localStorage.setItem('malaebi_refresh_token', refreshToken);
+    }
+    try {
+      history.replaceState(null, '', window.location.pathname + '#home');
+    } catch {}
+    isEmailVerificationRedirect = true;
+  } else if (params.get('error_description')) {
+    const errDesc = decodeURIComponent(params.get('error_description').replace(/\+/g, ' '));
+    toast(errDesc || 'تعذر تأكيد الرابط، يرجى طلب رابط جديد');
+    try {
+      history.replaceState(null, '', window.location.pathname + '#login');
+    } catch {}
+  }
+} catch (e) {
+  console.warn('Auth redirect token parse error:', e);
+}
+
 // Apply Saved Theme immediately on Startup
 if(localStorage.getItem('malaebi_theme') === 'dark'){
   document.body.classList.add('dark-mode');
@@ -1119,10 +1152,15 @@ if(window.MalaebiAPI?.enabled()&&localStorage.getItem('malaebi_access_token')){
   loadMyBookings();
 }
 
-// Determine initial page
-const requestedPage=location.hash?location.hash.slice(1):'';
-const validPage=requestedPage&&document.querySelector(`[data-page="${requestedPage}"]`);
-showPage(validPage?requestedPage:'home');
+if (isEmailVerificationRedirect) {
+  toast('تم تفعيل حسابك وتسجيل دخولك بنجاح');
+  showPage('home');
+} else {
+  // Determine initial page
+  const requestedPage=location.hash?location.hash.slice(1):'';
+  const validPage=requestedPage&&document.querySelector(`[data-page="${requestedPage}"]`);
+  showPage(validPage?requestedPage:'home');
+}
 
 // Service Worker
 if('serviceWorker' in navigator && location.protocol !== 'file:') {

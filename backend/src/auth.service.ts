@@ -9,12 +9,14 @@ export class AuthService {
   async register(fullName: string, email: string, password: string) {
     const trimmedName = fullName.trim();
     const cleanEmail = email.trim().toLowerCase();
+    const emailRedirectTo = process.env.PUBLIC_APP_URL || 'https://malaebi-player-psi.vercel.app';
 
     const { data, error } = await this.supabase.authClient.auth.signUp({
       email: cleanEmail,
       password,
       options: {
-        data: { full_name: trimmedName }
+        data: { full_name: trimmedName },
+        emailRedirectTo
       }
     });
 
@@ -174,16 +176,20 @@ export class AuthService {
 
   async resendEmailOtp(email: string) {
     const cleanEmail = email.trim().toLowerCase();
+    const emailRedirectTo = process.env.PUBLIC_APP_URL || 'https://malaebi-player-psi.vercel.app';
     const { error } = await this.supabase.authClient.auth.resend({
       type: 'signup',
-      email: cleanEmail
+      email: cleanEmail,
+      options: {
+        emailRedirectTo
+      }
     });
 
     if (error) {
       throw new BadRequestException(error.message);
     }
 
-    return { accepted: true, message: 'تمت إعادة إرسال رمز التحقق إلى بريدك الإلكتروني' };
+    return { accepted: true, message: 'تمت إعادة إرسال رابط التحقق إلى بريدك الإلكتروني' };
   }
 
   async requestOtp(phone: string) {
