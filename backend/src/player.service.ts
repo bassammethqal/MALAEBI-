@@ -39,6 +39,50 @@ export class PlayerService {
   const r=await this.db.query<any>(`SELECT v.*,a.name area FROM venues v LEFT JOIN areas a ON a.id=v.area_id WHERE v.id=$1 AND v.status='active'`,[id]);
   if(!r.rowCount) throw new NotFoundException(); return r.rows[0];
  }
+ async venueReviews(venueId:string) {
+  const summaryRes = await this.db.query<any>(
+    `SELECT COALESCE(ROUND(AVG(rv.rating)::numeric, 1), 0)::float AS average_rating,
+            COUNT(rv.id)::int AS total_reviews
+     FROM reviews rv
+     JOIN bookings b ON b.id = rv.booking_id
+     WHERE rv.status = 'published'
+       AND EXISTS (
+         SELECT 1 FROM field_occupancies o
+         JOIN fields f ON f.id = o.field_id
+         WHERE o.booking_id = b.id AND f.venue_id = $1
+       )`,
+    [venueId]
+  );
+
+  const reviewsRes = await this.db.query<any>(
+    `SELECT rv.id, rv.rating, rv.comment, rv.created_at,
+            COALESCE(u.full_name, 'لاعب ملاعبي') AS player_name
+     FROM reviews rv
+     JOIN bookings b ON b.id = rv.booking_id
+     LEFT JOIN users u ON u.id = rv.player_user_id
+     WHERE rv.status = 'published'
+       AND EXISTS (
+         SELECT 1 FROM field_occupancies o
+         JOIN fields f ON f.id = o.field_id
+         WHERE o.booking_id = b.id AND f.venue_id = $1
+       )
+     ORDER BY rv.created_at DESC
+     LIMIT 30`,
+    [venueId]
+  );
+
+  return {
+    average_rating: Number(summaryRes.rows[0]?.average_rating) || 0,
+    total_reviews: Number(summaryRes.rows[0]?.total_reviews) || 0,
+    reviews: reviewsRes.rows.map(r => ({
+      id: r.id,
+      rating: Number(r.rating),
+      comment: r.comment,
+      created_at: r.created_at,
+      player_name: r.player_name
+    }))
+  };
+ }
  async fields(venueId:string) {
   const r=await this.db.query<any>(`SELECT f.id,f.venue_id,f.name,f.sport_type,f.capacity,f.surface_type,
    (SELECT min(price) FROM pricing_rules p WHERE p.field_id=f.id AND p.active) hourly_price_from,

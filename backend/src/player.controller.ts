@@ -15,6 +15,7 @@ export class PlayerController {
  @Get('venues') venues(@Query() q:any){ return this.player.listVenues(q); }
  @Get('venues/:venueId') venue(@Param('venueId') id:string){ return this.player.venue(id); }
  @Get('venues/:venueId/fields') fields(@Param('venueId') id:string){ return this.player.fields(id); }
+ @Get('venues/:venueId/reviews') reviews(@Param('venueId') id:string){ return this.player.venueReviews(id); }
  @Get('fields/:fieldId/availability') availability(@Param('fieldId') id:string,@Query('date') date:string){ return this.player.availability(id,date); }
  @Post('bookings') @UseGuards(JwtGuard) create(@Req() req:any,@Body() dto:CreateBookingDto,@Headers('idempotency-key') key:string){ return this.player.createBooking(req.user.sub,dto,key); }
  @Get('notifications') @UseGuards(JwtGuard) notifications(@Req() req:any){return this.player.notifications(req.user.sub);}

@@ -30,6 +30,7 @@
   requestOtp:phone=>request('/auth/otp/request',{method:'POST',body:JSON.stringify({phone})}),
   verifyOtp:async(phone,code)=>{const r=await request('/auth/otp/verify',{method:'POST',body:JSON.stringify({phone,code})});saveSession(r);return r;},
   venues:async()=>{const r=await request('/venues');return r.data||[];},
+  venueReviews:id=>request(`/venues/${encodeURIComponent(id)}/reviews`),
   fields:id=>request(`/venues/${encodeURIComponent(id)}/fields`),
   availability:(id,date)=>request(`/fields/${encodeURIComponent(id)}/availability?date=${encodeURIComponent(date)}`),
   createBooking:(fieldId,startsAt)=>request('/bookings',{method:'POST',headers:{'Idempotency-Key':crypto.randomUUID()},body:JSON.stringify({field_id:fieldId,starts_at:startsAt})}),

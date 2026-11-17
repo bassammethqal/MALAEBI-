@@ -43,8 +43,62 @@ async function renderHome(){const list=$('#homeVenues');if(window.MalaebiAPI?.en
 async function loadRemoteVenues(){if(state.remoteVenues)return state.remoteVenues;const rows=await MalaebiAPI.venues();const mapped=[];for(const v of rows){let fieldId=v.default_field_id, price=Number(v.hourly_price_from||0), mode=(v.confirmation_mode==='instant'&&v.instant_booking_enabled===true)?'instant':'approval', features=Array.isArray(v.amenities)?v.amenities:[];if(!fieldId){const fs=await MalaebiAPI.fields(v.id);if(!fs.length)continue;const f=fs[0];fieldId=f.id;price=Number(f.hourly_price_from||0);mode=(f.confirmation_mode==='instant'&&f.instant_booking_enabled===true)?'instant':'approval';features=Array.isArray(f.amenities)?f.amenities:[];}mapped.push({id:v.id,fieldId,name:v.name,area:v.area||v.address_text||'مأرب',price,rating:Number(v.rating||0),reviews:0,photo:v.cover_image_url||photos.a,features,description:v.description||'',mode,deposit:0})}state.remoteVenues=mapped;return mapped}
 function filteredVenues(){let list=(state.remoteVenues||venues).filter(v=>v.price<=state.price);if(state.query)list=list.filter(v=>(v.name+' '+v.area+' '+v.features.join(' ')).includes(state.query));if(state.filter==='grass')list=list.filter(v=>v.features.includes('عشب صناعي'));if(state.filter==='night')list=list.filter(v=>v.features.includes('إضاءة ليلية'));if(state.filter==='parking')list=list.filter(v=>v.features.includes('مواقف سيارات'));if(state.sort==='price_asc')list.sort((a,b)=>a.price-b.price);if(state.sort==='rating_desc')list.sort((a,b)=>b.rating-a.rating);return list}
 async function renderSearch(){if(window.MalaebiAPI?.enabled()){try{await loadRemoteVenues()}catch(e){toast(e.message)}}const list=filteredVenues();$('#searchVenues').innerHTML=list.map(venueCard).join('');$('#resultCount').textContent=`(${list.length})`;$('#emptySearch').classList.toggle('hidden',list.length>0)}
-function renderVenue(){const v=state.venue;if(!v)return;$('#venueDetails').innerHTML=`<div class="detail-cover" style="background-image:url('${v.photo}')"><button class="back-btn" data-go="search">→</button><button class="detail-fav" data-fav="${v.id}">${state.favoriteIds.has(v.id)?'♥':'♡'}</button></div><div class="detail-content"><div class="detail-title-row"><div><h1>${v.name}</h1><div class="detail-sub">⌖ ${v.area}</div></div><span class="detail-rating">★ ${v.rating} (${v.reviews})</span></div><div class="detail-price">${money(v.price)} <small>للساعة الواحدة</small></div><div class="detail-tabs"><span>عن الملعب</span><span>المرافق</span><span>التقييمات</span></div><p class="detail-description">${v.description}</p><div class="amenity-grid">${v.features.map(f=>`<div class="amenity"><b>${f.includes('إضاءة')?'☼':f.includes('مواقف')?'♙':f.includes('دورات')?'♧':f.includes('غرف')?'▣':'⚽'}</b>${f}</div>`).join('')}</div><div class="booking-summary"><div><span>طريقة التأكيد</span><b>${v.mode==='instant'?'فوري':'بموافقة المنشأة'}</b></div><div><span>مدة الحجز</span><b>60 دقيقة</b></div><div><span>العربون</span><b>${v.deposit?money(v.deposit):'لا يوجد'}</b></div></div><div class="detail-bottom"><div><small>السعر يبدأ من</small><b>${money(v.price)}</b></div><button class="primary-btn" data-book="${v.id}">احجز الآن ←</button></div></div>`}
-async function openVenue(id){state.venue=(state.remoteVenues||venues).find(v=>v.id===id);if(!state.venue)return;if(window.MalaebiAPI?.enabled()&&!state.venue.fieldId){const fs=await MalaebiAPI.fields(id);if(!fs.length){toast('لا يوجد ملعب نشط للحجز');return}state.venue.fieldId=fs[0].id;state.venue.price=Number(fs[0].hourly_price_from||0);state.venue.mode=(fs[0].confirmation_mode==='instant'&&fs[0].instant_booking_enabled===true)?'instant':'approval';state.venue.features=Array.isArray(fs[0].amenities)?fs[0].amenities:[];}renderVenue();showPage('venue')}
+function renderVenue(){
+  const v=state.venue;
+  if(!v)return;
+  const currentTab=state.venueTab||'about';
+  $('#venueDetails').innerHTML=`<div class="detail-cover" style="background-image:url('${v.photo}')"><button class="back-btn" data-go="search" type="button">→</button><button class="detail-fav ${state.favoriteIds.has(v.id)?'saved':''}" data-fav="${v.id}" type="button">${state.favoriteIds.has(v.id)?'♥':'♡'}</button></div><div class="detail-content"><div class="detail-title-row"><div><h1>${v.name}</h1><div class="detail-sub">⌖ ${v.area}</div></div><span class="detail-rating">★ ${v.rating} <small>(${v.reviews||0})</small></span></div><div class="detail-price">${money(v.price)} <small>للساعة الواحدة</small></div><div class="detail-tabs"><button type="button" class="detail-tab ${currentTab==='about'?'active':''}" data-detail-tab="about">عن الملعب</button><button type="button" class="detail-tab ${currentTab==='amenities'?'active':''}" data-detail-tab="amenities">المرافق</button><button type="button" class="detail-tab ${currentTab==='reviews'?'active':''}" data-detail-tab="reviews">التقييمات</button></div><div id="detailTabContent"></div><div class="detail-bottom"><div><small>السعر يبدأ من</small><b>${money(v.price)}</b></div><button class="primary-btn" data-book="${v.id}" type="button">احجز الآن ←</button></div></div>`;
+  renderVenueTab(currentTab);
+}
+async function renderVenueTab(tab){
+  state.venueTab=tab;
+  const container=$('#detailTabContent');
+  if(!container)return;
+  const v=state.venue;
+  if(!v)return;
+  $$('.detail-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.detailTab===tab));
+  if(tab==='about'){
+    container.innerHTML=`<p class="detail-description">${v.description||'ملعب كرة قدم مجهز ومناسب للمباريات الودية والتمارين الرياضية والبطولات التنافسية.'}</p><div class="booking-summary"><div><span>طريقة التأكيد</span><b>${v.mode==='instant'?'فوري':'بموافقة المنشأة'}</b></div><div><span>مدة الحجز</span><b>60 دقيقة</b></div><div><span>العربون</span><b>${v.deposit?money(v.deposit):'لا يوجد (الدفع عند الملعب)'}</b></div></div>`;
+    return;
+  }
+  if(tab==='amenities'){
+    if(v.features&&v.features.length){
+      container.innerHTML=`<div class="amenity-grid">${v.features.map(f=>`<div class="amenity"><b>${f.includes('إضاءة')?'☼':f.includes('مواقف')?'♙':f.includes('دورات')?'♧':f.includes('غرف')?'▣':'⚽'}</b>${f}</div>`).join('')}</div>`;
+    }else{
+      container.innerHTML=`<div class="tab-empty">لم تُضف مرافق محددة لهذا الملعب بعد.</div>`;
+    }
+    return;
+  }
+  if(tab==='reviews'){
+    container.innerHTML=`<div class="tab-empty">جاري تحميل التقييمات...</div>`;
+    if(window.MalaebiAPI?.enabled()){
+      try{
+        const data=await MalaebiAPI.venueReviews(v.id);
+        const reviews=data.reviews||[];
+        const avg=data.average_rating||v.rating||0;
+        const total=data.total_reviews||reviews.length||0;
+        if(!reviews.length){
+          container.innerHTML=`<div class="tab-empty">لا توجد تقييمات بعد لهذا الملعب. كن أول من يقيّمه بعد إتمام حجزك!</div>`;
+          return;
+        }
+        const fullStars=Math.round(avg);
+        container.innerHTML=`<div class="reviews-summary"><div class="reviews-score">${avg}</div><div class="reviews-score-meta"><div class="reviews-score-stars">${'★'.repeat(fullStars)}${'☆'.repeat(Math.max(0,5-fullStars))}</div><small>بناءً على ${total} تقييم</small></div></div><div class="reviews-list">${reviews.map(r=>`<div class="review-item"><div class="review-item-head"><span class="review-player">⚽ ${r.player_name||'لاعب ملاعبي'}</span><span class="review-date">${r.created_at?new Intl.DateTimeFormat('ar-YE',{dateStyle:'medium'}).format(new Date(r.created_at)):''}</span></div><div class="review-stars">${'★'.repeat(r.rating||5)}${'☆'.repeat(Math.max(0,5-(r.rating||5)))}</div>${r.comment?`<p class="review-comment">${r.comment}</p>`:''}</div>`).join('')}</div>`;
+        return;
+      }catch(e){
+        container.innerHTML=`<div class="tab-empty">تعذر تحميل التقييمات: ${e.message}</div>`;
+        return;
+      }
+    }
+    const demoReviews=[
+      {player_name:'أحمد صالح',rating:5,comment:'الملعب ممتاز والعشب بحالة رائعة والإضاءة الليلية واضحة جداً.',created_at:new Date(Date.now()-86400000*2).toISOString()},
+      {player_name:'محمد عبدالله',rating:4,comment:'تجربة حجز سهلة وسريعة والمواقف متوفرة بجانب الملعب.',created_at:new Date(Date.now()-86400000*6).toISOString()}
+    ];
+    const avg=v.rating||4.8;
+    const fullStars=Math.round(avg);
+    container.innerHTML=`<div class="reviews-summary"><div class="reviews-score">${avg}</div><div class="reviews-score-meta"><div class="reviews-score-stars">${'★'.repeat(fullStars)}${'☆'.repeat(Math.max(0,5-fullStars))}</div><small>بناءً على ${demoReviews.length} تقييم (معاينة)</small></div></div><div class="reviews-list">${demoReviews.map(r=>`<div class="review-item"><div class="review-item-head"><span class="review-player">⚽ ${r.player_name}</span><span class="review-date">${new Intl.DateTimeFormat('ar-YE',{dateStyle:'medium'}).format(new Date(r.created_at))}</span></div><div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(Math.max(0,5-r.rating))}</div><p class="review-comment">${r.comment}</p></div>`).join('')}</div>`;
+  }
+}
+async function openVenue(id){state.venueTab='about';state.venue=(state.remoteVenues||venues).find(v=>v.id===id);if(!state.venue)return;if(window.MalaebiAPI?.enabled()&&!state.venue.fieldId){const fs=await MalaebiAPI.fields(id);if(!fs.length){toast('لا يوجد ملعب نشط للحجز');return}state.venue.fieldId=fs[0].id;state.venue.price=Number(fs[0].hourly_price_from||0);state.venue.mode=(fs[0].confirmation_mode==='instant'&&fs[0].instant_booking_enabled===true)?'instant':'approval';state.venue.features=Array.isArray(fs[0].amenities)?fs[0].amenities:[];}renderVenue();showPage('venue')}
 function toggleFavorite(id){if(state.favoriteIds.has(id))state.favoriteIds.delete(id);else state.favoriteIds.add(id);localStorage.setItem('malaebi_favorites',JSON.stringify([...state.favoriteIds]));renderHome();if(state.page==='search')renderSearch();if(state.page==='venue')renderVenue();toast(state.favoriteIds.has(id)?'أضيف الملعب إلى المفضلة':'تمت إزالة الملعب من المفضلة')}
 function renderBooking(){const v=state.venue;if(!v)return;$('#bookingVenueMini').innerHTML=`<div class="mini-thumb" style="background-image:url('${v.photo}')"></div><div><b>${v.name}</b><small>${v.area}</small></div>`;$('#bookingPrice').textContent=money(v.price);$('#bookingTotal').textContent=money(v.price);$('#confirmMethod').innerHTML=v.mode==='instant'?'هذا الملعب يعتمد <b>التأكيد الفوري</b> بعد نجاح إنشاء الحجز.':'هذا الملعب يعتمد <b>موافقة المنشأة</b> خلال المهلة المحددة في سياسة الحجز.';renderDates();renderTimes()}
 function renderDates(){const base=new Date();base.setHours(0,0,0,0);$('#bookingMonth').textContent=new Intl.DateTimeFormat('ar-YE',{month:'long',year:'numeric'}).format(state.date);$('#dateScroller').innerHTML=Array.from({length:7},(_,i)=>{const d=new Date(base);d.setDate(base.getDate()+i);return `<button class="date-option ${dateISO(d)===dateISO(state.date)?'active':''}" data-date="${dateISO(d)}"><small>${new Intl.DateTimeFormat('ar-YE',{weekday:'short'}).format(d)}</small><b>${d.getDate()}</b><small>${new Intl.DateTimeFormat('ar-YE',{month:'short'}).format(d)}</small></button>`}).join('')}
@@ -123,6 +177,7 @@ $('#mainContent').addEventListener('click',e=>{
       return;
     }
   }
+  const tabBtn=e.target.closest('[data-detail-tab]');if(tabBtn){renderVenueTab(tabBtn.dataset.detailTab);return}
   const fav=e.target.closest('[data-fav]');if(fav){e.stopPropagation();toggleFavorite(fav.dataset.fav);return}
   const book=e.target.closest('[data-book]');if(book){openBooking(book.dataset.book);return}
   const go=e.target.closest('[data-go]');if(go){showPage(go.dataset.go);return}
