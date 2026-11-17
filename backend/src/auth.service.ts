@@ -6,6 +6,186 @@ import { DbService } from './db.service';
 export class AuthService {
   constructor(private supabase: SupabaseService, private db: DbService) {}
 
+  async register(fullName: string, email: string, password: string) {
+    const trimmedName = fullName.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    const { data, error } = await this.supabase.authClient.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        data: { full_name: trimmedName }
+      }
+    });
+
+    if (error) {
+      if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+        throw new BadRequestException('هذا البريد الإلكتروني مسجل مسبقاً، يمكنك تسجيل الدخول مباشرة');
+      }
+      throw new BadRequestException(error.message);
+    }
+
+    if (data?.user) {
+      await this.db.query(
+        `INSERT INTO public.users(id, email, full_name, email_verified_at, status)
+         VALUES ($1, $2, $3, $4, 'active')
+         ON CONFLICT (id) DO UPDATE SET
+           email = EXCLUDED.email,
+           full_name = COALESCE(EXCLUDED.full_name, public.users.full_name),
+           email_verified_at = COALESCE(EXCLUDED.email_verified_at, public.users.email_verified_at),
+           status = 'active'`,
+        [data.user.id, cleanEmail, trimmedName, data.user.email_confirmed_at]
+      );
+    }
+
+    if (data?.session && data?.user) {
+      const profile = await this.db.query<any>(
+        'SELECT id, full_name, email, phone, status FROM users WHERE id=$1',
+        [data.user.id]
+      );
+      return {
+        requires_verification: false,
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+        token_type: 'Bearer',
+        expires_in: data.session.expires_in,
+        user: profile.rows[0]
+      };
+    }
+
+    return {
+      requires_verification: true,
+      email: cleanEmail,
+      message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني'
+    };
+  }
+
+  async login(email: string, password: string) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    const { data, error } = await this.supabase.authClient.auth.signInWithPassword({
+      email: cleanEmail,
+      password
+    });
+
+    if (error) {
+      if (error.message.includes('Email not confirmed') || error.message.includes('Email link is invalid')) {
+        throw new UnauthorizedException('يرجى تأكيد بريدك الإلكتروني أولاً باستخدام رمز التحقق المرسل إليك');
+      }
+      if (error.message.includes('Invalid login credentials')) {
+        throw new UnauthorizedException('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+      }
+      throw new UnauthorizedException(error.message);
+    }
+
+    if (!data?.session || !data?.user) {
+      throw new UnauthorizedException('فشل تسجيل الدخول');
+    }
+
+    let profile = await this.db.query<any>(
+      'SELECT id, full_name, email, phone, status FROM users WHERE id=$1',
+      [data.user.id]
+    );
+
+    if (!profile.rowCount) {
+      const name = data.user.user_metadata?.full_name || 'لاعب ملاعبي';
+      await this.db.query(
+        `INSERT INTO public.users(id, email, full_name, email_verified_at, status)
+         VALUES ($1, $2, $3, $4, 'active')
+         ON CONFLICT (id) DO UPDATE SET
+           email = EXCLUDED.email,
+           full_name = COALESCE(EXCLUDED.full_name, public.users.full_name),
+           status = 'active'`,
+        [data.user.id, cleanEmail, name, data.user.email_confirmed_at]
+      );
+      profile = await this.db.query<any>(
+        'SELECT id, full_name, email, phone, status FROM users WHERE id=$1',
+        [data.user.id]
+      );
+    }
+
+    if (profile.rows[0].status !== 'active') {
+      throw new UnauthorizedException('الحساب غير نشط');
+    }
+
+    return {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      token_type: 'Bearer',
+      expires_in: data.session.expires_in,
+      user: profile.rows[0]
+    };
+  }
+
+  async verifyEmailOtp(email: string, code: string, type?: string) {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCode = code.trim();
+
+    let otpType = (type || 'signup') as any;
+    let { data, error } = await this.supabase.authClient.auth.verifyOtp({
+      email: cleanEmail,
+      token: cleanCode,
+      type: otpType
+    });
+
+    // If signup verification failed, retry with 'email'
+    if (error && otpType === 'signup') {
+      const retry = await this.supabase.authClient.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanCode,
+        type: 'email'
+      });
+      if (!retry.error && retry.data?.session) {
+        data = retry.data;
+        error = null;
+      }
+    }
+
+    if (error || !data?.session || !data?.user) {
+      throw new UnauthorizedException(error?.message || 'رمز التحقق غير صحيح أو منتهي الصلاحية');
+    }
+
+    const session = data.session;
+    const name = data.user.user_metadata?.full_name || 'لاعب ملاعبي';
+
+    await this.db.query(
+      `INSERT INTO public.users(id, email, full_name, email_verified_at, status)
+       VALUES ($1, $2, $3, now(), 'active')
+       ON CONFLICT (id) DO UPDATE SET
+         email = EXCLUDED.email,
+         email_verified_at = now(),
+         status = 'active'`,
+      [session.user.id, cleanEmail, name]
+    );
+
+    const profile = await this.db.query<any>(
+      'SELECT id, full_name, email, phone, status FROM users WHERE id=$1',
+      [session.user.id]
+    );
+
+    return {
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      token_type: 'Bearer',
+      expires_in: session.expires_in,
+      user: profile.rows[0]
+    };
+  }
+
+  async resendEmailOtp(email: string) {
+    const cleanEmail = email.trim().toLowerCase();
+    const { error } = await this.supabase.authClient.auth.resend({
+      type: 'signup',
+      email: cleanEmail
+    });
+
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+
+    return { accepted: true, message: 'تمت إعادة إرسال رمز التحقق إلى بريدك الإلكتروني' };
+  }
+
   async requestOtp(phone: string) {
     const isDev = process.env.NODE_ENV !== 'production';
 
@@ -41,7 +221,7 @@ export class AuthService {
     const { data, error } = await this.supabase.authClient.auth.verifyOtp({ phone, token: code, type: 'sms' });
 
     if (!error && data?.session && data?.user) {
-      const profile = await this.db.query<any>('SELECT id, phone, full_name, status FROM users WHERE id=$1', [data.user.id]);
+      const profile = await this.db.query<any>('SELECT id, full_name, email, phone, status FROM users WHERE id=$1', [data.user.id]);
       if (!profile.rowCount) throw new UnauthorizedException('تعذر تجهيز ملف المستخدم؛ تحقق من trigger مزامنة Supabase Auth');
       if (profile.rows[0].status !== 'active') throw new UnauthorizedException('الحساب غير نشط');
       return {
@@ -112,7 +292,7 @@ export class AuthService {
         [session.user.id, cleanPhone]
       );
 
-      const profile = await this.db.query<any>('SELECT id, phone, full_name, status FROM users WHERE id=$1', [session.user.id]);
+      const profile = await this.db.query<any>('SELECT id, full_name, email, phone, status FROM users WHERE id=$1', [session.user.id]);
 
       return {
         access_token: session.access_token,

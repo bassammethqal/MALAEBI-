@@ -27,6 +27,11 @@
  function clearSession(){sessionStorage.removeItem(accessKey);sessionStorage.removeItem(refreshKey)}
  window.MalaebiAPI={
   enabled:()=>!C.DEMO_MODE&&!!base,
+  register:async(fullName,email,password)=>{const r=await request('/auth/register',{method:'POST',body:JSON.stringify({full_name:fullName,email,password})});if(r?.access_token)saveSession(r);return r;},
+  login:async(email,password)=>{const r=await request('/auth/login',{method:'POST',body:JSON.stringify({email,password})});if(r?.access_token)saveSession(r);return r;},
+  verifyEmailOtp:async(email,code)=>{const r=await request('/auth/email/verify',{method:'POST',body:JSON.stringify({email,code})});if(r?.access_token)saveSession(r);return r;},
+  resendEmailOtp:email=>request('/auth/email/resend',{method:'POST',body:JSON.stringify({email})}),
+  me:()=>request('/me'),
   requestOtp:phone=>request('/auth/otp/request',{method:'POST',body:JSON.stringify({phone})}),
   verifyOtp:async(phone,code)=>{const r=await request('/auth/otp/verify',{method:'POST',body:JSON.stringify({phone,code})});saveSession(r);return r;},
   venues:async()=>{const r=await request('/venues');return r.data||[];},

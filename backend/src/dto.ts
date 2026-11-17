@@ -1,4 +1,25 @@
-import { IsIn, IsISO8601, IsOptional, IsString, Length, Matches, MaxLength } from 'class-validator';
+import { IsEmail, IsIn, IsISO8601, IsOptional, IsString, Length, Matches, MaxLength, MinLength } from 'class-validator';
+
+export class RegisterDto {
+  @IsString() @MinLength(2) @MaxLength(120) full_name!: string;
+  @IsEmail() email!: string;
+  @IsString() @MinLength(6) @MaxLength(72) password!: string;
+}
+
+export class LoginDto {
+  @IsEmail() email!: string;
+  @IsString() @MinLength(6) @MaxLength(72) password!: string;
+}
+
+export class EmailOtpVerifyDto {
+  @IsEmail() email!: string;
+  @IsString() @Length(6, 10) code!: string;
+  @IsOptional() @IsIn(['signup', 'email']) type?: string;
+}
+
+export class EmailResendDto {
+  @IsEmail() email!: string;
+}
 
 export class OtpRequestDto {
   @IsString() @Matches(/^\+9677\d{8}$/) phone!: string;

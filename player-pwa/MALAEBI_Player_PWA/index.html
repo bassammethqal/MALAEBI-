@@ -7,7 +7,7 @@
   <meta name="description" content="ملاعبي — اكتشف ملاعب كرة القدم واحجز ملعبك بسهولة في مأرب" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/images/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=2" />
+  <link rel="stylesheet" href="styles.css?v=3" />
   <title>ملاعبي | احجز ملعبك</title>
 </head>
 <body>
@@ -110,32 +110,47 @@
       <section class="page" id="page-login" data-page="login">
         <div class="auth-screen">
           <div class="brand large-brand"><span class="brand-mark">م</span><span>ملاعبي</span></div>
-          <h1>تسجيل الدخول</h1>
-          <p>أدخل رقم هاتفك لاستلام رمز التحقق.</p>
-          <label class="field-label">رقم الهاتف</label>
-          <div class="phone-input"><span>🇾🇪 +967</span><input id="pageLoginPhone" inputmode="tel" maxlength="9" placeholder="7XXXXXXXX"></div>
-          <button class="primary-btn full" id="pageRequestOtp">إرسال رمز التحقق</button>
+          <div class="auth-tabs" id="pageAuthTabs">
+            <button type="button" class="auth-tab active" data-auth-tab="login">تسجيل الدخول</button>
+            <button type="button" class="auth-tab" data-auth-tab="register">إنشاء حساب جديد</button>
+          </div>
+
+          <div id="pageLoginForm" class="auth-form">
+            <h1>مرحباً بعودتك</h1>
+            <p>سجّل دخولك لمتابعة حجوزاتك وملاعبك المفضلة.</p>
+            <label class="field-label">البريد الإلكتروني</label>
+            <input id="pageLoginEmail" class="auth-input" type="email" placeholder="name@example.com" autocomplete="email" />
+            <label class="field-label">كلمة المرور</label>
+            <input id="pageLoginPassword" class="auth-input" type="password" placeholder="••••••••" autocomplete="current-password" />
+            <button class="primary-btn full" id="pageSubmitLogin" type="button" style="margin-top:14px">تسجيل الدخول <span>←</span></button>
+          </div>
+
+          <div id="pageRegisterForm" class="auth-form hidden">
+            <h1>انضم إلى ملاعبي</h1>
+            <p>أنشئ حسابك لتأكيد حجوزاتك وتقييم الملاعب باسمك الحقيقي.</p>
+            <label class="field-label">الاسم الكامل</label>
+            <input id="pageRegisterName" class="auth-input" type="text" placeholder="مثال: بسام مثقال" autocomplete="name" />
+            <label class="field-label">البريد الإلكتروني</label>
+            <input id="pageRegisterEmail" class="auth-input" type="email" placeholder="name@example.com" autocomplete="email" />
+            <label class="field-label">كلمة المرور (6 أحرف على الأقل)</label>
+            <input id="pageRegisterPassword" class="auth-input" type="password" placeholder="••••••••" autocomplete="new-password" />
+            <button class="primary-btn full" id="pageSubmitRegister" type="button" style="margin-top:14px">إنشاء الحساب <span>←</span></button>
+          </div>
+
           <p class="micro-note">بمتابعتك أنت توافق على شروط الاستخدام وسياسة الخصوصية.</p>
-          <button class="text-btn" data-go="home">التصفح دون تسجيل</button>
+          <button class="text-btn" data-go="home" type="button">التصفح دون تسجيل</button>
         </div>
       </section>
 
       <section class="page" id="page-otp" data-page="otp">
         <div class="auth-screen">
-          <div class="brand large-brand">ملاعبي</div>
-          <h1>رمز التحقق</h1>
-          <p>أدخل الرمز المكوّن من 6 أرقام المرسل إلى هاتفك.</p>
-          <div class="otp-inputs">
-            <input maxlength="1" inputmode="numeric">
-            <input maxlength="1" inputmode="numeric">
-            <input maxlength="1" inputmode="numeric">
-            <input maxlength="1" inputmode="numeric">
-            <input maxlength="1" inputmode="numeric">
-            <input maxlength="1" inputmode="numeric">
-          </div>
-          <button class="primary-btn full" id="pageVerifyOtp">تحقق ودخول</button>
-          <button class="text-btn" id="resendOtp">إعادة إرسال الرمز</button>
-          <p class="micro-note">أدخل رمز التحقق (رمز التجربة: 123456).</p>
+          <div class="brand large-brand"><span class="brand-mark">م</span><span>ملاعبي</span></div>
+          <div class="email-badge-icon" style="width:68px;height:68px;border-radius:22px;background:#e8f6ed;color:var(--green);display:grid;place-items:center;font-size:32px;margin:8px auto">✉</div>
+          <h1>تحقق من بريدك الإلكتروني</h1>
+          <p id="pageOtpTarget">أرسلنا رابط تفعيل الحساب إلى بريدك الإلكتروني. افتح بريدك واضغط على رابط التأكيد، ثم عد إلى هنا لتسجيل الدخول.</p>
+          <button class="primary-btn full" id="pageGoLogin" type="button" style="margin-top:14px">لقد فعّلت حسابي — تسجيل الدخول <span>←</span></button>
+          <button class="text-btn" id="resendOtp" type="button" style="margin-top:8px">إعادة إرسال رابط التفعيل</button>
+          <p class="micro-note">إذا لم تجد الرسالة في صندوق الوارد، يرجى فحص مجلد الرسائل غير المرغوب فيها (Spam).</p>
         </div>
       </section>
 
@@ -209,6 +224,6 @@
 
   <div class="modal-backdrop hidden" id="modalBackdrop"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose">×</button><div id="modalContent"></div></div></div>
   <div class="toast" id="toast" role="status"></div>
-  <script src="config.js?v=2"></script><script src="api-client.js?v=2"></script><script src="app.js?v=2"></script>
+  <script src="config.js?v=3"></script><script src="api-client.js?v=3"></script><script src="app.js?v=3"></script>
 </body>
 </html>
