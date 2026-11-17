@@ -40,6 +40,141 @@ const money=n=>new Intl.NumberFormat('ar-YE').format(n)+' ريال';
 const dateISO=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const dateLabel=d=>new Intl.DateTimeFormat('ar-YE',{weekday:'long',day:'numeric',month:'long'}).format(d);
 
+function formatTime12Ar(input){
+  if(!input) return '';
+  if(typeof input === 'string' && /(صباحاً|ظهراً|عصراً|مساءً|فجراً)/.test(input)) return input;
+  let hours = 0;
+  let minutes = 0;
+
+  if(typeof input === 'string' && /^\d{1,2}:\d{2}(:\d{2})?$/.test(input.trim())){
+    const parts = input.trim().split(':');
+    hours = parseInt(parts[0], 10);
+    minutes = parseInt(parts[1], 10);
+  } else {
+    const d = (input instanceof Date) ? input : new Date(input);
+    if(isNaN(d.getTime())) return String(input);
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Aden',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: false
+    });
+    const parts = formatter.formatToParts(d);
+    for(const p of parts){
+      if(p.type === 'hour') hours = parseInt(p.value, 10);
+      if(p.type === 'minute') minutes = parseInt(p.value, 10);
+    }
+  }
+
+  let period = 'مساءً';
+  if(hours >= 0 && hours < 5){
+    period = 'فجراً';
+  } else if(hours >= 5 && hours < 12){
+    period = 'صباحاً';
+  } else if(hours >= 12 && hours < 15){
+    period = 'ظهراً';
+  } else if(hours >= 15 && hours < 18){
+    period = 'عصراً';
+  } else {
+    period = 'مساءً';
+  }
+
+  const h12 = hours % 12 || 12;
+  const mm = String(minutes).padStart(2, '0');
+  return `${h12}:${mm} ${period}`;
+}
+
+let lastConfirmedBooking = null;
+
+function toggleTheme(isDark){
+  document.body.classList.toggle('dark-mode', isDark);
+  localStorage.setItem('malaebi_theme', isDark ? 'dark' : 'light');
+  const darkSwitch = $('#settingDarkMode');
+  if(darkSwitch && darkSwitch.checked !== isDark) darkSwitch.checked = isDark;
+  updateThemeIcons(isDark);
+}
+
+function updateThemeIcons(isDark){
+  const moon = $('.theme-moon');
+  const sun = $('.theme-sun');
+  if(moon) moon.classList.toggle('hidden', isDark);
+  if(sun) sun.classList.toggle('hidden', !isDark);
+}
+
+async function renderQrCode(container, text){
+  if(!container) return;
+  if(!text){
+    container.innerHTML = '';
+    return;
+  }
+  try {
+    if(window.QRCode && typeof window.QRCode.toString === 'function'){
+      const svgString = await window.QRCode.toString(String(text), {
+        type: 'svg',
+        margin: 1,
+        color: {
+          dark: '#064e3b',
+          light: '#ffffff'
+        }
+      });
+      container.innerHTML = svgString;
+    } else {
+      container.innerHTML = `<div style="font-size:12px;color:var(--muted);padding:20px 0">رمز الحجز: <b>${text}</b></div>`;
+    }
+  } catch(err) {
+    console.warn('QR Code render error:', err);
+    container.innerHTML = `<div style="font-size:12px;color:var(--muted);padding:20px 0">رمز الحجز: <b>${text}</b></div>`;
+  }
+}
+
+function shareBooking(b){
+  if(!b) return;
+  const venueName = b.venue || state.venue?.name || 'ملعب ملاعبي';
+  const dateStr = b.dateText || b.date || dateLabel(state.date);
+  const timeStr = formatTime12Ar(b.time || state.time);
+  const bookingNo = b.id || b.booking_no || '—';
+  const price = Number(b.price || state.venue?.price || 0);
+  const perPlayer = Math.round(price / 10);
+
+  const shareText = `⚽ *دعوة لمباراة في ${venueName}*\n\n` +
+    `📅 *التاريخ:* ${dateStr}\n` +
+    `⏰ *الوقت:* ${timeStr}\n` +
+    `🎫 *رقم الحجز:* ${bookingNo}\n` +
+    `💰 *المبلغ الإجمالي:* ${money(price)}\n` +
+    `👥 *نصيب اللاعب (10 لاعبين):* ${money(perPlayer)}\n\n` +
+    `📍 تم الحجز عبر منصة ملاعبي (MALAEBI)\n` +
+    `https://malaebi-player-psi.vercel.app`;
+
+  if(navigator.share){
+    navigator.share({
+      title: `حجز ملعب: ${venueName}`,
+      text: shareText
+    }).catch(err => {
+      if(err.name !== 'AbortError'){
+        window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+      }
+    });
+  } else {
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+  }
+}
+
+const MAIN_TABS = ['home', 'search', 'bookings', 'account'];
+let previousPage = 'home';
+
+function updateNavIndicator(navItem){
+  const indicator = $('#navIndicator');
+  const bottomNav = $('.bottom-nav');
+  if(!indicator || !bottomNav || !navItem) return;
+  const navRect = bottomNav.getBoundingClientRect();
+  const itemRect = navItem.getBoundingClientRect();
+  if(!itemRect.width) return;
+  const offset = itemRect.left - navRect.left;
+  indicator.style.width = `${itemRect.width}px`;
+  indicator.style.transform = `translateX(${offset}px)`;
+  indicator.style.opacity = '1';
+}
+
 function toast(msg){
   const el=$('#toast');
   if(!el) return;
@@ -50,9 +185,44 @@ function toast(msg){
 }
 
 function showPage(name){
-  state.page=name;
-  $$('.page').forEach(p=>p.classList.toggle('active',p.dataset.page===name));
-  $$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.go===name));
+  const fromPage = state.page || previousPage;
+  const toPage = name;
+  previousPage = fromPage;
+  state.page = name;
+
+  const fromIndex = MAIN_TABS.indexOf(fromPage);
+  const toIndex = MAIN_TABS.indexOf(toPage);
+
+  let animClass = 'anim-fade';
+  if(fromIndex !== -1 && toIndex !== -1){
+    if(toIndex > fromIndex){
+      animClass = 'anim-slide-left';
+    } else if(toIndex < fromIndex){
+      animClass = 'anim-slide-right';
+    } else {
+      animClass = 'anim-fade';
+    }
+  } else if(toIndex === -1){
+    animClass = 'anim-push';
+  } else {
+    animClass = 'anim-fade';
+  }
+
+  $$('.page').forEach(p => {
+    const isActive = p.dataset.page === name;
+    p.classList.remove('anim-slide-left', 'anim-slide-right', 'anim-push', 'anim-fade');
+    p.classList.toggle('active', isActive);
+    if(isActive){
+      p.classList.add(animClass);
+    }
+  });
+
+  const activeNavBtn = $(`.nav-item[data-go="${name}"]`);
+  $$('.nav-item').forEach(b => b.classList.toggle('active', b === activeNavBtn));
+  if(activeNavBtn){
+    updateNavIndicator(activeNavBtn);
+  }
+
   const authFlows=['splash','onboarding','login','otp'];
   const isAuth=authFlows.includes(name);
   const topbar=$('.topbar');
@@ -92,54 +262,111 @@ function venueCard(v){
   return `<article class="venue-card" data-venue="${v.id}"><div class="venue-photo" style="background-image:url('${v.photo}')"><span class="photo-badge">${v.mode==='instant'?'تأكيد فوري':'يتطلب موافقة'}</span><button class="favorite-btn ${saved?'saved':''}" data-fav="${v.id}" aria-label="إضافة للمفضلة">${saved?'♥':'♡'}</button></div><div class="venue-info"><div class="venue-title-row"><div><h3>${v.name}</h3><div class="venue-location">⌖ ${v.area}</div></div><span class="rating">★ ${v.rating} <small>(${v.reviews})</small></span></div><div class="venue-meta"><div class="amenities"><span>⚽ عشب</span><span>☾ إضاءة</span><span>♙ مرافق</span></div><div class="price">${money(v.price)} <small>/ ساعة</small></div></div></div></article>`;
 }
 
-async function renderHome(){
-  const list=$('#homeVenues');
-  if(!list) return;
-  if(window.MalaebiAPI?.enabled()){
-    try{
-      await loadRemoteVenues();
-      list.innerHTML=state.remoteVenues.slice(0,3).map(venueCard).join('');
-    }catch(e){
-      list.innerHTML='<div class="empty-state">تعذر تحميل الملاعب من الخادم.</div>';
-      toast(e.message);
-    }
-    return;
-  }
-  list.innerHTML=venues.slice(0,3).map(venueCard).join('');
+function renderSkeletons(container, count = 3){
+  if(!container) return;
+  container.innerHTML = Array.from({length: count}, () => `
+    <div class="skeleton-card">
+      <div class="skeleton-photo skeleton-shimmer"></div>
+      <div class="skeleton-body" style="padding:13px 14px 14px">
+        <div class="skeleton-line skeleton-shimmer" style="height:18px;width:60%;margin-bottom:8px"></div>
+        <div class="skeleton-line skeleton-shimmer" style="height:12px;width:40%;margin-bottom:12px"></div>
+        <div class="skeleton-line skeleton-shimmer" style="height:14px;width:85%"></div>
+      </div>
+    </div>
+  `).join('');
 }
 
-async function loadRemoteVenues(){
-  if(state.remoteVenues) return state.remoteVenues;
-  const rows=await MalaebiAPI.venues();
-  const mapped=[];
-  for(const v of rows){
-    let fieldId=v.default_field_id, price=Number(v.hourly_price_from||0), mode=(v.confirmation_mode==='instant'&&v.instant_booking_enabled===true)?'instant':'approval', features=Array.isArray(v.amenities)?v.amenities:[];
-    if(!fieldId){
-      const fs=await MalaebiAPI.fields(v.id);
-      if(!fs.length) continue;
-      const f=fs[0];
-      fieldId=f.id;
-      price=Number(f.hourly_price_from||0);
-      mode=(f.confirmation_mode==='instant'&&f.instant_booking_enabled===true)?'instant':'approval';
-      features=Array.isArray(f.amenities)?f.amenities:[];
+let loadVenuesPromise = null;
+async function loadRemoteVenues(force = false){
+  if(state.remoteVenues && !force) return state.remoteVenues;
+  if(loadVenuesPromise) return loadVenuesPromise;
+
+  loadVenuesPromise = (async () => {
+    try {
+      const rows = await MalaebiAPI.venues();
+      const mapped = await Promise.all(rows.map(async v => {
+        let fieldId = v.default_field_id;
+        let price = Number(v.hourly_price_from || 0);
+        let mode = (v.confirmation_mode === 'instant' && v.instant_booking_enabled === true) ? 'instant' : 'approval';
+        let features = Array.isArray(v.amenities) ? v.amenities : [];
+        if(!fieldId){
+          try {
+            const fs = await MalaebiAPI.fields(v.id);
+            if(fs && fs.length){
+              fieldId = fs[0].id;
+              price = Number(fs[0].hourly_price_from || 0);
+              mode = (fs[0].confirmation_mode === 'instant' && fs[0].instant_booking_enabled === true) ? 'instant' : 'approval';
+              features = Array.isArray(fs[0].amenities) ? fs[0].amenities : [];
+            }
+          } catch {}
+        }
+        return {
+          id: v.id,
+          fieldId,
+          name: v.name,
+          area: v.area || v.address_text || 'مأرب',
+          price,
+          rating: Number(v.rating || 0),
+          reviews: 0,
+          photo: v.cover_image_url || photos.a,
+          features,
+          description: v.description || '',
+          mode,
+          deposit: 0
+        };
+      }));
+      state.remoteVenues = mapped;
+      try {
+        localStorage.setItem('malaebi_cached_venues', JSON.stringify(mapped));
+      } catch {}
+      return mapped;
+    } finally {
+      loadVenuesPromise = null;
     }
-    mapped.push({
-      id:v.id,
-      fieldId,
-      name:v.name,
-      area:v.area||v.address_text||'مأرب',
-      price,
-      rating:Number(v.rating||0),
-      reviews:0,
-      photo:v.cover_image_url||photos.a,
-      features,
-      description:v.description||'',
-      mode,
-      deposit:0
+  })();
+
+  return loadVenuesPromise;
+}
+
+function renderHome(){
+  const list = $('#homeVenues');
+  if(!list) return;
+
+  if(window.MalaebiAPI?.enabled()){
+    // 1. If loaded in memory, render instantly
+    if(state.remoteVenues && state.remoteVenues.length){
+      list.innerHTML = state.remoteVenues.slice(0, 3).map(venueCard).join('');
+    } else {
+      // 2. Check localStorage cache for 0ms startup
+      const cached = localStorage.getItem('malaebi_cached_venues');
+      if(cached){
+        try {
+          state.remoteVenues = JSON.parse(cached);
+          list.innerHTML = state.remoteVenues.slice(0, 3).map(venueCard).join('');
+        } catch {
+          renderSkeletons(list, 3);
+        }
+      } else {
+        renderSkeletons(list, 3);
+      }
+    }
+
+    // 3. Stale-While-Revalidate in background
+    loadRemoteVenues().then(venuesList => {
+      if(venuesList && venuesList.length && list){
+        list.innerHTML = venuesList.slice(0, 3).map(venueCard).join('');
+        if(state.page === 'search') renderSearch();
+      }
+    }).catch(e => {
+      if(!state.remoteVenues || !state.remoteVenues.length){
+        list.innerHTML = '<div class="empty-state">تعذر تحميل الملاعب من الخادم. جاري الاتصال...</div>';
+      }
+      console.warn('Venue load notice:', e.message);
     });
+    return;
   }
-  state.remoteVenues=mapped;
-  return mapped;
+
+  list.innerHTML = venues.slice(0, 3).map(venueCard).join('');
 }
 
 function filteredVenues(){
@@ -282,37 +509,140 @@ function renderDates(){
 }
 
 async function renderTimes(){
-  const now=new Date();
-  const today=dateISO(state.date)===dateISO(now);
-  if(window.MalaebiAPI?.enabled()&&state.venue?.fieldId){
+  const now = new Date();
+  const today = dateISO(state.date) === dateISO(now);
+  const timeGrid = $('#timeGrid');
+  if(!timeGrid) return;
+
+  const oldBanner = $('#allPastBanner');
+  if(oldBanner) oldBanner.remove();
+
+  if(window.MalaebiAPI?.enabled() && state.venue?.fieldId){
     try{
-      const result=await MalaebiAPI.availability(state.venue.fieldId,dateISO(state.date));
-      state.availableSlots=result.slots||[];
-      $('#timeGrid').innerHTML=state.availableSlots.map(s=>{
-        const t=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Aden',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(s.starts_at));
-        return `<button class="time-option ${!s.available?'unavailable':''} ${state.time===t?'active':''}" data-time="${t}" data-starts="${s.starts_at}" ${!s.available?'disabled':''}>${t}</button>`;
+      const result = await MalaebiAPI.availability(state.venue.fieldId, dateISO(state.date));
+      state.availableSlots = result.slots || [];
+
+      let hasAvailable = false;
+      let allPast = state.availableSlots.length > 0;
+
+      const html = state.availableSlots.map(s => {
+        const t = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Asia/Aden',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }).format(new Date(s.starts_at));
+
+        const isPast = s.is_past || (today && new Date(s.starts_at).getTime() <= Date.now());
+        const isBooked = s.is_booked || (!s.available && !isPast);
+        const isAvail = s.available && !isPast && !isBooked;
+
+        if(isAvail) hasAvailable = true;
+        if(!isPast) allPast = false;
+
+        let statusClass = 'available';
+        let badgeText = 'متاح';
+        if(isPast){
+          statusClass = 'past';
+          badgeText = 'انتهى';
+        } else if(isBooked){
+          statusClass = 'booked';
+          badgeText = 'محجوز';
+        }
+
+        const isSelected = state.time === t;
+
+        return `<button class="time-option ${statusClass} ${isSelected ? 'active' : ''}" data-time="${t}" data-starts="${s.starts_at}" ${!isAvail ? 'disabled' : ''}><span>${formatTime12Ar(t)}</span><span class="slot-status">${badgeText}</span></button>`;
       }).join('');
-      $('#continueBooking').disabled=!state.time;
+
+      timeGrid.innerHTML = html;
+
+      if(allPast && today){
+        const banner = document.createElement('div');
+        banner.id = 'allPastBanner';
+        banner.className = 'all-past-banner';
+        banner.innerHTML = `
+          <div class="past-icon">⏱</div>
+          <div>
+            <b>انتهت مواعيد اليوم</b>
+            <small>انتهت كافة الأوقات المتاحة لهذا اليوم. يمكنك حجز موعد للغد بكل سهولة.</small>
+          </div>
+          <button type="button" class="tomorrow-btn" id="selectTomorrowBtn">عرض مواعيد الغد ←</button>
+        `;
+        timeGrid.before(banner);
+        $('#selectTomorrowBtn').onclick = () => {
+          const nextDay = new Date();
+          nextDay.setDate(nextDay.getDate() + 1);
+          nextDay.setHours(0,0,0,0);
+          state.date = nextDay;
+          state.time = null;
+          state.selectedStartsAt = null;
+          renderDates();
+          renderTimes();
+        };
+      }
+
+      $('#continueBooking').disabled = !state.time;
       return;
     }catch(e){
       toast(e.message);
     }
   }
-  $('#timeGrid').innerHTML=times.map(t=>{
-    const [h]=t.split(':').map(Number);
-    const unavailable=(today&&h<=now.getHours());
-    return `<button class="time-option ${unavailable?'unavailable':''} ${state.time===t?'active':''}" data-time="${t}" ${unavailable?'disabled':''}>${t}</button>`;
+
+  let hasAvailable = false;
+  let allPast = true;
+  const html = times.map(t => {
+    const [h] = t.split(':').map(Number);
+    const isPast = (today && h <= now.getHours());
+    const isAvail = !isPast;
+    if(isAvail) hasAvailable = true;
+    if(!isPast) allPast = false;
+    const statusClass = isPast ? 'past' : 'available';
+    const badgeText = isPast ? 'انتهى' : 'متاح';
+    const isSelected = state.time === t;
+    return `<button class="time-option ${statusClass} ${isSelected ? 'active' : ''}" data-time="${t}" ${!isAvail ? 'disabled' : ''}><span>${formatTime12Ar(t)}</span><span class="slot-status">${badgeText}</span></button>`;
   }).join('');
-  $('#continueBooking').disabled=!state.time;
+
+  timeGrid.innerHTML = html;
+
+  if(allPast && today){
+    const banner = document.createElement('div');
+    banner.id = 'allPastBanner';
+    banner.className = 'all-past-banner';
+    banner.innerHTML = `
+      <div class="past-icon">⏱</div>
+      <div>
+        <b>انتهت مواعيد اليوم</b>
+        <small>انتهت كافة الأوقات المتاحة لهذا اليوم. يمكنك حجز موعد للغد بكل سهولة.</small>
+      </div>
+      <button type="button" class="tomorrow-btn" id="selectTomorrowBtn">عرض مواعيد الغد ←</button>
+    `;
+    timeGrid.before(banner);
+    $('#selectTomorrowBtn').onclick = () => {
+      const nextDay = new Date();
+      nextDay.setDate(nextDay.getDate() + 1);
+      nextDay.setHours(0,0,0,0);
+      state.date = nextDay;
+      state.time = null;
+      renderDates();
+      renderTimes();
+    };
+  }
+
+  $('#continueBooking').disabled = !state.time;
 }
 
 async function openBooking(id){
   if(id) await openVenue(id);
   if(!state.venue) return;
-  state.date=new Date();
+  const now = new Date();
+  state.date = new Date();
+  if(now.getHours() >= 22){
+    state.date.setDate(state.date.getDate() + 1);
+  }
   state.date.setHours(0,0,0,0);
-  state.time=null;
-  state.selectedStartsAt=null;
+  state.time = null;
+  state.selectedStartsAt = null;
   renderBooking();
   showPage('booking');
 }
@@ -320,7 +650,8 @@ async function openBooking(id){
 function openCheckout(){
   const v=state.venue;
   if(!v||!state.time) return;
-  $('#checkoutSummary').innerHTML=`<h3>${v.name}</h3><div class="checkout-line"><span>التاريخ</span><b>${dateLabel(state.date)}</b></div><div class="checkout-line"><span>الوقت</span><b>${state.time} — ${String((Number(state.time.slice(0,2))+1)%24).padStart(2,'0')}:00</b></div><div class="checkout-line"><span>مدة الحجز</span><b>ساعة واحدة</b></div><div class="checkout-line"><span>طريقة التأكيد</span><b>${v.mode==='instant'?'فوري':'بموافقة المنشأة'}</b></div><div class="checkout-line"><span>الإجمالي</span><b style="color:var(--green)">${money(v.price)}</b></div>`;
+  const endHour = String((Number(state.time.slice(0,2))+1)%24).padStart(2,'0') + ':00';
+  $('#checkoutSummary').innerHTML=`<h3>${v.name}</h3><div class="checkout-line"><span>التاريخ</span><b>${dateLabel(state.date)}</b></div><div class="checkout-line"><span>الوقت</span><b>${formatTime12Ar(state.time)} — ${formatTime12Ar(endHour)}</b></div><div class="checkout-line"><span>مدة الحجز</span><b>ساعة واحدة</b></div><div class="checkout-line"><span>طريقة التأكيد</span><b>${v.mode==='instant'?'فوري':'بموافقة المنشأة'}</b></div><div class="checkout-line"><span>الإجمالي</span><b style="color:var(--green)">${money(v.price)}</b></div>`;
   showPage('checkout');
 }
 
@@ -334,7 +665,7 @@ async function loadMyBookings(){
       area:'',
       date:b.starts_at?.slice(0,10)||'',
       dateText:b.starts_at?new Intl.DateTimeFormat('ar-YE',{dateStyle:'medium',timeZone:'Asia/Aden'}).format(new Date(b.starts_at)):'',
-      time:b.starts_at?new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Aden',hour:'2-digit',minute:'2-digit'}).format(new Date(b.starts_at)):'',
+      time:b.starts_at?formatTime12Ar(b.starts_at):'',
       price:Number(b.total_price),
       status:b.status
     }));
@@ -348,7 +679,7 @@ function renderBookings(){
   const list=state.bookings.filter(b=>state.bookingTab==='all'||(state.bookingTab==='upcoming'&&['confirmed','pending','held'].includes(b.status))||(state.bookingTab==='pending'&&b.status==='pending')||(state.bookingTab==='past'&&['completed','cancelled','expired','no_show','disputed'].includes(b.status)));
   const myBookings=$('#myBookings');
   if(myBookings){
-    myBookings.innerHTML=list.map(b=>`<article class="booking-card" data-booking-detail="${b.serverId||b.id}"><div class="booking-card-top"><div><h3>${b.venue}</h3><small>⌖ ${b.area}</small></div><span class="status-pill ${b.status==='pending'?'pending':''}">${b.status==='pending'?'بانتظار الموافقة':b.status==='confirmed'?'مؤكد':b.status==='cancelled'?'ملغي':b.status==='expired'?'منتهي':'مكتمل'}</span></div><div class="booking-card-meta"><span>${b.dateText||b.date} · ${b.time}</span><b>${money(b.price)}</b></div><small style="display:block;margin-top:9px">مرجع: ${b.id} · ${b.demo?'حجز تجريبي':''}</small></article>`).join('');
+    myBookings.innerHTML=list.map(b=>`<article class="booking-card" data-booking-detail="${b.serverId||b.id}"><div class="booking-card-top"><div><h3>${b.venue}</h3><small>⌖ ${b.area}</small></div><span class="status-pill ${b.status==='pending'?'pending':''}">${b.status==='pending'?'بانتظار الموافقة':b.status==='confirmed'?'مؤكد':b.status==='cancelled'?'ملغي':b.status==='expired'?'منتهي':'مكتمل'}</span></div><div class="booking-card-meta"><span>${b.dateText||b.date} · ${formatTime12Ar(b.time)}</span><b>${money(b.price)}</b></div><small style="display:block;margin-top:9px">مرجع: ${b.id} · ${b.demo?'حجز تجريبي':''}</small></article>`).join('');
   }
   const emptyBookings=$('#emptyBookings');
   if(emptyBookings) emptyBookings.classList.toggle('hidden',list.length>0);
@@ -751,7 +1082,7 @@ async function renderBookingDetail(){
       Object.assign(b,{
         status:fresh.status,
         price:Number(fresh.total_price),
-        time:new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Aden',hour:'2-digit',minute:'2-digit'}).format(new Date(fresh.starts_at))
+        time:fresh.starts_at?formatTime12Ar(fresh.starts_at):(b.time?formatTime12Ar(b.time):'')
       });
     }catch(e){
       toast(e.message);
@@ -759,8 +1090,11 @@ async function renderBookingDetail(){
   }
   const content=$('#bookingDetailContent');
   if(content){
-    content.innerHTML=b?`<h3>${b.venue}</h3><div class="checkout-line"><span>المرجع</span><b>${b.id}</b></div><div class="checkout-line"><span>التاريخ</span><b>${b.dateText||b.date}</b></div><div class="checkout-line"><span>الوقت</span><b>${b.time}</b></div><div class="checkout-line"><span>الحالة</span><b>${b.status==='pending'?'بانتظار الموافقة':b.status==='confirmed'?'مؤكد':b.status==='cancelled'?'ملغي':b.status==='expired'?'منتهي':'مكتمل'}</b></div><div class="checkout-line"><span>المبلغ عند الملعب</span><b>${money(b.price)}</b></div>`:'لا توجد حجوزات لعرض تفاصيلها.';
+    content.innerHTML=b?`<h3>${b.venue}</h3><div class="checkout-line"><span>المرجع</span><b>${b.id}</b></div><div class="checkout-line"><span>التاريخ</span><b>${b.dateText||b.date}</b></div><div class="checkout-line"><span>الوقت</span><b>${formatTime12Ar(b.time)}</b></div><div class="checkout-line"><span>الحالة</span><b>${b.status==='pending'?'بانتظار الموافقة':b.status==='confirmed'?'مؤكد':b.status==='cancelled'?'ملغي':b.status==='expired'?'منتهي':'مكتمل'}</b></div><div class="checkout-line"><span>المبلغ عند الملعب</span><b>${money(b.price)}</b></div>`:'لا توجد حجوزات لعرض تفاصيلها.';
   }
+  renderQrCode($('#detailQrCode'), b?.id || b?.booking_no || '');
+  const detailShareBtn = $('#detailShareBtn');
+  if(detailShareBtn) detailShareBtn.onclick = () => shareBooking(b);
   const reviewBtn=document.querySelector('#page-booking-detail [data-go="rating"]');
   if(reviewBtn) reviewBtn.hidden=!(b&&b.status==='completed');
   const old=document.querySelector('#cancelBookingAction');
@@ -959,16 +1293,20 @@ if(completeDemoBooking){
           area:state.venue.area,
           date:dateISO(state.date),
           dateText:dateLabel(state.date),
-          time:state.time,
+          time:formatTime12Ar(state.time),
           price:Number(b.total_price),
           status:b.status,
           demo:false
         };
         state.bookings.unshift(item);
+        lastConfirmedBooking = item;
         const confInfo=$('#confirmationInfo');
         if(confInfo){
-          confInfo.innerHTML=`<div class="checkout-line"><span>رقم الحجز</span><b>${b.booking_no}</b></div><div class="checkout-line"><span>الحالة</span><b>${b.status==='pending'?'بانتظار موافقة المنشأة':'مؤكد'}</b></div><div class="checkout-line"><span>الملعب</span><b>${state.venue.name}</b></div><div class="checkout-line"><span>الوقت</span><b>${state.time}</b></div><div class="checkout-line"><span>المبلغ عند الملعب</span><b>${money(b.total_price)}</b></div>`;
+          confInfo.innerHTML=`<div class="checkout-line"><span>رقم الحجز</span><b>${b.booking_no}</b></div><div class="checkout-line"><span>الحالة</span><b>${b.status==='pending'?'بانتظار موافقة المنشأة':'مؤكد'}</b></div><div class="checkout-line"><span>الملعب</span><b>${state.venue.name}</b></div><div class="checkout-line"><span>الوقت</span><b>${formatTime12Ar(state.time)}</b></div><div class="checkout-line"><span>المبلغ عند الملعب</span><b>${money(b.total_price)}</b></div>`;
         }
+        renderQrCode($('#confirmationQrCode'), b.booking_no || b.id);
+        const confShareBtn = $('#confirmationShareBtn');
+        if(confShareBtn) confShareBtn.onclick = () => shareBooking(item);
         showPage('confirmation');
         return;
       }catch(e){
@@ -984,18 +1322,22 @@ if(completeDemoBooking){
       photo:state.venue.photo,
       date:dateISO(state.date),
       dateText:dateLabel(state.date),
-      time:state.time,
+      time:formatTime12Ar(state.time),
       price:state.venue.price,
       status:state.venue.mode==='instant'?'confirmed':'pending',
       createdAt:new Date().toISOString(),
       demo:true
     };
     state.bookings.unshift(b);
+    lastConfirmedBooking = b;
     localStorage.setItem('malaebi_demo_bookings',JSON.stringify(state.bookings));
     const confInfo=$('#confirmationInfo');
     if(confInfo){
-      confInfo.innerHTML=`<div class="checkout-line"><span>رقم الحجز</span><b>${b.id}</b></div><div class="checkout-line"><span>الملعب</span><b>${b.venue}</b></div><div class="checkout-line"><span>الموعد</span><b>${b.dateText} · ${b.time}</b></div><div class="checkout-line"><span>المبلغ</span><b>${money(b.price)}</b></div>`;
+      confInfo.innerHTML=`<div class="checkout-line"><span>رقم الحجز</span><b>${b.id}</b></div><div class="checkout-line"><span>الملعب</span><b>${b.venue}</b></div><div class="checkout-line"><span>الموعد</span><b>${b.dateText} · ${formatTime12Ar(b.time)}</b></div><div class="checkout-line"><span>المبلغ</span><b>${money(b.price)}</b></div>`;
     }
+    renderQrCode($('#confirmationQrCode'), b.id);
+    const confShareBtn = $('#confirmationShareBtn');
+    if(confShareBtn) confShareBtn.onclick = () => shareBooking(b);
     showPage('confirmation');
   };
 }
@@ -1057,8 +1399,16 @@ const settingDarkMode=$('#settingDarkMode');
 if(settingDarkMode){
   settingDarkMode.onchange=e=>{
     const isDark = e.target.checked;
-    document.body.classList.toggle('dark-mode', isDark);
-    localStorage.setItem('malaebi_theme', isDark ? 'dark' : 'light');
+    toggleTheme(isDark);
+    toast(isDark ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع الفاتح');
+  };
+}
+
+const topThemeToggle=$('#topThemeToggle');
+if(topThemeToggle){
+  topThemeToggle.onclick=()=>{
+    const isDark = !document.body.classList.contains('dark-mode');
+    toggleTheme(isDark);
     toast(isDark ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع الفاتح');
   };
 }
@@ -1130,9 +1480,11 @@ try {
 }
 
 // Apply Saved Theme immediately on Startup
-if(localStorage.getItem('malaebi_theme') === 'dark'){
+const initialDark = localStorage.getItem('malaebi_theme') === 'dark';
+if(initialDark){
   document.body.classList.add('dark-mode');
 }
+updateThemeIcons(initialDark);
 
 // App Startup & Initialization
 renderHome();
@@ -1162,7 +1514,15 @@ if (isEmailVerificationRedirect) {
   showPage(validPage?requestedPage:'home');
 }
 
-// Service Worker
+// Bottom Nav Indicator layout sync
+window.addEventListener('resize', () => {
+  const activeNav = $('.nav-item.active');
+  if(activeNav) updateNavIndicator(activeNav);
+});
+setTimeout(() => {
+  const activeNav = $('.nav-item.active');
+  if(activeNav) updateNavIndicator(activeNav);
+}, 60);
 if('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then(reg => {

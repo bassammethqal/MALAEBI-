@@ -7,7 +7,7 @@
   <meta name="description" content="ملاعبي — اكتشف ملاعب كرة القدم واحجز ملعبك بسهولة في مأرب" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=8" />
+  <link rel="stylesheet" href="styles.css?v=11" />
   <title>ملاعبي | احجز ملعبك</title>
 </head>
 <body>
@@ -15,7 +15,13 @@
     <header class="topbar">
       <a class="brand" href="#home" aria-label="ملاعبي الرئيسية"><img src="assets/images/logo.svg" alt="ملاعبي" class="brand-logo" /><span>ملاعبي</span></a>
       <button class="location-pill" id="locationBtn" type="button"><span class="pin">⌖</span><span><small>موقعك الحالي</small><b>مأرب، اليمن</b></span><span class="chevron">⌄</span></button>
-      <button class="icon-btn" id="notificationsBtn" aria-label="الإشعارات">♧<i class="notification-dot"></i></button>
+      <div class="topbar-actions" style="display:flex;align-items:center;gap:6px">
+        <button class="icon-btn theme-toggle-btn" id="topThemeToggle" type="button" aria-label="تبديل المظهر النهاري/الليلي">
+          <svg class="theme-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <svg class="theme-sun hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="icon-btn" id="notificationsBtn" aria-label="الإشعارات">♧<i class="notification-dot"></i></button>
+      </div>
     </header>
 
     <main id="mainContent">
@@ -25,8 +31,6 @@
           <div class="hero-ball" aria-hidden="true">⚽</div>
           <div class="hero-lines"></div>
         </div>
-        <div class="section-head"><div><span class="section-kicker">ابدأ الاختيار</span><h2>ابحث حسب احتياجك</h2></div><button class="text-btn" data-go="search">عرض الكل</button></div>
-        <div class="quick-filters"><button class="quick active" data-filter="all"><span>⚽</span>كل الملاعب</button><button class="quick" data-filter="grass"><span>🌱</span>عشب صناعي</button><button class="quick" data-filter="night"><span>☾</span>إضاءة ليلية</button><button class="quick" data-filter="parking"><span>♙</span>مواقف</button></div>
         <div class="section-head compact"><div><span class="section-kicker">مختارة لك</span><h2>ملاعب قريبة منك</h2></div><span class="muted">مأرب</span></div>
         <div class="venue-list" id="homeVenues"></div>
         <div class="info-strip"><span class="info-icon">✓</span><div><b>حجز واضح وموثوق</b><small>تعرف على السعر والوقت قبل تأكيد طلبك</small></div><span class="strip-arrow">←</span></div>
@@ -169,7 +173,11 @@
           <h1>تم تسجيل طلب الحجز</h1>
           <p>احتفظ بالرقم المرجعي واعرضه عند الوصول للملعب.</p>
           <div class="checkout-card" id="confirmationInfo"></div>
-          <div class="qr-placeholder">▦<small>رمز الحجز الإلكتروني</small></div>
+          <div class="qr-container" id="confirmationQrContainer">
+            <div class="qr-box" id="confirmationQrCode"></div>
+            <small class="qr-label">امسح الرمز للتحقق من الحجز عند الملعب</small>
+          </div>
+          <button class="secondary-btn full share-btn" id="confirmationShareBtn" type="button" style="margin-top:10px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px"><span>📤</span> مشاركة الحجز مع الأصدقاء</button>
           <button class="primary-btn full" data-go="bookings">عرض حجوزاتي</button>
           <button class="text-btn" data-go="home">العودة للرئيسية</button>
         </div>
@@ -178,6 +186,11 @@
       <section class="page" id="page-booking-detail" data-page="booking-detail">
         <div class="page-title"><span class="section-kicker">حجوزاتك</span><h1>تفاصيل الحجز</h1></div>
         <div id="bookingDetailContent" class="checkout-card"></div>
+        <div class="qr-container" id="detailQrContainer" style="margin:14px 0">
+          <div class="qr-box" id="detailQrCode"></div>
+          <small class="qr-label">رمز الدخول الإلكتروني للملعب</small>
+        </div>
+        <button class="secondary-btn full share-btn" id="detailShareBtn" type="button" style="margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px"><span>📤</span> مشاركة الحجز مع الأصدقاء</button>
         <button class="primary-btn full" data-go="rating">تقييم الملعب</button>
         <button class="secondary-btn full" data-go="bookings">العودة إلى حجوزاتي</button>
       </section>
@@ -275,15 +288,152 @@
     </main>
 
     <nav class="bottom-nav" aria-label="التنقل الرئيسي">
-      <button class="nav-item active" data-go="home"><span>⌂</span><small>الرئيسية</small></button>
-      <button class="nav-item" data-go="search"><span>⌕</span><small>اكتشف</small></button>
-      <button class="nav-item" data-go="bookings"><span>▦</span><small>حجوزاتي</small></button>
-      <button class="nav-item" data-go="account"><span>♙</span><small>حسابي</small></button>
+      <div class="nav-indicator" id="navIndicator" aria-hidden="true"></div>
+      <button class="nav-item active" data-go="home">
+        <span class="nav-icon-3d">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="navHomeRoof" x1="16" y1="3" x2="16" y2="17" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#34d399"/>
+                <stop offset="40%" stop-color="#10b981"/>
+                <stop offset="100%" stop-color="#059669"/>
+              </linearGradient>
+              <linearGradient id="navHomeWall" x1="16" y1="13" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#047857"/>
+                <stop offset="100%" stop-color="#064e3b"/>
+              </linearGradient>
+              <linearGradient id="navHomeDoor" x1="16" y1="18" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#a7f3d0"/>
+                <stop offset="100%" stop-color="#6ee7b7"/>
+              </linearGradient>
+              <filter id="navHomeShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#064e3b" flood-opacity="0.25"/>
+              </filter>
+            </defs>
+            <g filter="url(#navHomeShadow)">
+              <path d="M16 3.5L3.5 13.5C2.8 14 3.2 15 4 15H6V26.5C6 27.3 6.7 28 7.5 28H24.5C25.3 28 26 27.3 26 26.5V15H28C28.8 15 29.2 14 28.5 13.5L16 3.5Z" fill="url(#navHomeWall)"/>
+              <path d="M16 3.5L4 13.5H28L16 3.5Z" fill="url(#navHomeRoof)"/>
+              <path d="M16 5.2L25.8 13.5H6.2L16 5.2Z" fill="#a7f3d0" opacity="0.35"/>
+              <path d="M12.5 28V20C12.5 18.1 14.1 16.5 16 16.5C17.9 16.5 19.5 18.1 19.5 20V28H12.5Z" fill="url(#navHomeDoor)"/>
+              <circle cx="16" cy="20.5" r="1.8" fill="#047857"/>
+            </g>
+          </svg>
+        </span>
+        <small>الرئيسية</small>
+      </button>
+
+      <button class="nav-item" data-go="search">
+        <span class="nav-icon-3d">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="navLensGrad" x1="6" y1="6" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#a7f3d0"/>
+                <stop offset="45%" stop-color="#34d399"/>
+                <stop offset="100%" stop-color="#059669"/>
+              </linearGradient>
+              <linearGradient id="navRimGrad" x1="4" y1="4" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#6ee7b7"/>
+                <stop offset="50%" stop-color="#10b981"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="navHandleGrad" x1="19" y1="19" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#10b981"/>
+                <stop offset="40%" stop-color="#065f46"/>
+                <stop offset="100%" stop-color="#022c22"/>
+              </linearGradient>
+              <filter id="navSearchShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#064e3b" flood-opacity="0.25"/>
+              </filter>
+            </defs>
+            <g filter="url(#navSearchShadow)">
+              <rect x="18.5" y="19.5" width="4.5" height="11" rx="2.2" transform="rotate(-45 18.5 19.5)" fill="url(#navHandleGrad)"/>
+              <circle cx="26.8" cy="26.8" r="2" fill="#34d399" opacity="0.6"/>
+              <circle cx="13" cy="13" r="9.5" fill="url(#navRimGrad)"/>
+              <circle cx="13" cy="13" r="6.8" fill="url(#navLensGrad)"/>
+              <path d="M8.5 11C8.5 8.5 10.5 6.5 13 6.5C14.2 6.5 15.3 7 16 7.8C15 7.2 13.8 6.9 12.5 7.1C10.2 7.4 8.7 9.2 8.5 11Z" fill="#ffffff" opacity="0.8"/>
+              <line x1="8.5" y1="13" x2="17.5" y2="13" stroke="#ffffff" stroke-width="0.8" stroke-dasharray="1.5 1" opacity="0.6"/>
+              <circle cx="13" cy="13" r="1.5" stroke="#ffffff" stroke-width="0.8" opacity="0.7"/>
+            </g>
+          </svg>
+        </span>
+        <small>اكتشف</small>
+      </button>
+
+      <button class="nav-item" data-go="bookings">
+        <span class="nav-icon-3d">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="navCalTop" x1="16" y1="5" x2="16" y2="12" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#34d399"/>
+                <stop offset="100%" stop-color="#059669"/>
+              </linearGradient>
+              <linearGradient id="navCalBody" x1="16" y1="12" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="100%" stop-color="#e2e8f0"/>
+              </linearGradient>
+              <linearGradient id="navCalCheck" x1="12" y1="16" x2="20" y2="24" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#10b981"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <filter id="navCalShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#064e3b" flood-opacity="0.22"/>
+              </filter>
+            </defs>
+            <g filter="url(#navCalShadow)">
+              <rect x="4.5" y="7" width="23" height="20" rx="4" fill="url(#navCalBody)"/>
+              <path d="M4.5 11C4.5 8.8 6.3 7 8.5 7H23.5C25.7 7 27.5 8.8 27.5 11V13H4.5V11Z" fill="url(#navCalTop)"/>
+              <rect x="9" y="4" width="3" height="5.5" rx="1.5" fill="#047857"/>
+              <rect x="20" y="4" width="3" height="5.5" rx="1.5" fill="#047857"/>
+              <circle cx="10" cy="17" r="1.5" fill="#a7f3d0"/>
+              <circle cx="16" cy="17" r="1.5" fill="#a7f3d0"/>
+              <circle cx="22" cy="17" r="1.5" fill="#a7f3d0"/>
+              <circle cx="10" cy="22" r="1.5" fill="#a7f3d0"/>
+              <circle cx="18" cy="22" r="3.2" fill="url(#navCalCheck)"/>
+              <path d="M16.5 22L17.5 23L19.5 21" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+          </svg>
+        </span>
+        <small>حجوزاتي</small>
+      </button>
+
+      <button class="nav-item" data-go="account">
+        <span class="nav-icon-3d">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="navUserShield" x1="16" y1="3" x2="16" y2="29" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#10b981"/>
+                <stop offset="50%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#064e3b"/>
+              </linearGradient>
+              <linearGradient id="navUserGold" x1="6" y1="3" x2="26" y2="29" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#fde68a"/>
+                <stop offset="50%" stop-color="#f59e0b"/>
+                <stop offset="100%" stop-color="#d97706"/>
+              </linearGradient>
+              <linearGradient id="navAvatarShine" x1="16" y1="8" x2="16" y2="26" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="100%" stop-color="#d1fae5"/>
+              </linearGradient>
+              <filter id="navUserShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#064e3b" flood-opacity="0.25"/>
+              </filter>
+            </defs>
+            <g filter="url(#navUserShadow)">
+              <path d="M16 3.5L25.5 7V16.5C25.5 22.3 21.4 27.6 16 29C10.6 27.6 6.5 22.3 6.5 16.5V7L16 3.5Z" fill="url(#navUserShield)"/>
+              <path d="M16 4.8L24.2 7.8V16.5C24.2 21.6 20.6 26.3 16 27.6C11.4 26.3 7.8 21.6 7.8 16.5V7.8L16 4.8Z" stroke="url(#navUserGold)" stroke-width="1.2" fill="none" opacity="0.65"/>
+              <circle cx="16" cy="12.5" r="3.8" fill="url(#navAvatarShine)"/>
+              <path d="M10.8 23.5C11.2 20.4 13.4 18.5 16 18.5C18.6 18.5 20.8 20.4 21.2 23.5C19.7 24.8 17.9 25.5 16 25.5C14.1 25.5 12.3 24.8 10.8 23.5Z" fill="url(#navAvatarShine)"/>
+            </g>
+          </svg>
+        </span>
+        <small>حسابي</small>
+      </button>
     </nav>
   </div>
 
   <div class="modal-backdrop hidden" id="modalBackdrop"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose">×</button><div id="modalContent"></div></div></div>
   <div class="toast" id="toast" role="status"></div>
-  <script src="config.js?v=8"></script><script src="api-client.js?v=8"></script><script src="app.js?v=8"></script>
+  <script src="assets/js/qrcode.min.js?v=11"></script>
+  <script src="config.js?v=11"></script><script src="api-client.js?v=11"></script><script src="app.js?v=11"></script>
 </body>
 </html>

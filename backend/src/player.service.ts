@@ -111,7 +111,8 @@ export class PlayerService {
    const rule=rules.rows.find(x=>time>=String(x.starts_at).slice(0,5)&&time<String(x.ends_at).slice(0,5));
    const price=rule?Number(rule.price):null; const startMs=cursor.getTime();
    const isBusy=busy.some(([s,e])=>startMs<e&&startMs+3600000>s);
-   slots.push({starts_at:cursor.toISOString(),ends_at:end.toISOString(),available:!isBusy&&!!price&&startMs>Date.now(),price,currency:'YER'});
+   const isPast=startMs<=Date.now();
+   slots.push({starts_at:cursor.toISOString(),ends_at:end.toISOString(),available:!isBusy&&!!price&&!isPast,is_past:isPast,is_booked:isBusy,price,currency:'YER'});
    cursor=end;
   }
   return {field_id:fieldId,date,timezone:'Asia/Aden',slots};
