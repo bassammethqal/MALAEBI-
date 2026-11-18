@@ -9,6 +9,7 @@
     "migration:status": "node scripts/migrate.js status",
     "migration:up": "node scripts/migrate.js up",
     "seed": "node scripts/seed.js",
+    "create-owner": "node scripts/create-owner.js",
     "serve:pwa": "node scripts/serve-pwa.js",
     "test:smoke": "bash scripts/smoke-test.sh",
     "start:prod": "node dist/main.js"

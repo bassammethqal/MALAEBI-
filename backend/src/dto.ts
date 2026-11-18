@@ -16,6 +16,10 @@ export class LoginDto {
   @IsString() @MinLength(6) @MaxLength(72) password!: string;
 }
 
+export class ChangePasswordDto {
+  @IsString() @MinLength(6) @MaxLength(72) new_password!: string;
+}
+
 export class EmailOtpVerifyDto {
   @IsEmail() email!: string;
   @IsString() @Length(6, 10) code!: string;

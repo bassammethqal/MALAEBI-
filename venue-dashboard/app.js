@@ -153,6 +153,12 @@
     try {
       const user = await MalaebiOwnerAPI.me();
       state.user = user;
+
+      if (user?.must_change_password) {
+        showMandatoryPasswordModal();
+        return;
+      }
+
       await loadOwnerVenues();
     } catch (err) {
       console.warn('Session expired or invalid token:', err);
@@ -1490,8 +1496,119 @@
   }
 
   function closeModal(id) {
+    if (id === 'mandatoryChangePasswordModal' && state.user?.must_change_password) {
+      return; // Cannot close mandatory first-login password change modal
+    }
     const m = document.getElementById(id);
     if (m) m.classList.add('hidden');
+  }
+
+  function showMandatoryPasswordModal() {
+    showAppShell();
+    openModal('mandatoryChangePasswordModal');
+    const errEl = document.getElementById('mandatoryPassError');
+    if (errEl) errEl.style.display = 'none';
+    const nInput = document.getElementById('mandNewPassword');
+    const cInput = document.getElementById('mandConfirmPassword');
+    if (nInput) nInput.value = '';
+    if (cInput) cInput.value = '';
+    setTimeout(() => nInput?.focus(), 150);
+  }
+
+  async function handleMandatoryPasswordSubmit() {
+    const nInput = document.getElementById('mandNewPassword');
+    const cInput = document.getElementById('mandConfirmPassword');
+    const errEl = document.getElementById('mandatoryPassError');
+    const btn = document.getElementById('btnSubmitMandatoryPass');
+
+    const newPass = nInput?.value || '';
+    const confirmPass = cInput?.value || '';
+
+    if (errEl) errEl.style.display = 'none';
+
+    if (!newPass || newPass.length < 6) {
+      if (errEl) {
+        errEl.textContent = 'كلمة المرور يجب ألا تقل عن 6 خانات.';
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      if (errEl) {
+        errEl.textContent = 'كلمتا المرور غير متطابقتين، يرجى التأكد وإعادة المحاولة.';
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'جاري حفظ كلمة المرور...';
+
+    try {
+      await MalaebiOwnerAPI.changePassword(newPass);
+      if (state.user) {
+        state.user.must_change_password = false;
+      }
+      closeModal('mandatoryChangePasswordModal');
+      showToast('تم تعيين كلمة المرور بنجاح، مرحباً بك!');
+      await loadOwnerVenues();
+    } catch (err) {
+      if (errEl) {
+        errEl.textContent = err.message || 'فشل تعيين كلمة المرور، حاول مجدداً.';
+        errEl.style.display = 'block';
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'حفظ كلمة المرور ومتابعة الدخول';
+    }
+  }
+
+  async function handleChangePasswordSubmit() {
+    const nInput = document.getElementById('changeNewPassword');
+    const cInput = document.getElementById('changeConfirmPassword');
+    const errEl = document.getElementById('changePassError');
+    const btn = document.getElementById('btnSubmitChangePass');
+
+    const newPass = nInput?.value || '';
+    const confirmPass = cInput?.value || '';
+
+    if (errEl) errEl.style.display = 'none';
+
+    if (!newPass || newPass.length < 6) {
+      if (errEl) {
+        errEl.textContent = 'كلمة المرور يجب ألا تقل عن 6 خانات.';
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      if (errEl) {
+        errEl.textContent = 'كلمتا المرور غير متطابقتين، يرجى التأكد.';
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'جاري التحديث...';
+
+    try {
+      await MalaebiOwnerAPI.changePassword(newPass);
+      closeModal('changePasswordModal');
+      showToast('تم تحديث كلمة المرور بنجاح!');
+      if (nInput) nInput.value = '';
+      if (cInput) cInput.value = '';
+    } catch (err) {
+      if (errEl) {
+        errEl.textContent = err.message || 'فشل تحديث كلمة المرور';
+        errEl.style.display = 'block';
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'حفظ كلمة المرور';
+    }
   }
 
   // Event Listeners
@@ -1510,28 +1627,7 @@
     document.getElementById('drawerCloseBtn')?.addEventListener('click', closeDrawer);
     document.getElementById('drawerBackdrop')?.addEventListener('click', closeDrawer);
 
-    // 2. Auth Tabs (Login vs Register)
-    const tabLogin = document.getElementById('tabAuthLogin');
-    const tabRegister = document.getElementById('tabAuthRegister');
-    const wrapLogin = document.getElementById('loginFormWrap');
-    const wrapRegister = document.getElementById('registerFormWrap');
-
-    if (tabLogin && tabRegister) {
-      tabLogin.addEventListener('click', () => {
-        tabLogin.classList.add('active');
-        tabRegister.classList.remove('active');
-        wrapLogin.style.display = 'block';
-        wrapRegister.style.display = 'none';
-      });
-      tabRegister.addEventListener('click', () => {
-        tabRegister.classList.add('active');
-        tabLogin.classList.remove('active');
-        wrapRegister.style.display = 'block';
-        wrapLogin.style.display = 'none';
-      });
-    }
-
-    // 3. Login submit
+    // 2. Login submit
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
       loginForm.addEventListener('submit', async (e) => {
@@ -1546,9 +1642,15 @@
         btn.textContent = 'جاري التحقق...';
 
         try {
-          await MalaebiOwnerAPI.login(email, pass);
-          const user = await MalaebiOwnerAPI.me();
+          const authData = await MalaebiOwnerAPI.login(email, pass);
+          const user = authData?.user || await MalaebiOwnerAPI.me();
           state.user = user;
+
+          if (user?.must_change_password) {
+            showMandatoryPasswordModal();
+            return;
+          }
+
           await loadOwnerVenues();
         } catch (err) {
           if (errEl) {
@@ -1562,38 +1664,26 @@
       });
     }
 
-    // 4. Register submit
-    const regForm = document.getElementById('registerForm');
-    if (regForm) {
-      regForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const fullName = document.getElementById('regFullName').value.trim();
-        const email = document.getElementById('regEmail').value.trim();
-        const pass = document.getElementById('regPassword').value;
-        const btn = document.getElementById('regSubmitBtn');
-        const errEl = document.getElementById('registerError');
+    // 3. Password Forms (Mandatory & Voluntary)
+    document.getElementById('mandatoryPasswordForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleMandatoryPasswordSubmit();
+    });
 
-        if (errEl) errEl.style.display = 'none';
-        btn.disabled = true;
-        btn.textContent = 'جاري إنشاء الحساب...';
+    document.getElementById('openChangePassBtn')?.addEventListener('click', () => {
+      const errEl = document.getElementById('changePassError');
+      if (errEl) errEl.style.display = 'none';
+      const nInput = document.getElementById('changeNewPassword');
+      const cInput = document.getElementById('changeConfirmPassword');
+      if (nInput) nInput.value = '';
+      if (cInput) cInput.value = '';
+      openModal('changePasswordModal');
+    });
 
-        try {
-          await MalaebiOwnerAPI.register(fullName, email, pass);
-          const user = await MalaebiOwnerAPI.me();
-          state.user = user;
-          showToast(`أهلاً بك يا ${fullName}! دعنا ننشئ منشأتك الآن.`);
-          await loadOwnerVenues();
-        } catch (err) {
-          if (errEl) {
-            errEl.textContent = err.message || 'فشل إنشاء الحساب، تحقق من البيانات';
-            errEl.style.display = 'block';
-          }
-        } finally {
-          btn.disabled = false;
-          btn.textContent = 'إنشاء الحساب وبدء إعداد المنشأة';
-        }
-      });
-    }
+    document.getElementById('changePasswordForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleChangePasswordSubmit();
+    });
 
     // 5. Onboarding Form Submit
     document.getElementById('onboardingForm')?.addEventListener('submit', (e) => {

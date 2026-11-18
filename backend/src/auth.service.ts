@@ -128,12 +128,17 @@ export class AuthService {
       throw new UnauthorizedException('الحساب غير نشط');
     }
 
+    const mustChangePassword = Boolean(data.user.user_metadata?.must_change_password);
+
     return {
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,
       token_type: 'Bearer',
       expires_in: data.session.expires_in,
-      user: profile.rows[0]
+      user: {
+        ...profile.rows[0],
+        must_change_password: mustChangePassword
+      }
     };
   }
 
@@ -396,5 +401,63 @@ export class AuthService {
     }
 
     return result.rows[0];
+  }
+
+  async getSupabaseUser(userId: string) {
+    return this.supabase.adminClient.auth.admin.getUserById(userId);
+  }
+
+  async changePassword(userId: string, newPassword: string) {
+    const { data: userRes, error: userErr } = await this.supabase.adminClient.auth.admin.getUserById(userId);
+    if (userErr || !userRes?.user) {
+      throw new BadRequestException('المستخدم غير موجود');
+    }
+
+    const currentMeta = userRes.user.user_metadata || {};
+    const updatedMeta = { ...currentMeta, must_change_password: false };
+
+    const { error: updateErr } = await this.supabase.adminClient.auth.admin.updateUserById(userId, {
+      password: newPassword,
+      user_metadata: updatedMeta
+    });
+
+    if (updateErr) {
+      throw new BadRequestException(updateErr.message || 'فشل تحديث كلمة المرور');
+    }
+
+    try {
+      await this.db.query(
+        `INSERT INTO audit_logs(actor_user_id, venue_id, action, entity_type, entity_id, metadata)
+         VALUES ($1, NULL, 'user.password_changed', 'user', $1, $2::jsonb)`,
+        [userId, JSON.stringify({ timestamp: new Date().toISOString() })]
+      );
+    } catch (auditErr) {
+      console.warn('Failed to write password change audit log:', auditErr);
+    }
+
+    // Generate fresh session so client can continue seamlessly
+    let newAccessToken = null;
+    let newRefreshToken = null;
+    if (userRes.user.email) {
+      try {
+        const { data: signData } = await this.supabase.authClient.auth.signInWithPassword({
+          email: userRes.user.email,
+          password: newPassword
+        });
+        if (signData?.session) {
+          newAccessToken = signData.session.access_token;
+          newRefreshToken = signData.session.refresh_token;
+        }
+      } catch (signErr) {
+        console.warn('Could not re-login after password change:', signErr);
+      }
+    }
+
+    return {
+      success: true,
+      message: 'تم تغيير كلمة المرور بنجاح',
+      access_token: newAccessToken,
+      refresh_token: newRefreshToken
+    };
   }
 }

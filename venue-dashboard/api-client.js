@@ -109,6 +109,17 @@
       return data;
     },
 
+    async changePassword(newPassword){
+      const res = await request('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ new_password: newPassword })
+      });
+      if (res && res.access_token) {
+        this.setTokens(res.access_token, res.refresh_token);
+      }
+      return res;
+    },
+
     async myVenues(){
       return request('/owner/venues');
     },

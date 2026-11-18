@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import {
   RegisterDto,
   LoginDto,
+  ChangePasswordDto,
   EmailOtpVerifyDto,
   EmailResendDto,
   OtpRequestDto,
@@ -65,6 +66,12 @@ export class AuthController {
     return this.auth.logout(h.slice(7));
   }
 
+  @Post('auth/change-password')
+  @UseGuards(JwtGuard)
+  changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
+    return this.auth.changePassword(req.user.sub, dto.new_password);
+  }
+
   @Get('me')
   @UseGuards(JwtGuard)
   async me(@Req() req: any) {
@@ -72,7 +79,19 @@ export class AuthController {
       'SELECT id, email, phone, full_name, status, email_verified_at, phone_verified_at FROM users WHERE id=$1',
       [req.user.sub]
     );
-    return r.rows[0] || null;
+    const user = r.rows[0];
+    if (!user) return null;
+
+    let mustChangePassword = false;
+    try {
+      const { data } = await this.auth.getSupabaseUser(req.user.sub);
+      mustChangePassword = Boolean(data?.user?.user_metadata?.must_change_password);
+    } catch {}
+
+    return {
+      ...user,
+      must_change_password: mustChangePassword
+    };
   }
 
   @Patch('me')
