@@ -64,3 +64,49 @@ export class BlockSlotDto {
   @IsOptional() @IsIn(['maintenance', 'private_block']) occupancy_type?: string;
   @IsOptional() @IsString() @MaxLength(240) reason?: string;
 }
+
+export class UpdateBookingSettingsDto {
+  @IsIn(['instant', 'approval']) confirmation_mode!: 'instant' | 'approval';
+  @IsOptional() instant_booking_enabled?: boolean;
+}
+
+export class AddVenueMemberDto {
+  @IsOptional() @IsEmail() email?: string;
+  @IsOptional() @IsString() phone?: string;
+  @IsIn(['manager', 'receptionist']) role!: 'manager' | 'receptionist';
+}
+
+export class CreateVenueDto {
+  @IsString() @MinLength(2) @MaxLength(180) name!: string;
+  @IsOptional() @IsString() area_id?: string;
+  @IsOptional() @IsString() @MaxLength(240) address_text?: string;
+  @IsOptional() @IsString() @MaxLength(1000) description?: string;
+  @IsOptional() @IsString() @MaxLength(30) phone?: string;
+
+  // First field fields
+  @IsString() @MinLength(2) @MaxLength(160) field_name!: string;
+  @IsOptional() capacity?: number;
+  @IsOptional() @IsString() surface_type?: string;
+  @IsOptional() hourly_price?: number;
+  @IsOptional() @IsString() opens_at?: string;
+  @IsOptional() @IsString() closes_at?: string;
+  @IsOptional() @IsIn(['instant', 'approval']) confirmation_mode?: 'instant' | 'approval';
+}
+
+export class UpdateVenueDto {
+  @IsOptional() @IsString() @MinLength(2) @MaxLength(180) name?: string;
+  @IsOptional() @IsString() area_id?: string;
+  @IsOptional() @IsString() @MaxLength(240) address_text?: string;
+  @IsOptional() @IsString() @MaxLength(1000) description?: string;
+  @IsOptional() @IsString() @MaxLength(30) phone?: string;
+}
+
+export class CreateFieldDto {
+  @IsString() @MinLength(2) @MaxLength(160) name!: string;
+  @IsOptional() capacity?: number;
+  @IsOptional() @IsString() surface_type?: string;
+  @IsOptional() hourly_price?: number;
+  @IsOptional() @IsString() opens_at?: string;
+  @IsOptional() @IsString() closes_at?: string;
+  @IsOptional() @IsIn(['instant', 'approval']) confirmation_mode?: 'instant' | 'approval';
+}

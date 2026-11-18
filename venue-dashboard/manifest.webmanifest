@@ -1,0 +1,25 @@
+{
+  "name": "ملاعبي للأعمال — لوحة إدارة الملاعب",
+  "short_name": "ملاعبي للأعمال",
+  "description": "منصة ملاعبي لإدارة المنشآت والملاعب الرياضية، متابعة الحجوزات والموافقات الفورية",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#087b43",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./assets/images/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/images/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

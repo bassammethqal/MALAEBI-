@@ -12,12 +12,12 @@ import { SupabaseService } from './supabase.service';
 import { HealthController } from './health.controller';
 import { AppController } from './app.controller';
 import { BookingExpiryService } from './booking-expiry.service';
-import { VenueOpsController } from './venue-ops.controller';
+import { VenueOpsController, OwnerVenuesController, AreasController } from './venue-ops.controller';
 import { VenueOpsService } from './venue-ops.service';
 
 @Module({
   imports: [ScheduleModule.forRoot(), ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }])],
-  controllers: [AppController, PlayerController, AuthController, HealthController, VenueOpsController],
+  controllers: [AppController, PlayerController, AuthController, HealthController, VenueOpsController, OwnerVenuesController, AreasController],
   providers: [
     DbService,
     PlayerService,

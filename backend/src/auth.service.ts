@@ -9,50 +9,68 @@ export class AuthService {
   async register(fullName: string, email: string, password: string) {
     const trimmedName = fullName.trim();
     const cleanEmail = email.trim().toLowerCase();
-    const emailRedirectTo = process.env.PUBLIC_APP_URL || 'https://malaebi-player-psi.vercel.app';
 
-    const { data, error } = await this.supabase.authClient.auth.signUp({
+    // Use Supabase Admin API to create user with email_confirm: true directly.
+    // This avoids Supabase free tier SMTP rate limits and eliminates verification friction.
+    let userRecord: any = null;
+    const { data: adminData, error: adminError } = await this.supabase.adminClient.auth.admin.createUser({
       email: cleanEmail,
       password,
-      options: {
-        data: { full_name: trimmedName },
-        emailRedirectTo
-      }
+      email_confirm: true,
+      user_metadata: { full_name: trimmedName }
     });
 
-    if (error) {
-      if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+    if (adminError) {
+      if (adminError.message.includes('already registered') || adminError.message.includes('User already registered') || adminError.message.includes('already exists')) {
         throw new BadRequestException('هذا البريد الإلكتروني مسجل مسبقاً، يمكنك تسجيل الدخول مباشرة');
       }
-      throw new BadRequestException(error.message);
+      const { data: signData, error: signError } = await this.supabase.authClient.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: { data: { full_name: trimmedName } }
+      });
+      if (signError) {
+        if (signError.message.includes('already registered') || signError.message.includes('User already registered')) {
+          throw new BadRequestException('هذا البريد الإلكتروني مسجل مسبقاً، يمكنك تسجيل الدخول مباشرة');
+        }
+        throw new BadRequestException(signError.message);
+      }
+      userRecord = signData?.user;
+    } else {
+      userRecord = adminData?.user;
     }
 
-    if (data?.user) {
+    if (userRecord) {
       await this.db.query(
         `INSERT INTO public.users(id, email, full_name, email_verified_at, status)
-         VALUES ($1, $2, $3, $4, 'active')
+         VALUES ($1, $2, $3, NOW(), 'active')
          ON CONFLICT (id) DO UPDATE SET
            email = EXCLUDED.email,
            full_name = COALESCE(EXCLUDED.full_name, public.users.full_name),
-           email_verified_at = COALESCE(EXCLUDED.email_verified_at, public.users.email_verified_at),
+           email_verified_at = COALESCE(EXCLUDED.email_verified_at, public.users.email_verified_at, NOW()),
            status = 'active'`,
-        [data.user.id, cleanEmail, trimmedName, data.user.email_confirmed_at]
+        [userRecord.id, cleanEmail, trimmedName]
       );
-    }
 
-    if (data?.session && data?.user) {
-      const profile = await this.db.query<any>(
-        'SELECT id, full_name, email, phone, status FROM users WHERE id=$1',
-        [data.user.id]
-      );
-      return {
-        requires_verification: false,
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token,
-        token_type: 'Bearer',
-        expires_in: data.session.expires_in,
-        user: profile.rows[0]
-      };
+      const loginRes = await this.supabase.authClient.auth.signInWithPassword({
+        email: cleanEmail,
+        password
+      });
+
+      if (loginRes.data?.session) {
+        const profile = await this.db.query<any>(
+          'SELECT id, full_name, email, phone, status FROM users WHERE id=$1',
+          [userRecord.id]
+        );
+        return {
+          requires_verification: false,
+          access_token: loginRes.data.session.access_token,
+          refresh_token: loginRes.data.session.refresh_token,
+          token_type: 'Bearer',
+          expires_in: loginRes.data.session.expires_in,
+          user: profile.rows[0]
+        };
+      }
     }
 
     return {

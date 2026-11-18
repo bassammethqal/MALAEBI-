@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ملاعبي — بوابة المنشأة لإدارة الملاعب والحجوزات</title>
+  <meta name="description" content="بوابة ملاعبي الرسمية لإدارة الملاعب والمنشآت الرياضية، الجدولة والأسعار والتقارير المالية">
+  <meta name="theme-color" content="#072b1c">
+  <link rel="icon" type="image/svg+xml" href="./assets/images/logo.svg">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+  <!-- ==================== 1. SPLIT-SCREEN LOGIN ==================== -->
+  <div id="loginScreen" class="login-screen-split">
+    <!-- Visual Left/Banner Half -->
+    <div class="login-left-banner">
+      <div class="login-banner-logo">
+        <img src="./assets/images/logo.svg" alt="ملاعبي">
+      </div>
+      <h1 class="login-banner-title">ملاعبي</h1>
+      <span class="login-banner-badge">بوابة المنشأة</span>
+      <p class="login-banner-subtitle">
+        إدارة منشأتك الرياضية بسهولة واحترافية، متابعة الحجوزات والجدولة اليومية والتقارير المالية المباشرة.
+      </p>
+    </div>
+
+    <!-- White Form Right Half -->
+    <div class="login-right-form">
+      <div class="login-box">
+        <div class="tabs-bar" style="margin-bottom:20px;">
+          <button type="button" class="tab-pill active" id="tabAuthLogin">تسجيل الدخول</button>
+          <button type="button" class="tab-pill" id="tabAuthRegister">تسجيل منشأة جديدة</button>
+        </div>
+
+        <!-- 1. Login Form -->
+        <div id="loginFormWrap">
+          <h2>تسجيل الدخول</h2>
+          <p>أدخل بيانات الحساب للمتابعة وإدارة منشأتك</p>
+
+          <form id="loginForm" onsubmit="return false;">
+            <div id="loginError" style="display:none; background:var(--red-light); color:var(--red); padding:10px 14px; border-radius:10px; font-size:12.5px; font-weight:700; margin-bottom:14px; text-align:right;"></div>
+
+            <div class="form-field">
+              <label for="loginEmail">البريد الإلكتروني</label>
+              <input type="email" id="loginEmail" class="form-input" placeholder="owner@malaebi.com" required autocomplete="username" dir="ltr">
+            </div>
+
+            <div class="form-field">
+              <label for="loginPassword">كلمة المرور</label>
+              <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password" dir="ltr">
+            </div>
+
+            <button type="submit" id="loginSubmitBtn" class="login-btn">تسجيل الدخول</button>
+          </form>
+
+          <div style="margin-top:22px; font-size:11.5px; color:var(--muted); line-height:1.7; background:var(--bg); padding:12px; border-radius:10px; border:1px solid var(--line);">
+            ⚽ <b>حساب المالك التجريبي:</b><br>
+            البريد: <code>owner@malaebi.com</code><br>
+            كلمة المرور: <code>OwnerPassword123!</code>
+          </div>
+        </div>
+
+        <!-- 2. Register Form -->
+        <div id="registerFormWrap" style="display:none;">
+          <h2>تسجيل منشأة جديدة</h2>
+          <p>أنشئ حساب مالك المنشأة وابدأ إضافة ملاعبك</p>
+
+          <form id="registerForm" onsubmit="return false;">
+            <div id="registerError" style="display:none; background:var(--red-light); color:var(--red); padding:10px 14px; border-radius:10px; font-size:12.5px; font-weight:700; margin-bottom:14px; text-align:right;"></div>
+
+            <div class="form-field">
+              <label for="regFullName">اسم مالك المنشأة / المسؤول</label>
+              <input type="text" id="regFullName" class="form-input" placeholder="مثال: الكابتن أحمد صالح" required autocomplete="name">
+            </div>
+
+            <div class="form-field">
+              <label for="regEmail">البريد الإلكتروني</label>
+              <input type="email" id="regEmail" class="form-input" placeholder="owner@example.com" required autocomplete="username" dir="ltr">
+            </div>
+
+            <div class="form-field">
+              <label for="regPassword">كلمة المرور (6 خانات على الأقل)</label>
+              <input type="password" id="regPassword" class="form-input" placeholder="••••••••" required autocomplete="new-password" dir="ltr">
+            </div>
+
+            <button type="submit" id="regSubmitBtn" class="login-btn">إنشاء الحساب وبدء إعداد المنشأة</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ONBOARDING WIZARD (FIRST VENUE SETUP) ==================== -->
+  <div id="onboardingScreen" style="display:none; min-height:100vh; background:var(--bg); padding:40px 16px; align-items:center; justify-content:center;">
+    <div style="width:min(100%, 680px); background:var(--card); border:1px solid var(--card-border); border-radius:24px; padding:36px 30px; box-shadow:var(--shadow-lg);">
+      <div style="text-align:center; margin-bottom:28px;">
+        <div style="width:68px; height:68px; background:#072b1c; border-radius:20px; margin:0 auto 14px; display:grid; place-items:center; font-size:34px;">
+          🏟️
+        </div>
+        <h2 style="font-size:24px; font-weight:900; margin-bottom:6px;">مرحباً بك في ملاعبي للأعمال!</h2>
+        <p style="font-size:13.5px; color:var(--muted); max-width:500px; margin:0 auto; line-height:1.6;">
+          أنت على بعد خطوة واحدة من إطلاق منشأتك. أضف بيانات المنشأة وملعبك الأول لتظهر فوراً للاعبين وتبدأ باستقبال الحجوزات.
+        </p>
+      </div>
+
+      <form id="onboardingForm" onsubmit="return false;">
+        <div id="onboardingError" style="display:none; background:var(--red-light); color:var(--red); padding:10px 14px; border-radius:10px; font-size:12.5px; font-weight:700; margin-bottom:18px;"></div>
+
+        <!-- Section 1: Venue -->
+        <div style="font-size:14.5px; font-weight:800; color:var(--green); border-bottom:1.5px solid var(--mint); padding-bottom:6px; margin-bottom:16px;">
+          1. بيانات المنشأة الرياضية
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>اسم المنشأة الرياضية *</label>
+            <input type="text" id="obVenueName" class="form-input" placeholder="مثال: مجمع النجوم الرياضي" required>
+          </div>
+          <div class="form-field">
+            <label>المنطقة / الحي *</label>
+            <select id="obAreaSelect" class="form-input" required></select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>العنوان بالتفصيل *</label>
+            <input type="text" id="obAddressText" class="form-input" placeholder="مثال: مأرب - حي الجامعة - جوار مدرسة اليرموك" required>
+          </div>
+          <div class="form-field">
+            <label>رقم هاتف التواصل والواتساب</label>
+            <input type="tel" id="obPhone" class="form-input" placeholder="771234567" dir="ltr">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>وصف المنشأة والخدمات المتوفرة</label>
+          <input type="text" id="obDescription" class="form-input" placeholder="مثال: ملاعب معشبة حديثة، إنارة ليلية ممتازة، كافتيريا ومواقف سيارات">
+        </div>
+
+        <!-- Section 2: First Field -->
+        <div style="font-size:14.5px; font-weight:800; color:var(--green); border-bottom:1.5px solid var(--mint); padding-bottom:6px; margin-bottom:16px; margin-top:24px;">
+          2. بيانات الملعب الأول
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>اسم الملعب *</label>
+            <input type="text" id="obFieldName" class="form-input" placeholder="مثال: الملعب الرئيسي" value="الملعب الرئيسي" required>
+          </div>
+          <div class="form-field">
+            <label>نوع الأرضية</label>
+            <select id="obSurfaceType" class="form-input">
+              <option value="عشب صناعي">عشب صناعي (Turf)</option>
+              <option value="عشب طبيعي">عشب طبيعي (Natural Grass)</option>
+              <option value="أرضية صالة">أرضية صالة مغلقة (Indoor)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>سعة الملعب (عدد اللاعبين)</label>
+            <select id="obCapacity" class="form-input">
+              <option value="10">10 لاعبين (5 ضد 5)</option>
+              <option value="12" selected>12 لاعب (6 ضد 6)</option>
+              <option value="14">14 لاعب (7 ضد 7)</option>
+              <option value="16">16 لاعب (8 ضد 8)</option>
+              <option value="22">22 لاعب (ملعب كامل 11 ضد 11)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>سعر إيجار الساعة (ريال يمني) *</label>
+            <input type="number" id="obHourlyPrice" class="form-input" placeholder="7000" value="7000" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>طريقة تأكيد حجوزات التطبيق لهذا الملعب</label>
+          <select id="obConfMode" class="form-input">
+            <option value="approval" selected>موافقة المنشأة اليدوية خلال 10 دقائق (موصى به للملاعب الجديدة)</option>
+            <option value="instant">تأكيد فوري تلقائي وتوليد QR مباشرة (Instant Booking)</option>
+          </select>
+        </div>
+
+        <button type="submit" id="obSubmitBtn" class="login-btn" style="margin-top:22px; font-size:16px;">
+          🚀 حفظ المنشأة وبدء التشغيل
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== 2. APP SHELL LAYOUT ==================== -->
+  <div id="opsAppShell" class="ops-app" style="display:none;">
+
+    <!-- Sidebar (Right side, Dark Green #072b1c) -->
+    <aside class="ops-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <img src="./assets/images/logo.svg" alt="ملاعبي">
+        </div>
+        <div class="sidebar-brand-info">
+          <b>ملاعبي</b>
+          <small>بوابة المنشأة</small>
+        </div>
+      </div>
+
+      <!-- Navigation (11 items) -->
+      <nav class="sidebar-nav">
+        <button type="button" class="nav-item active" data-view="dashboard">
+          <span class="icon">🏠</span>
+          <span>الرئيسية</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="bookings">
+          <span class="icon">📋</span>
+          <span>الحجوزات</span>
+          <span class="badge" id="navPendingBadge" style="display:none;">0</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="schedule">
+          <span class="icon">📅</span>
+          <span>تقويم الحجوزات</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="walkin">
+          <span class="icon">🏟️</span>
+          <span>الحجز الخارجي</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="venues">
+          <span class="icon">⚽</span>
+          <span>المنشآت والملاعب</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="pricing">
+          <span class="icon">⏱️</span>
+          <span>الجدولة والأسعار</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="customers">
+          <span class="icon">👥</span>
+          <span>العملاء</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="reviews">
+          <span class="icon">⭐</span>
+          <span>التقييمات</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="staff">
+          <span class="icon">👔</span>
+          <span>الموظفون</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="reports">
+          <span class="icon">📊</span>
+          <span>التقارير</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="settings">
+          <span class="icon">⚙️</span>
+          <span>الإعدادات</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar User Profile -->
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="userAvatar">م</div>
+        <div class="sidebar-user-text">
+          <b id="userName">مالك المنشأة</b>
+          <small id="userRoleBadge">مالك رئيسي</small>
+        </div>
+        <button type="button" class="sidebar-logout-btn" id="logoutBtn" title="تسجيل الخروج">🚪</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="ops-main">
+
+      <!-- Topbar Header -->
+      <header class="ops-topbar">
+        <div class="topbar-right">
+          <div class="topbar-greeting">
+            <h2 id="topbarTitle">مرحباً، جاري التحميل... 👋</h2>
+            <small id="topbarSubtitle">الخميس 16 يناير 2025</small>
+          </div>
+        </div>
+
+        <div class="topbar-left">
+          <!-- Venue Switcher -->
+          <select id="venueSelect" class="topbar-pill-select" title="اختر المنشأة"></select>
+
+          <!-- Refresh Data -->
+          <button type="button" class="topbar-icon-btn" id="refreshBtn" title="تحديث البيانات">🔄</button>
+
+          <!-- Notifications Button -->
+          <button type="button" class="topbar-icon-btn" id="notifBtn" title="الإشعارات">🔔</button>
+
+          <!-- Theme Toggle -->
+          <button type="button" class="topbar-icon-btn" id="themeToggleBtn" title="تبديل الوضع">🌙</button>
+        </div>
+      </header>
+
+      <!-- All 11 Views Container -->
+      <div class="ops-content">
+
+        <!-- ==================== VIEW 1: الرئيسية (DASHBOARD) ==================== -->
+        <section id="viewDashboard" class="view-section active">
+
+          <!-- 4 KPI Boxes -->
+          <div class="kpi-row">
+            <div class="kpi-box green">
+              <div class="kpi-box-data">
+                <small>إيرادات اليوم</small>
+                <b id="kpiRevenue">0 <span style="font-size:13px; font-weight:700;">ريال</span></b>
+              </div>
+              <div class="kpi-box-icon">💵</div>
+            </div>
+
+            <div class="kpi-box amber">
+              <div class="kpi-box-data">
+                <small>حجوزات اليوم</small>
+                <b id="kpiBookingsCount">0</b>
+              </div>
+              <div class="kpi-box-icon">📅</div>
+            </div>
+
+            <div class="kpi-box blue">
+              <div class="kpi-box-data">
+                <small>نسبة الإشغال</small>
+                <b id="kpiOccupancy">0%</b>
+              </div>
+              <div class="kpi-box-icon">📊</div>
+            </div>
+
+            <div class="kpi-box purple">
+              <div class="kpi-box-data">
+                <small>الملاعب النشطة</small>
+                <b id="kpiActiveFields">0</b>
+              </div>
+              <div class="kpi-box-icon">🏟️</div>
+            </div>
+          </div>
+
+          <!-- Charts Row (Side-by-side) -->
+          <div class="charts-grid">
+            <!-- Right: Donut Chart (توزيع الحجوزات) -->
+            <div class="chart-card">
+              <div class="chart-card-head">
+                <h3>توزيع الحجوزات</h3>
+                <small>حالة حجوزات المنشأة</small>
+              </div>
+              <div class="donut-wrap">
+                <div class="donut-svg-box">
+                  <svg viewBox="0 0 100 100" width="140" height="140">
+                    <circle cx="50" cy="50" r="38" fill="transparent" stroke="#e2e8f0" stroke-width="12"/>
+                    <!-- Segments rendered dynamically -->
+                    <circle id="donutConfirmed" cx="50" cy="50" r="38" fill="transparent" stroke="#10b981" stroke-width="12" stroke-dasharray="180 240" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+                    <circle id="donutPending" cx="50" cy="50" r="38" fill="transparent" stroke="#f59e0b" stroke-width="12" stroke-dasharray="30 240" stroke-dashoffset="-180" transform="rotate(-90 50 50)"/>
+                    <circle id="donutCancelled" cx="50" cy="50" r="38" fill="transparent" stroke="#ef4444" stroke-width="12" stroke-dasharray="30 240" stroke-dashoffset="-210" transform="rotate(-90 50 50)"/>
+                  </svg>
+                  <div class="donut-center-text">
+                    <b id="donutTotalText">28</b>
+                    <small>إجمالي الحجوزات</small>
+                  </div>
+                </div>
+
+                <div class="donut-legend">
+                  <div class="donut-legend-item">
+                    <span class="legend-bullet green"></span>
+                    <span>مؤكدة: <b id="legendConfirmedVal">22</b></span>
+                  </div>
+                  <div class="donut-legend-item">
+                    <span class="legend-bullet amber"></span>
+                    <span>بانتظار الموافقة: <b id="legendPendingVal">3</b></span>
+                  </div>
+                  <div class="donut-legend-item">
+                    <span class="legend-bullet red"></span>
+                    <span>ملغاة: <b id="legendCancelledVal">3</b></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Left: Line/Area Chart (الإيرادات خلال آخر 7 أيام) -->
+            <div class="chart-card">
+              <div class="chart-card-head">
+                <h3>الإيرادات خلال آخر 7 أيام</h3>
+                <small>المعدل اليومي بالريال اليمني</small>
+              </div>
+              <div id="lineChartContainer">
+                <!-- SVG Line Chart rendered dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Pending Approvals Section -->
+          <div class="section-card">
+            <div class="section-title-row">
+              <h3>
+                <span>⚡ طلبات الحجز المعلقة بانتظار الموافقة</span>
+                <span id="pendingBadgeCount" class="status-pill pending">0 طلب</span>
+              </h3>
+              <small style="color:var(--muted); font-size:12px;">مهلة الاستجابة 10 دقائق من وقت الطلب</small>
+            </div>
+            <div id="pendingContainer" class="form-grid">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Recent Bookings Table -->
+          <div class="section-card">
+            <div class="section-title-row">
+              <h3><span>📋 آخر الحجوزات اليوم</span></h3>
+              <button type="button" class="btn-outline" onclick="MalaebiApp.switchView('bookings')">عرض كل الحجوزات ←</button>
+            </div>
+            <div class="table-responsive">
+              <table class="ops-table">
+                <thead>
+                  <tr>
+                    <th>رقم الحجز</th>
+                    <th>الملعب</th>
+                    <th>العميل</th>
+                    <th>التاريخ</th>
+                    <th>الوقت</th>
+                    <th>المبلغ</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboardRecentBody">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== VIEW 2: الحجوزات (BOOKINGS) ==================== -->
+        <section id="viewBookings" class="view-section">
+          <div class="section-card">
+            <div class="section-title-row" style="flex-wrap:wrap; gap:12px;">
+              <div class="tabs-bar" id="bookingsFilterTabs" style="margin-bottom:0; border-bottom:0;">
+                <button type="button" class="tab-pill active" data-status="">الكل</button>
+                <button type="button" class="tab-pill" data-status="confirmed">مؤكدة</button>
+                <button type="button" class="tab-pill" data-status="pending">بانتظار</button>
+                <button type="button" class="tab-pill" data-status="cancelled">ملغاة</button>
+              </div>
+
+              <div style="display:flex; gap:10px; align-items:center;">
+                <input type="text" id="bookingsSearchInput" class="form-input" style="height:38px; width:220px;" placeholder="🔍 بحث بالرقم أو الاسم...">
+                <button type="button" class="btn-primary" onclick="MalaebiApp.switchView('walkin')">+ حجز خارجي</button>
+              </div>
+            </div>
+
+            <div class="table-responsive" style="margin-top:16px;">
+              <table class="ops-table">
+                <thead>
+                  <tr>
+                    <th>الرقم</th>
+                    <th>الملعب</th>
+                    <th>العميل</th>
+                    <th>التاريخ</th>
+                    <th>الوقت</th>
+                    <th>السعر</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="allBookingsBody">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 3: تقويم الحجوزات (SCHEDULE) ==================== -->
+        <section id="viewSchedule" class="view-section">
+          <div class="section-card">
+            <div class="section-title-row" style="flex-wrap:wrap; gap:12px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="btn-outline" id="prevDayBtn">◀</button>
+                <b id="scheduleDateLabel" style="font-size:14px; padding:0 8px;">اليوم</b>
+                <button type="button" class="btn-outline" id="nextDayBtn">▶</button>
+                <button type="button" class="btn-outline" id="todayScheduleBtn">اليوم</button>
+                <input type="date" id="scheduleDateInput" class="form-input" style="height:36px; width:auto;">
+              </div>
+
+              <div style="display:flex; align-items:center; gap:12px; font-size:12px; color:var(--muted);">
+                <span><span class="status-pill active" style="padding:2px 8px;"></span> مؤكد</span>
+                <span><span class="status-pill pending" style="padding:2px 8px;"></span> بانتظار</span>
+                <span><span class="status-pill maintenance" style="padding:2px 8px;"></span> صيانة / محظور</span>
+                <span><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#86efac;"></span> متاح</span>
+              </div>
+
+              <!-- Field Selector for Schedule -->
+              <select id="scheduleFieldSelect" class="topbar-pill-select"></select>
+            </div>
+
+            <!-- 18 Slots Timeline Grid -->
+            <div id="scheduleSlotsGrid" class="timeline-grid" style="margin-top:20px;">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 4: الحجز الخارجي (WALKIN) ==================== -->
+        <section id="viewWalkin" class="view-section">
+          <div class="section-card" style="max-width:700px; margin:0 auto;">
+            <div class="section-title-row">
+              <h3><span>🏟️ تسجيل حجز خارجي (حضوري / هاتفي)</span></h3>
+            </div>
+
+            <form id="externalBookingForm" onsubmit="return false;">
+              <div class="form-field">
+                <label>اختر الملعب</label>
+                <select id="walkinFieldSelect" class="form-input" required></select>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>التاريخ</label>
+                  <input type="date" id="walkinDateInput" class="form-input" required>
+                </div>
+                <div class="form-field">
+                  <label>المبلغ المتفق عليه (ريال يمني)</label>
+                  <input type="number" id="walkinPriceInput" class="form-input" placeholder="7000" required>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>وقت البدء</label>
+                  <input type="time" id="walkinTimeStart" class="form-input" value="16:00" required>
+                </div>
+                <div class="form-field">
+                  <label>وقت الانتهاء</label>
+                  <input type="time" id="walkinTimeEnd" class="form-input" value="17:00" required>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>اسم العميل / الفريق (اختياري)</label>
+                  <input type="text" id="walkinCustName" class="form-input" placeholder="مثال: الكابتن محمد أحمد">
+                </div>
+                <div class="form-field">
+                  <label>رقم هاتف العميل (اختياري)</label>
+                  <input type="tel" id="walkinCustPhone" class="form-input" placeholder="771234567" dir="ltr">
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label>ملاحظات إضافية (اختياري)</label>
+                <input type="text" id="walkinCustNotes" class="form-input" placeholder="حجز عبر الهاتف / تم دفع العربون">
+              </div>
+
+              <button type="submit" id="btnSubmitExternal" class="login-btn" style="margin-top:16px;">
+                تأكيد وتسجيل الحجز
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 5: المنشآت والملاعب (VENUES) ==================== -->
+        <section id="viewVenues" class="view-section">
+          <!-- Venue Details Card -->
+          <div class="section-card">
+            <div class="section-title-row">
+              <div>
+                <h3 id="venueCardName">ملعب مأرب الرياضي</h3>
+                <small id="venueCardCity" style="color:var(--muted);">عدن — كريتر</small>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="status-pill active">منشأة نشطة</span>
+                <button type="button" class="btn-outline" id="openEditVenueBtn">✏️ تعديل المنشأة</button>
+              </div>
+            </div>
+            <p id="venueCardDesc" style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:14px;">
+              مجمع رياضي متكامل يضم ملاعب عشب صناعي حديثة مع خدمات متكاملة وإنارة ليلية ومواقف سيارات.
+            </p>
+          </div>
+
+          <!-- Fields List Header -->
+          <div class="section-title-row" style="margin-top:20px;">
+            <h3><span>⚽ الملاعب التابعة للمنشأة</span></h3>
+            <button type="button" class="btn-primary" id="openAddFieldBtn">+ إضافة ملعب جديد</button>
+          </div>
+
+          <!-- Fields Grid -->
+          <div id="fieldsGridContainer" class="fields-display-grid">
+            <!-- Rendered via JS -->
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 6: الجدولة والأسعار (PRICING) ==================== -->
+        <section id="viewPricing" class="view-section">
+          <div class="section-card">
+            <div class="tabs-bar" id="pricingTabs">
+              <button type="button" class="tab-pill active" data-ptab="hours">ساعات العمل</button>
+              <button type="button" class="tab-pill" data-ptab="rates">الأسعار</button>
+              <button type="button" class="tab-pill" data-ptab="rules">إعدادات الحجز والتأكيد</button>
+            </div>
+
+            <!-- Tab 1: ساعات العمل -->
+            <div id="ptabHours" class="ptab-content">
+              <div style="font-size:13.5px; color:var(--muted); margin-bottom:16px;">
+                حدد ساعات تشغيل الملاعب اليومية لاستقبال الحجوزات:
+              </div>
+              <div class="form-grid" style="max-width:550px;">
+                <div class="form-field">
+                  <label>بدء العمل اليومي</label>
+                  <input type="time" class="form-input" value="06:00" readonly>
+                </div>
+                <div class="form-field">
+                  <label>نهاية العمل والإغلاق</label>
+                  <input type="time" class="form-input" value="23:59" readonly>
+                </div>
+              </div>
+              <div style="background:var(--mint); color:var(--mint-text); padding:12px; border-radius:10px; font-size:12.5px; font-weight:700; max-width:550px; margin-top:10px;">
+                ✓ ساعات العمل مفعلة حالياً على مدار 18 فترة بالساعة (06:00 صباحاً – 11:00 مساءً).
+              </div>
+            </div>
+
+            <!-- Tab 2: الأسعار -->
+            <div id="ptabRates" class="ptab-content" style="display:none;">
+              <div style="font-size:13.5px; color:var(--muted); margin-bottom:16px;">
+                أسعار الساعة الافتراضية لكل ملعب:
+              </div>
+              <div id="pricingRatesList" class="form-grid" style="max-width:650px;">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+
+            <!-- Tab 3: إعدادات الحجز -->
+            <div id="ptabRules" class="ptab-content" style="display:none;">
+              <div style="font-size:13.5px; color:var(--muted); margin-bottom:16px;">
+                اختر سياسة قبول الحجوزات القادمة من تطبيق ملاعبي:
+              </div>
+              <div class="form-field" style="max-width:600px;">
+                <label>الملعب المراد ضبطه</label>
+                <select id="settingsFieldSelect" class="form-input"></select>
+              </div>
+
+              <div style="max-width:600px; display:flex; flex-direction:column; gap:12px; margin-top:14px;">
+                <label style="border:1.5px solid var(--line); border-radius:12px; padding:14px; display:flex; gap:12px; align-items:start; cursor:pointer;" id="radioBoxInstant">
+                  <input type="radio" name="conf_mode" id="confInstant" value="instant" checked>
+                  <div>
+                    <b>تأكيد فوري تلقائي (Instant Booking)</b>
+                    <small style="display:block; color:var(--muted); margin-top:3px;">
+                      يتم تأكيد الحجز فور إرساله من التطبيق وتوليد رمز QR مباشرة بدون انتظار.
+                    </small>
+                  </div>
+                </label>
+
+                <label style="border:1.5px solid var(--line); border-radius:12px; padding:14px; display:flex; gap:12px; align-items:start; cursor:pointer;" id="radioBoxApproval">
+                  <input type="radio" name="conf_mode" id="confApproval" value="approval">
+                  <div>
+                    <b>موافقة المنشأة اليدوية (Approval Required)</b>
+                    <small style="display:block; color:var(--muted); margin-top:3px;">
+                      يصل إشعار إلى لوحة التحكم بمهلة 10 دقائق للموافقة أو الرفض قبل تأكيد الحجز.
+                    </small>
+                  </div>
+                </label>
+
+                <button type="button" class="btn-primary" id="saveBookingSettingsBtn" style="margin-top:12px; width:fit-content;">
+                  حفظ إعدادات الحجز
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 7: العملاء (CUSTOMERS) ==================== -->
+        <section id="viewCustomers" class="view-section">
+          <div class="section-card">
+            <div class="section-title-row">
+              <h3><span>👥 قائمة العملاء واللاعبين</span></h3>
+              <input type="text" id="customerSearchInput" class="form-input" style="height:38px; width:220px;" placeholder="🔍 بحث باسم العميل...">
+            </div>
+
+            <div class="table-responsive">
+              <table class="ops-table">
+                <thead>
+                  <tr>
+                    <th>العميل</th>
+                    <th>رقم الهاتف</th>
+                    <th>عدد الحجوزات</th>
+                    <th>إجمالي المدفوعات</th>
+                    <th>آخر حجز</th>
+                  </tr>
+                </thead>
+                <tbody id="customersTableBody">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 8: التقييمات (REVIEWS) ==================== -->
+        <section id="viewReviews" class="view-section">
+          <div class="section-card">
+            <div class="section-title-row">
+              <div>
+                <h3><span>⭐ تقييمات وآراء اللاعبين</span></h3>
+                <small style="color:var(--muted);">تقييمات معتمدة من لاعبين خاضوا مباريات في ملاعب المنشأة</small>
+              </div>
+              <div style="font-size:20px; font-weight:900; color:#f59e0b; display:flex; align-items:center; gap:6px;">
+                <span>4.8</span>
+                <span style="font-size:16px;">⭐⭐⭐⭐⭐</span>
+              </div>
+            </div>
+
+            <div id="reviewsListContainer" class="reviews-grid" style="margin-top:18px;">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 9: الموظفون (STAFF) ==================== -->
+        <section id="viewStaff" class="view-section">
+          <div class="section-card">
+            <div class="section-title-row">
+              <div>
+                <h3><span>👔 فريق العمل والمشرفين</span></h3>
+                <small style="color:var(--muted);">المصرح لهم بإدارة الحجوزات والمواعيد والتقارير</small>
+              </div>
+              <button type="button" class="btn-primary" id="openAddStaffModalBtn">+ إضافة موظف جديد</button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="ops-table">
+                <thead>
+                  <tr>
+                    <th>الموظف</th>
+                    <th>البريد / الهاتف</th>
+                    <th>الوظيفة</th>
+                    <th>الصلاحيات</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="staffTableBody">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 10: التقارير (REPORTS) ==================== -->
+        <section id="viewReports" class="view-section">
+          <!-- Report Summary Cards -->
+          <div class="kpi-row">
+            <div class="kpi-box green">
+              <div class="kpi-box-data">
+                <small>إجمالي الإيرادات (آخر 30 يوم)</small>
+                <b id="repTotalRev">420,000 <span style="font-size:13px; font-weight:700;">ريال</span></b>
+              </div>
+              <div class="kpi-box-icon">💰</div>
+            </div>
+
+            <div class="kpi-box amber">
+              <div class="kpi-box-data">
+                <small>متوسط الإيراد اليومي</small>
+                <b id="repAvgDaily">26,250 <span style="font-size:13px; font-weight:700;">ريال</span></b>
+              </div>
+              <div class="kpi-box-icon">📈</div>
+            </div>
+
+            <div class="kpi-box blue">
+              <div class="kpi-box-data">
+                <small>عدد الحجوزات المنفذة</small>
+                <b id="repTotalBookings">68</b>
+              </div>
+              <div class="kpi-box-icon">📋</div>
+            </div>
+
+            <div class="kpi-box purple">
+              <div class="kpi-box-data">
+                <small>معدل إشغال الملاعب</small>
+                <b id="repOccupancyRate">74%</b>
+              </div>
+              <div class="kpi-box-icon">📊</div>
+            </div>
+          </div>
+
+          <!-- Bar Chart Card -->
+          <div class="section-card">
+            <div class="chart-card-head">
+              <h3>رسم بياني للإيرادات والحجوزات (آخر 14 يوماً)</h3>
+              <small>توزيع الحجوزات اليومية</small>
+            </div>
+            <div id="reportsBarChartContainer" style="padding-top:14px;">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 11: الإعدادات (SETTINGS) ==================== -->
+        <section id="viewSettings" class="view-section">
+          <div class="form-grid">
+            <!-- Settings Card 1 -->
+            <div class="section-card">
+              <div class="section-title-row">
+                <h3><span>🏢 معلومات المنشأة</span></h3>
+              </div>
+              <div class="form-field">
+                <label>اسم المنشأة</label>
+                <input type="text" id="setVenueName" class="form-input" readonly>
+              </div>
+              <div class="form-field">
+                <label>المدينة / المنطقة</label>
+                <input type="text" id="setVenueCity" class="form-input" readonly>
+              </div>
+              <div class="form-field">
+                <label>نوع المنشأة</label>
+                <input type="text" value="ملاعب كرة قدم معشبة" class="form-input" readonly>
+              </div>
+            </div>
+
+            <!-- Settings Card 2 -->
+            <div class="section-card">
+              <div class="section-title-row">
+                <h3><span>🔔 إشعارات الحجوزات</span></h3>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+                <label style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" checked>
+                  <span>تنبيهات صوتية فورية عند وصول حجز جديد</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" checked>
+                  <span>إشعارات انتهاء مهلة الـ 10 دقائق للطلبات المعلقة</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" checked>
+                  <span>ملخص يومي بإجمالي الحجوزات والدخل عبر الإيميل</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Settings Card 3 -->
+            <div class="section-card">
+              <div class="section-title-row">
+                <h3><span>⚖️ سياسة الحجز والإلغاء</span></h3>
+              </div>
+              <p style="font-size:12.5px; color:var(--muted); line-height:1.7;">
+                • مهلة استجابة المنشأة للطلب: <b>10 دقائق</b> قبل إلغاء الطلب تلقائياً.<br>
+                • فترة الإلغاء المجاني للاعب: حتى <b>3 ساعات</b> قبل موعد المباراة.<br>
+                • حضور الفريق: يتم تسكين الحجز ورمز QR قبل 15 دقيقة من البداية.
+              </p>
+            </div>
+
+            <!-- Settings Card 4 -->
+            <div class="section-card">
+              <div class="section-title-row">
+                <h3><span>🔒 الحساب والأمان</span></h3>
+              </div>
+              <div class="form-field">
+                <label>البريد الإلكتروني الحالي</label>
+                <input type="text" id="setUserEmail" class="form-input" readonly dir="ltr">
+              </div>
+              <button type="button" class="btn-outline" style="color:var(--red); border-color:var(--red);" onclick="document.getElementById('logoutBtn').click()">
+                🚪 تسجيل الخروج من البوابة
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Mobile Navigation Bar -->
+    <nav class="mobile-nav">
+      <button type="button" class="m-nav-item active" data-view="dashboard">
+        <span class="m-icon">🏠</span>
+        <span>الرئيسية</span>
+      </button>
+      <button type="button" class="m-nav-item" data-view="bookings">
+        <span class="m-icon">📋</span>
+        <span>الحجوزات</span>
+      </button>
+      <button type="button" class="m-nav-item" data-view="schedule">
+        <span class="m-icon">📅</span>
+        <span>التقويم</span>
+      </button>
+      <button type="button" class="m-nav-item" data-view="walkin">
+        <span class="m-icon">🏟️</span>
+        <span>حجز خارجي</span>
+      </button>
+      <button type="button" class="m-nav-item" data-view="settings">
+        <span class="m-icon">⚙️</span>
+        <span>الإعدادات</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 1: Booking Detail Modal -->
+  <div id="bookingDetailModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalBookingNo">تفاصيل الحجز</h3>
+        <button type="button" class="modal-close-btn" data-close-modal="bookingDetailModal">✕</button>
+      </div>
+
+      <div id="bookingDetailContent" style="font-size:13.5px; line-height:1.8;">
+        <!-- Filled dynamically -->
+      </div>
+
+      <div id="bookingDetailActions" style="display:flex; gap:10px; margin-top:20px;">
+        <!-- Filled dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Add Staff Member -->
+  <div id="addStaffModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>+ إضافة عضو لفريق العمل</h3>
+        <button type="button" class="modal-close-btn" data-close-modal="addStaffModal">✕</button>
+      </div>
+
+      <form id="addStaffForm" onsubmit="return false;">
+        <div class="form-field">
+          <label>البريد الإلكتروني أو رقم الهاتف</label>
+          <input type="text" id="newStaffIdInput" class="form-input" placeholder="staff@example.com أو 771234567" required dir="ltr">
+        </div>
+
+        <div class="form-field">
+          <label>المسمى الوظيفي والصلاحيات</label>
+          <select id="newStaffRoleSelect" class="form-input">
+            <option value="manager">مدير منشأة (إدارة كاملة للملاعب والأسعار والتقارير)</option>
+            <option value="receptionist" selected>مشرف حجوزات واستقبال (إدارة المواعيد والتسكين)</option>
+          </select>
+        </div>
+
+        <button type="submit" id="btnSubmitNewStaff" class="login-btn">إضافة العضو</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Reject Reason Modal -->
+  <div id="rejectModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>رفض طلب الحجز</h3>
+        <button type="button" class="modal-close-btn" data-close-modal="rejectModal">✕</button>
+      </div>
+
+      <p id="rejectModalSummary" style="font-size:13px; color:var(--muted); margin-bottom:14px;"></p>
+      <input type="hidden" id="rejectTargetId">
+
+      <div class="form-field">
+        <label>سبب الرفض ليتم إرساله للعميل</label>
+        <textarea id="rejectReasonText" class="form-input" style="height:80px; padding:10px;" placeholder="مثال: الملعب محجوز مسبقاً لمباراة رسمية / صيانة"></textarea>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button type="button" id="confirmRejectBtn" class="btn-primary" style="background:var(--red); flex:1;">تأكيد الرفض</button>
+        <button type="button" class="btn-outline" data-close-modal="rejectModal" style="flex:1;">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Add Additional Field Modal -->
+  <div id="addFieldModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>+ إضافة ملعب جديد للمنشأة</h3>
+        <button type="button" class="modal-close-btn" data-close-modal="addFieldModal">✕</button>
+      </div>
+
+      <form id="addFieldForm" onsubmit="return false;">
+        <div class="form-field">
+          <label>اسم الملعب *</label>
+          <input type="text" id="afName" class="form-input" placeholder="مثال: الملعب الفرعي B" required>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>نوع الأرضية</label>
+            <select id="afSurface" class="form-input">
+              <option value="عشب صناعي">عشب صناعي (Turf)</option>
+              <option value="عشب طبيعي">عشب طبيعي (Natural Grass)</option>
+              <option value="أرضية صالة">أرضية صالة مغلقة (Indoor)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>سعة اللاعبين</label>
+            <select id="afCapacity" class="form-input">
+              <option value="10">10 لاعبين (5x5)</option>
+              <option value="12" selected>12 لاعب (6x6)</option>
+              <option value="14">14 لاعب (7x7)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>سعر الساعة (ريال يمني) *</label>
+            <input type="number" id="afPrice" class="form-input" placeholder="7000" value="7000" required>
+          </div>
+          <div class="form-field">
+            <label>طريقة التأكيد</label>
+            <select id="afConfMode" class="form-input">
+              <option value="approval">موافقة يدوية</option>
+              <option value="instant">تأكيد فوري</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" id="btnSubmitAddField" class="login-btn" style="margin-top:10px;">إضافة الملعب للمنشأة</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: Edit Venue Details Modal -->
+  <div id="editVenueModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>تعديل بيانات المنشأة</h3>
+        <button type="button" class="modal-close-btn" data-close-modal="editVenueModal">✕</button>
+      </div>
+
+      <form id="editVenueForm" onsubmit="return false;">
+        <div class="form-field">
+          <label>اسم المنشأة الرياضية *</label>
+          <input type="text" id="evName" class="form-input" required>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>المنطقة</label>
+            <select id="evAreaSelect" class="form-input"></select>
+          </div>
+          <div class="form-field">
+            <label>رقم هاتف التواصل</label>
+            <input type="tel" id="evPhone" class="form-input" dir="ltr">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>العنوان التفصيلي</label>
+          <input type="text" id="evAddress" class="form-input">
+        </div>
+
+        <div class="form-field">
+          <label>الوصف والخدمات</label>
+          <textarea id="evDescription" class="form-input" style="height:70px; padding:8px;"></textarea>
+        </div>
+
+        <button type="submit" id="btnSubmitEditVenue" class="login-btn">حفظ التعديلات</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Bar -->
+  <div id="toastBar" class="toast-bar"></div>
+
+  <!-- Scripts -->
+  <script src="./config.js"></script>
+  <script src="./api-client.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
