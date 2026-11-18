@@ -134,7 +134,13 @@
 
   function updateThemeIcon(isDark) {
     const btn = document.getElementById('themeToggleBtn');
-    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+    if (btn) {
+      if (window.MalaebiIcons3D) {
+        btn.innerHTML = isDark ? window.MalaebiIcons3D.sun(20) : window.MalaebiIcons3D.moon(20);
+      } else {
+        btn.textContent = isDark ? '☀️' : '🌙';
+      }
+    }
   }
 
   // ==================== APP INITIALIZATION ====================
@@ -608,7 +614,7 @@
             <div>
               <span style="font-size:11px; font-weight:800; color:var(--muted);">${b.reference_code || 'MLB-NEW'}</span>
               <h4 style="font-size:15px; font-weight:800; margin-top:2px;">${escapeHtml(custName)}</h4>
-              <small style="color:var(--muted);">🏟️ ${escapeHtml(fieldName)}</small>
+              <small style="color:var(--muted);display:inline-flex;align-items:center;gap:4px;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.stadium(14) : '🏟️'} ${escapeHtml(fieldName)}</small>
             </div>
             <div class="pending-badge-timer" id="timerBadge_${b.id}" data-expires="${b.expires_at || ''}" data-created="${b.created_at || ''}" style="background:#fef3c7; color:#b45309; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:800; border:1px solid #fde68a;">
               ⏱️ <span class="countdown-text">10:00</span>
@@ -616,7 +622,7 @@
           </div>
 
           <div style="font-size:13px; font-weight:700; margin-bottom:12px;">
-            📅 ${formatDateAr(b.starts_at?.split('T')[0])} (${timeStr})
+            ${window.MalaebiIcons3D ? window.MalaebiIcons3D.calendar(14) : '📅'} ${formatDateAr(b.starts_at?.split('T')[0])} (${timeStr})
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1142,7 +1148,7 @@
               </div>
               <div>
                 <b>${escapeHtml(r.player_name || 'لاعب ملاعبي')}</b>
-                <small style="display:block; color:var(--muted); font-size:11px;">🏟️ ${escapeHtml(r.field_name || 'الملعب الرئيسي')}</small>
+                <small style="display:flex;align-items:center;gap:4px;color:var(--muted);font-size:11px;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.stadium(13) : '🏟️'} ${escapeHtml(r.field_name || 'الملعب الرئيسي')}</small>
               </div>
             </div>
             <div style="text-align:left;">

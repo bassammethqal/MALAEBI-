@@ -98,6 +98,20 @@ function toggleTheme(isDark){
   updateThemeIcons(isDark);
 }
 
+
+function render3DStars(score, size = 15) {
+  const round = Math.max(0, Math.min(5, Math.round(Number(score) || 0)));
+  if (typeof window !== 'undefined' && window.MalaebiIcons3D) {
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+      const op = i <= round ? '1' : '0.22';
+      html += `<span style="display:inline-flex;align-items:center;opacity:${op};margin:0 1px;">${window.MalaebiIcons3D.star(size)}</span>`;
+    }
+    return html;
+  }
+  return '★'.repeat(round) + '☆'.repeat(Math.max(0, 5 - round));
+}
+
 function updateThemeIcons(isDark){
   const moon = $('.theme-moon');
   const sun = $('.theme-sun');
@@ -421,7 +435,7 @@ function renderVenue(){
   const currentTab=state.venueTab||'about';
   const venueDetails=$('#venueDetails');
   if(!venueDetails) return;
-  venueDetails.innerHTML=`<div class="detail-cover" style="background-image:url('${v.photo}')"><button class="back-btn" data-go="search" type="button">→</button><button class="detail-fav ${state.favoriteIds.has(v.id)?'saved':''}" data-fav="${v.id}" type="button">${state.favoriteIds.has(v.id)?'♥':'♡'}</button></div><div class="detail-content"><div class="detail-title-row"><div><h1>${v.name}</h1><div class="detail-sub">⌖ ${v.area}</div></div><span class="detail-rating">★ ${v.rating} <small>(${v.reviews||0})</small></span></div><div class="detail-price">${money(v.price)} <small>للساعة الواحدة</small></div><div class="detail-tabs"><button type="button" class="detail-tab ${currentTab==='about'?'active':''}" data-detail-tab="about">عن الملعب</button><button type="button" class="detail-tab ${currentTab==='amenities'?'active':''}" data-detail-tab="amenities">المرافق</button><button type="button" class="detail-tab ${currentTab==='reviews'?'active':''}" data-detail-tab="reviews">التقييمات</button></div><div id="detailTabContent"></div><div class="detail-bottom"><div><small>السعر يبدأ من</small><b>${money(v.price)}</b></div><button class="primary-btn" data-book="${v.id}" type="button">احجز الآن ←</button></div></div>`;
+  venueDetails.innerHTML=`<div class="detail-cover" style="background-image:url('${v.photo}')"><button class="back-btn" data-go="search" type="button">→</button><button class="detail-fav ${state.favoriteIds.has(v.id)?'saved':''}" data-fav="${v.id}" type="button" style="display:flex;align-items:center;justify-content:center">${window.MalaebiIcons3D ? window.MalaebiIcons3D.heart(18, state.favoriteIds.has(v.id)) : (state.favoriteIds.has(v.id)?'♥':'♡')}</button></div><div class="detail-content"><div class="detail-title-row"><div><h1>${v.name}</h1><div class="detail-sub" style="display:flex;align-items:center;gap:4px">${window.MalaebiIcons3D ? window.MalaebiIcons3D.pin(14) : '⌖'} ${v.area}</div></div><span class="detail-rating" style="display:inline-flex;align-items:center;gap:4px">${window.MalaebiIcons3D ? window.MalaebiIcons3D.star(15) : '★'} ${v.rating} <small>(${v.reviews||0})</small></span></div><div class="detail-price">${money(v.price)} <small>للساعة الواحدة</small></div><div class="detail-tabs"><button type="button" class="detail-tab ${currentTab==='about'?'active':''}" data-detail-tab="about">عن الملعب</button><button type="button" class="detail-tab ${currentTab==='amenities'?'active':''}" data-detail-tab="amenities">المرافق</button><button type="button" class="detail-tab ${currentTab==='reviews'?'active':''}" data-detail-tab="reviews">التقييمات</button></div><div id="detailTabContent"></div><div class="detail-bottom"><div><small>السعر يبدأ من</small><b>${money(v.price)}</b></div><button class="primary-btn" data-book="${v.id}" type="button">احجز الآن ←</button></div></div>`;
   renderVenueTab(currentTab);
 }
 
@@ -438,7 +452,19 @@ async function renderVenueTab(tab){
   }
   if(tab==='amenities'){
     if(v.features&&v.features.length){
-      container.innerHTML=`<div class="amenity-grid">${v.features.map(f=>`<div class="amenity"><b>${f.includes('إضاءة')?'☼':f.includes('مواقف')?'♙':f.includes('دورات')?'♧':f.includes('غرف')?'▣':'⚽'}</b>${f}</div>`).join('')}</div>`;
+      container.innerHTML=`<div class="amenity-grid">${v.features.map(f=>{
+        let ic = '';
+        if(window.MalaebiIcons3D){
+          if(f.includes('إضاءة')) ic = window.MalaebiIcons3D.lighting(22);
+          else if(f.includes('مواقف')) ic = window.MalaebiIcons3D.parking(22);
+          else if(f.includes('دورات')) ic = window.MalaebiIcons3D.restrooms(22);
+          else if(f.includes('غرف')) ic = window.MalaebiIcons3D.lockers(22);
+          else ic = window.MalaebiIcons3D.turf(22);
+        } else {
+          ic = f.includes('إضاءة')?'☼':f.includes('مواقف')?'♙':f.includes('دورات')?'♧':f.includes('غرف')?'▣':'⚽';
+        }
+        return `<div class="amenity"><b style="display:inline-flex;align-items:center;justify-content:center">${ic}</b>${f}</div>`;
+      }).join('')}</div>`;
     }else{
       container.innerHTML=`<div class="tab-empty">لم تُضف مرافق محددة لهذا الملعب بعد.</div>`;
     }
@@ -494,7 +520,7 @@ async function renderVenueTab(tab){
           return;
         }
         const fullStars=Math.round(avg);
-        container.innerHTML=`${addReviewBanner}<div class="reviews-summary"><div class="reviews-score">${avg}</div><div class="reviews-score-meta"><div class="reviews-score-stars">${'★'.repeat(fullStars)}${'☆'.repeat(Math.max(0,5-fullStars))}</div><small>بناءً على ${total} تقييم</small></div></div><div class="reviews-list">${reviews.map(r=>`<div class="review-item"><div class="review-item-head"><span class="review-player">⚽ ${r.player_name||'لاعب ملاعبي'}</span><span class="review-date">${r.created_at?new Intl.DateTimeFormat('ar-YE',{dateStyle:'medium'}).format(new Date(r.created_at)):''}</span></div><div class="review-stars">${'★'.repeat(r.rating||5)}${'☆'.repeat(Math.max(0,5-(r.rating||5)))}</div>${r.comment?`<p class="review-comment">${r.comment}</p>`:''}</div>`).join('')}</div>`;
+        container.innerHTML=`${addReviewBanner}<div class="reviews-summary"><div class="reviews-score">${avg}</div><div class="reviews-score-meta"><div class="reviews-score-stars" style="display:flex;align-items:center;justify-content:center;gap:2px;">${render3DStars(avg, 16)}</div><small>بناءً على ${total} تقييم</small></div></div><div class="reviews-list">${reviews.map(r=>`<div class="review-item"><div class="review-item-head"><span class="review-player" style="display:inline-flex;align-items:center;gap:5px;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.ball(15) : '⚽'} ${r.player_name||'لاعب ملاعبي'}</span><span class="review-date">${r.created_at?new Intl.DateTimeFormat('ar-YE',{dateStyle:'medium'}).format(new Date(r.created_at)):''}</span></div><div class="review-stars" style="display:flex;align-items:center;gap:2px;">${render3DStars(r.rating||5, 13)}</div>${r.comment?`<p class="review-comment">${r.comment}</p>`:''}</div>`).join('')}</div>`;
         const reviewBtn = $('#openReviewFromTabBtn');
         if(reviewBtn){
           reviewBtn.onclick = () => {
@@ -514,7 +540,7 @@ async function renderVenueTab(tab){
     ];
     const avg=v.rating||4.8;
     const fullStars=Math.round(avg);
-    container.innerHTML=`<div class="reviews-summary"><div class="reviews-score">${avg}</div><div class="reviews-score-meta"><div class="reviews-score-stars">${'★'.repeat(fullStars)}${'☆'.repeat(Math.max(0,5-fullStars))}</div><small>بناءً على ${demoReviews.length} تقييم (معاينة)</small></div></div><div class="reviews-list">${demoReviews.map(r=>`<div class="review-item"><div class="review-item-head"><span class="review-player">⚽ ${r.player_name}</span><span class="review-date">${new Intl.DateTimeFormat('ar-YE',{dateStyle:'medium'}).format(new Date(r.created_at))}</span></div><div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(Math.max(0,5-r.rating))}</div><p class="review-comment">${r.comment}</p></div>`).join('')}</div>`;
+    container.innerHTML=`<div class="reviews-summary"><div class="reviews-score">${avg}</div><div class="reviews-score-meta"><div class="reviews-score-stars" style="display:flex;align-items:center;justify-content:center;gap:2px;">${render3DStars(avg, 16)}</div><small>بناءً على ${demoReviews.length} تقييم (معاينة)</small></div></div><div class="reviews-list">${demoReviews.map(r=>`<div class="review-item"><div class="review-item-head"><span class="review-player" style="display:inline-flex;align-items:center;gap:5px;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.ball(15) : '⚽'} ${r.player_name}</span><span class="review-date">${new Intl.DateTimeFormat('ar-YE',{dateStyle:'medium'}).format(new Date(r.created_at))}</span></div><div class="review-stars" style="display:flex;align-items:center;gap:2px;">${render3DStars(r.rating, 13)}</div><p class="review-comment">${r.comment}</p></div>`).join('')}</div>`;
   }
 }
 
@@ -557,7 +583,7 @@ function renderBooking(){
   if(!v) return;
   const mini = $('#bookingVenueMini');
   if(mini){
-    mini.innerHTML=`<div class="mini-thumb" style="background-image:url('${v.photo}')"></div><div class="mini-info"><b>${v.name}</b><small>⌖ ${v.area}</small></div>`;
+    mini.innerHTML=`<div class="mini-thumb" style="background-image:url('${v.photo}')"></div><div class="mini-info"><b>${v.name}</b><small style="display:flex;align-items:center;gap:3px;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.pin(12) : '⌖'} ${v.area}</small></div>`;
   }
   $('#bookingPrice').textContent=money(v.price);
   $('#bookingTotal').textContent=money(v.price);
@@ -748,7 +774,7 @@ function renderBookings(){
   const list=state.bookings.filter(b=>state.bookingTab==='all'||(state.bookingTab==='upcoming'&&['confirmed','pending','held'].includes(b.status))||(state.bookingTab==='pending'&&b.status==='pending')||(state.bookingTab==='past'&&['completed','cancelled','expired','no_show','disputed'].includes(b.status)));
   const myBookings=$('#myBookings');
   if(myBookings){
-    myBookings.innerHTML=list.map(b=>`<article class="booking-card" data-booking-detail="${b.serverId||b.id}"><div class="booking-card-top"><div><h3>${b.venue}</h3><small>⌖ ${b.area}</small></div><span class="status-pill ${b.status==='pending'?'pending':''}">${b.status==='pending'?'بانتظار الموافقة':b.status==='confirmed'?'مؤكد':b.status==='cancelled'?'ملغي':b.status==='expired'?'منتهي':'مكتمل'}</span></div><div class="booking-card-meta"><span>${b.dateText||b.date} · ${formatTime12Ar(b.time)}</span><b>${money(b.price)}</b></div><small style="display:block;margin-top:9px">مرجع: ${b.id} · ${b.demo?'حجز تجريبي':''}</small></article>`).join('');
+    myBookings.innerHTML=list.map(b=>`<article class="booking-card" data-booking-detail="${b.serverId||b.id}"><div class="booking-card-top"><div><h3>${b.venue}</h3><small style="display:flex;align-items:center;gap:3px;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.pin(12) : '⌖'} ${b.area}</small></div><span class="status-pill ${b.status==='pending'?'pending':''}">${b.status==='pending'?'بانتظار الموافقة':b.status==='confirmed'?'مؤكد':b.status==='cancelled'?'ملغي':b.status==='expired'?'منتهي':'مكتمل'}</span></div><div class="booking-card-meta"><span>${b.dateText||b.date} · ${formatTime12Ar(b.time)}</span><b>${money(b.price)}</b></div><small style="display:block;margin-top:9px">مرجع: ${b.id} · ${b.demo?'حجز تجريبي':''}</small></article>`).join('');
   }
   const emptyBookings=$('#emptyBookings');
   if(emptyBookings) emptyBookings.classList.toggle('hidden',list.length>0);
@@ -908,7 +934,7 @@ function openFavoritesModal(){
     $('#modalContent').innerHTML = `
       <h2 id="modalTitle">الملاعب المفضلة</h2>
       <div class="empty-state">
-        <span style="font-size:42px;color:var(--green)">♡</span>
+        <span style="display:flex;align-items:center;justify-content:center;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.heart(44, false) : '♡'}</span>
         <b>قائمة المفضلة فارغة حالياً</b>
         <small>اضغط على رمز القلب في أي ملعب لحفظه هنا والوصول إليه بسرعة.</small>
         <button class="primary-btn full" style="margin-top:14px" type="button" id="modalExploreBtn">استكشف الملاعب</button>
@@ -931,7 +957,7 @@ function openFavoritesModal(){
             <small style="color:var(--muted);font-size:10px">${v.area} · ${money(v.price)}</small>
           </div>
           <button type="button" class="primary-btn" style="padding:6px 10px;font-size:11px;gap:4px" data-fav-book="${v.id}">حجز</button>
-          <button type="button" style="border:0;background:transparent;color:#e05262;font-size:18px;cursor:pointer;padding:4px" data-fav-remove="${v.id}" title="إزالة من المفضلة">♥</button>
+          <button type="button" style="border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:4px" data-fav-remove="${v.id}" title="إزالة من المفضلة">${window.MalaebiIcons3D ? window.MalaebiIcons3D.heart(18, true) : '♥'}</button>
         </div>
       `).join('')}
     </div>
@@ -983,7 +1009,7 @@ async function openNotificationsModal(){
     $('#modalContent').innerHTML = `
       <h2 id="modalTitle">الإشعارات والتنبيهات</h2>
       <div class="empty-state">
-        <span style="font-size:42px;color:var(--green)">🔔</span>
+        <span style="display:flex;align-items:center;justify-content:center;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.bell(44) : '🔔'}</span>
         <b>لا توجد إشعارات جديدة حالياً</b>
         <small>ستظهر هنا تأكيدات الحجوزات والعروض والتحديثات الرياضية.</small>
       </div>
@@ -997,7 +1023,7 @@ async function openNotificationsModal(){
       ${notifs.map(n => `
         <div class="notif-item">
           <div class="notif-item-head">
-            <span class="notif-item-title">⚽ ${n.title || 'إشعار ملاعبي'}</span>
+            <span class="notif-item-title" style="display:flex;align-items:center;gap:6px;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.ball(15) : '⚽'} ${n.title || 'إشعار ملاعبي'}</span>
             <span class="notif-item-time">${n.created_at ? new Intl.DateTimeFormat('ar-YE', { dateStyle: 'short', timeStyle: 'short', hour12: true }).format(new Date(n.created_at)) : ''}</span>
           </div>
           <p class="notif-item-body">${n.body || n.message || ''}</p>
@@ -1082,7 +1108,7 @@ function openAboutModal(){
     </p>
     <div style="background:var(--mint);padding:14px;border-radius:14px;margin:14px 0;text-align:right;font-size:11px;color:var(--ink);line-height:1.7">
       <div style="margin-bottom:6px">⏱ <b>سياسة الإلغاء:</b> إلغاء مرن متاح حتى <b>6 ساعات</b> قبل موعد المباراة.</div>
-      <div style="margin-bottom:6px">📍 <b>نطاق الخدمة:</b> مدينة مأرب والمناطق المجاورة.</div>
+      <div style="margin-bottom:6px;display:flex;align-items:center;gap:5px;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.pin(15) : '📍'} <b>نطاق الخدمة:</b> مدينة مأرب والمناطق المجاورة.</div>
       <div>⚡ <b>طريقة الحجز:</b> تأكيد فوري أو بموافقة المنشأة مع الدفع عند الملعب.</div>
     </div>
     <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:14px">

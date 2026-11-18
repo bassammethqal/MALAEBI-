@@ -1309,3 +1309,18 @@ body.dark-mode .time-slot-card.available {
   .kpi-box-data b { font-size: 18px; }
   .form-grid { grid-template-columns: 1fr; }
 }
+
+/* 3D Icons Support */
+.drawer-nav-item .icon, .nav-item .icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.b-nav-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.kpi-box-icon svg, .b-nav-icon svg, .topbar-icon-btn svg, .drawer-nav-item .icon svg {
+  display: block;
+}

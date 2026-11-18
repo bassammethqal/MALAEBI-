@@ -63,9 +63,19 @@
   <div id="onboardingScreen" style="display:none; min-height:100vh; background:var(--bg); padding:40px 16px; align-items:center; justify-content:center;">
     <div style="width:min(100%, 680px); background:var(--card); border:1px solid var(--card-border); border-radius:24px; padding:36px 30px; box-shadow:var(--shadow-lg);">
       <div style="text-align:center; margin-bottom:28px;">
-        <div style="width:68px; height:68px; background:#072b1c; border-radius:20px; margin:0 auto 14px; display:grid; place-items:center; font-size:34px;">
-          🏟️
-        </div>
+        <div style="width:68px; height:68px; background:#072b1c; border-radius:20px; margin:0 auto 14px; display:grid; place-items:center;"><svg width="40" height="40" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-stad-34" x1="16" y1="5" x2="16" y2="27" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="45%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="16" cy="16" rx="13" ry="10" fill="url(#m3d-stad-34)" stroke="#34d399" stroke-width="1.2"/>
+        <ellipse cx="16" cy="16" rx="9" ry="6" fill="#059669" stroke="#ffffff" stroke-width="1"/>
+        <line x1="16" y1="10" x2="16" y2="22" stroke="#ffffff" stroke-width="1"/>
+        <circle cx="16" cy="16" r="2.5" stroke="#ffffff" stroke-width="1" fill="none"/>
+      </svg></div>
         <h2 style="font-size:24px; font-weight:900; margin-bottom:6px;">مرحباً بك في ملاعبي للأعمال!</h2>
         <p style="font-size:13.5px; color:var(--muted); max-width:500px; margin:0 auto; line-height:1.6;">
           أنت على بعد خطوة واحدة من إطلاق منشأتك. أضف بيانات المنشأة وملعبك الأول لتظهر فوراً للاعبين وتبدأ باستقبال الحجوزات.
@@ -191,58 +201,226 @@
       <!-- Navigation (11 items) -->
       <nav class="drawer-nav">
         <button type="button" class="drawer-nav-item nav-item active" data-view="dashboard">
-          <span class="icon">🏠</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-h1-1" x1="16" y1="3" x2="16" y2="17" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="40%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#059669"/>
+          </linearGradient>
+          <linearGradient id="m3d-h2-2" x1="16" y1="13" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ecfdf5"/>
+            <stop offset="100%" stop-color="#d1fae5"/>
+          </linearGradient>
+        </defs>
+        <path d="M16 3L4 14H8V27C8 27.5 8.5 28 9 28H23C23.5 28 24 27.5 24 27V14H28L16 3Z" fill="url(#m3d-h1-1)"/>
+        <path d="M13 28V19C13 18.5 13.5 18 14 18H18C18.5 18 19 18.5 19 19V28H13Z" fill="#047857"/>
+      </svg></span>
           <span>الرئيسية</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="bookings">
-          <span class="icon">📋</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-clip-3" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="50%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+          <linearGradient id="m3d-paper-4" x1="8" y1="8" x2="24" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#e2e8f0"/>
+          </linearGradient>
+        </defs>
+        <rect x="5" y="6" width="22" height="22" rx="4" fill="url(#m3d-clip-3)"/>
+        <rect x="8" y="9" width="16" height="17" rx="2" fill="url(#m3d-paper-4)"/>
+        <rect x="12" y="3" width="8" height="5" rx="1.5" fill="#047857"/>
+        <line x1="11" y1="14" x2="21" y2="14" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="11" y1="18" x2="21" y2="18" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="11" y1="22" x2="17" y2="22" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+      </svg></span>
           <span>الحجوزات</span>
           <span class="badge" id="navPendingBadge" style="display:none;">0</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="schedule">
-          <span class="icon">📅</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-cal1-5" x1="16" y1="4" x2="16" y2="11" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="100%" stop-color="#059669"/>
+          </linearGradient>
+          <linearGradient id="m3d-cal2-6" x1="16" y1="11" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#f3f4f6"/>
+          </linearGradient>
+        </defs>
+        <rect x="4" y="6" width="24" height="22" rx="4" fill="url(#m3d-cal2-6)" stroke="#e5e7eb" stroke-width="1"/>
+        <path d="M4 10C4 7.8 5.8 6 8 6H24C26.2 6 28 7.8 28 10V12H4V10Z" fill="url(#m3d-cal1-5)"/>
+        <rect x="9" y="3.5" width="2.5" height="5" rx="1.25" fill="#fde047"/>
+        <rect x="20.5" y="3.5" width="2.5" height="5" rx="1.25" fill="#fde047"/>
+        <circle cx="10" cy="17" r="1.5" fill="#10b981"/>
+        <circle cx="16" cy="17" r="1.5" fill="#10b981"/>
+        <circle cx="22" cy="17" r="1.5" fill="#9ca3af"/>
+        <circle cx="10" cy="22" r="1.5" fill="#9ca3af"/>
+        <circle cx="16" cy="22" r="1.5" fill="#3b82f6"/>
+        <circle cx="22" cy="22" r="1.5" fill="#10b981"/>
+      </svg></span>
           <span>تقويم الحجوزات</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="walkin">
-          <span class="icon">🏟️</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-stad-7" x1="16" y1="5" x2="16" y2="27" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="45%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="16" cy="16" rx="13" ry="10" fill="url(#m3d-stad-7)" stroke="#34d399" stroke-width="1.2"/>
+        <ellipse cx="16" cy="16" rx="9" ry="6" fill="#059669" stroke="#ffffff" stroke-width="1"/>
+        <line x1="16" y1="10" x2="16" y2="22" stroke="#ffffff" stroke-width="1"/>
+        <circle cx="16" cy="16" r="2.5" stroke="#ffffff" stroke-width="1" fill="none"/>
+      </svg></span>
           <span>الحجز الخارجي</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="venues">
-          <span class="icon">⚽</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="m3d-ball-8" cx="14" cy="12" r="13" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="65%" stop-color="#e5e7eb"/>
+            <stop offset="100%" stop-color="#9ca3af"/>
+          </radialGradient>
+        </defs>
+        <circle cx="16" cy="16" r="13" fill="url(#m3d-ball-8)" stroke="#1f2937" stroke-width="0.8"/>
+        <polygon points="16,11 20,14 18.5,19 13.5,19 12,14" fill="#1f2937"/>
+        <line x1="16" y1="11" x2="16" y2="4" stroke="#1f2937" stroke-width="1.2"/>
+        <line x1="20" y1="14" x2="27" y2="12" stroke="#1f2937" stroke-width="1.2"/>
+        <line x1="18.5" y1="19" x2="24" y2="25" stroke="#1f2937" stroke-width="1.2"/>
+        <line x1="13.5" y1="19" x2="8" y2="25" stroke="#1f2937" stroke-width="1.2"/>
+        <line x1="12" y1="14" x2="5" y2="12" stroke="#1f2937" stroke-width="1.2"/>
+      </svg></span>
           <span>المنشآت والملاعب</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="pricing">
-          <span class="icon">⏱️</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-rev-9" x1="16" y1="4" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="35%" stop-color="#fbbf24"/>
+            <stop offset="75%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="16" cy="23" rx="11" ry="4.5" fill="#b45309"/>
+        <ellipse cx="16" cy="21" rx="11" ry="4.5" fill="url(#m3d-rev-9)"/>
+        <ellipse cx="16" cy="16" rx="11" ry="4.5" fill="#b45309"/>
+        <ellipse cx="16" cy="14" rx="11" ry="4.5" fill="url(#m3d-rev-9)"/>
+        <ellipse cx="16" cy="9" rx="11" ry="4.5" fill="#b45309"/>
+        <ellipse cx="16" cy="7" rx="11" ry="4.5" fill="url(#m3d-rev-9)"/>
+        <path d="M12 7C14 6 18 6 20 7" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
+      </svg></span>
           <span>الجدولة والأسعار</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="customers">
-          <span class="icon">👥</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-cust-10" x1="6" y1="6" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="50%" stop-color="#0284c7"/>
+            <stop offset="100%" stop-color="#0369a1"/>
+          </linearGradient>
+        </defs>
+        <circle cx="21" cy="11" r="3.5" fill="#94a3b8"/>
+        <path d="M17 24C17 21 19 19 22 19C25 19 27 21 27 24" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="12" cy="11" r="4.5" fill="url(#m3d-cust-10)"/>
+        <path d="M5 26C5 21.5 8 18.5 12 18.5C16 18.5 19 21.5 19 26" fill="url(#m3d-cust-10)"/>
+      </svg></span>
           <span>العملاء</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="reviews">
-          <span class="icon">⭐</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-star-11" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="35%" stop-color="#fbbf24"/>
+            <stop offset="75%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+        <path d="M16 2.5L20.2 11.2L29.8 12.6L22.9 19.3L24.5 28.8L16 24.3L7.5 28.8L9.1 19.3L2.2 12.6L11.8 11.2L16 2.5Z" fill="url(#m3d-star-11)"/>
+        <path d="M16 2.5L20.2 11.2L16 16L11.8 11.2L16 2.5Z" fill="#fef9c3" opacity="0.6"/>
+        <path d="M29.8 12.6L22.9 19.3L16 16L20.2 11.2L29.8 12.6Z" fill="#f59e0b" opacity="0.5"/>
+        <path d="M24.5 28.8L16 24.3L16 16L22.9 19.3L24.5 28.8Z" fill="#b45309" opacity="0.35"/>
+        <path d="M16 24.3L7.5 28.8L9.1 19.3L16 16L16 24.3Z" fill="#f59e0b" opacity="0.5"/>
+        <path d="M7.5 28.8L9.1 19.3L2.2 12.6L16 16L7.5 28.8Z" fill="#fbbf24" opacity="0.4"/>
+      </svg></span>
           <span>التقييمات</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="staff">
-          <span class="icon">👔</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-stf-12" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#a78bfa"/>
+            <stop offset="50%" stop-color="#7c3aed"/>
+            <stop offset="100%" stop-color="#5b21b6"/>
+          </linearGradient>
+        </defs>
+        <rect x="6" y="5" width="20" height="23" rx="3.5" fill="url(#m3d-stf-12)"/>
+        <rect x="13" y="3.5" width="6" height="3" rx="1" fill="#fde047"/>
+        <circle cx="16" cy="12" r="3.5" fill="#ffffff"/>
+        <line x1="10" y1="19" x2="22" y2="19" stroke="#ddd6fe" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="12" y1="23" x2="20" y2="23" stroke="#ddd6fe" stroke-width="1.8" stroke-linecap="round"/>
+      </svg></span>
           <span>الموظفون</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="reports">
-          <span class="icon">📊</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-b1-13" x1="8" y1="14" x2="8" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#6ee7b7"/>
+            <stop offset="100%" stop-color="#10b981"/>
+          </linearGradient>
+          <linearGradient id="m3d-b2-14" x1="16" y1="8" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="100%" stop-color="#0284c7"/>
+          </linearGradient>
+          <linearGradient id="m3d-b3-15" x1="24" y1="4" x2="24" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fde047"/>
+            <stop offset="100%" stop-color="#f59e0b"/>
+          </linearGradient>
+        </defs>
+        <rect x="5" y="15" width="6" height="12" rx="2" fill="url(#m3d-b1-13)"/>
+        <rect x="13" y="9" width="6" height="18" rx="2" fill="url(#m3d-b2-14)"/>
+        <rect x="21" y="5" width="6" height="22" rx="2" fill="url(#m3d-b3-15)"/>
+        <ellipse cx="8" cy="15" rx="3" ry="1.2" fill="#d1fae5"/>
+        <ellipse cx="16" cy="9" rx="3" ry="1.2" fill="#e0f2fe"/>
+        <ellipse cx="24" cy="5" rx="3" ry="1.2" fill="#fef9c3"/>
+      </svg></span>
           <span>التقارير</span>
         </button>
 
         <button type="button" class="drawer-nav-item nav-item" data-view="settings">
-          <span class="icon">⚙️</span>
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-gear-16" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#9ca3af"/>
+            <stop offset="45%" stop-color="#6b7280"/>
+            <stop offset="100%" stop-color="#374151"/>
+          </linearGradient>
+        </defs>
+        <path d="M14 3H18L18.8 6.5C19.8 6.9 20.8 7.5 21.6 8.3L25 7.2L27 10.7L24.4 13.2C24.6 14.1 24.6 15.1 24.4 16L27 18.5L25 22L21.6 20.9C20.8 21.7 19.8 22.3 18.8 22.7L18 26.2H14L13.2 22.7C12.2 22.3 11.2 21.7 10.4 20.9L7 22L5 18.5L7.6 16C7.4 15.1 7.4 14.1 7.6 13.2L5 10.7L7 7.2L10.4 8.3C11.2 7.5 12.2 6.9 13.2 6.5L14 3Z" fill="url(#m3d-gear-16)"/>
+        <circle cx="16" cy="14.6" r="4.5" fill="#f3f4f6"/>
+        <circle cx="16" cy="14.6" r="3" fill="#374151"/>
+      </svg></span>
           <span>الإعدادات</span>
         </button>
       </nav>
@@ -254,7 +432,17 @@
           <b id="userName">مالك المنشأة</b>
           <small id="userRoleBadge">مالك رئيسي</small>
         </div>
-        <button type="button" class="sidebar-logout-btn" id="logoutBtn" title="تسجيل الخروج">🚪</button>
+        <button type="button" class="sidebar-logout-btn" id="logoutBtn" title="تسجيل الخروج" style="display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-door-17" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f87171"/>
+            <stop offset="50%" stop-color="#ef4444"/>
+            <stop offset="100%" stop-color="#b91c1c"/>
+          </linearGradient>
+        </defs>
+        <rect x="6" y="4" width="13" height="24" rx="2" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <path d="M19 16H29M25 12L29 16L25 20" stroke="url(#m3d-door-17)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg></button>
       </div>
     </aside>
 
@@ -271,9 +459,55 @@
         </div>
 
         <div class="topbar-left">
-          <button type="button" class="topbar-icon-btn" id="refreshBtn" title="تحديث البيانات">🔄</button>
-          <button type="button" class="topbar-icon-btn" id="notifBtn" title="الإشعارات">🔔</button>
-          <button type="button" class="topbar-icon-btn" id="themeToggleBtn" title="تبديل الوضع">🌙</button>
+          <button type="button" class="topbar-icon-btn" id="refreshBtn" title="تحديث البيانات" style="display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-ref-18" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="50%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#059669"/>
+          </linearGradient>
+        </defs>
+        <path d="M26 16C26 21.5 21.5 26 16 26C11.5 26 7.6 23 6.4 19M6 16C6 10.5 10.5 6 16 6C20.5 6 24.4 9 25.6 13" stroke="url(#m3d-ref-18)" stroke-width="3" stroke-linecap="round"/>
+        <polygon points="26,8 28,14 22,14" fill="#10b981"/>
+        <polygon points="6,24 4,18 10,18" fill="#10b981"/>
+      </svg></button>
+          <button type="button" class="topbar-icon-btn" id="notifBtn" title="الإشعارات" style="display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-bell-19" x1="16" y1="4" x2="16" y2="25" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef3c7"/>
+            <stop offset="25%" stop-color="#fbbf24"/>
+            <stop offset="70%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+          <linearGradient id="m3d-ring-21" x1="16" y1="2" x2="16" y2="7" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fde68a"/>
+            <stop offset="100%" stop-color="#d97706"/>
+          </linearGradient>
+          <radialGradient id="m3d-clap-20" cx="16" cy="27" r="3" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fbbf24"/>
+            <stop offset="100%" stop-color="#92400e"/>
+          </radialGradient>
+        </defs>
+        <circle cx="16" cy="5" r="3" stroke="url(#m3d-ring-21)" stroke-width="2" fill="none"/>
+        <circle cx="16" cy="26" r="3.2" fill="url(#m3d-clap-20)"/>
+        <path d="M16 6C10.5 6 8.5 11 8 16C7.5 21 5 22.5 5 24H27C27 22.5 24.5 21 24 16C23.5 11 21.5 6 16 6Z" fill="url(#m3d-bell-19)"/>
+        <rect x="4" y="22.5" width="24" height="2.5" rx="1.25" fill="#fef3c7" opacity="0.9"/>
+        <path d="M10 11C11.5 8 14 7 16 7" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+      </svg></button>
+          <button type="button" class="topbar-icon-btn" id="themeToggleBtn" title="تبديل الوضع" style="display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-moon-22" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#a7f3d0"/>
+            <stop offset="40%" stop-color="#34d399"/>
+            <stop offset="85%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#064e3b"/>
+          </linearGradient>
+        </defs>
+        <path d="M26 18.5C25.5 24.3 20.8 29 15 29C8.9 29 4 24.1 4 18C4 12.2 8.7 7.5 14.5 7C14 8.5 13.8 10.2 13.8 12C13.8 18.1 18.7 23 24.8 23C25.2 23 25.6 22.9 26 22.8V18.5Z" fill="url(#m3d-moon-22)"/>
+        <path d="M25 18.5C24.5 23.5 20.2 27.5 15 27.5C9.7 27.5 5.5 23.3 5.5 18C5.5 13 9.3 8.8 14.2 8.5" stroke="#d1fae5" stroke-width="0.8" fill="none" opacity="0.7"/>
+        <circle cx="10" cy="16" r="1.5" fill="#064e3b" opacity="0.3"/>
+        <circle cx="13" cy="22" r="1.8" fill="#064e3b" opacity="0.25"/>
+      </svg></button>
         </div>
       </header>
 
@@ -299,7 +533,23 @@
                 <small>إيرادات اليوم</small>
                 <b id="kpiRevenue">0 <span style="font-size:13px; font-weight:700;">ريال</span></b>
               </div>
-              <div class="kpi-box-icon">💵</div>
+              <div class="kpi-box-icon"><svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-rev-23" x1="16" y1="4" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="35%" stop-color="#fbbf24"/>
+            <stop offset="75%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="16" cy="23" rx="11" ry="4.5" fill="#b45309"/>
+        <ellipse cx="16" cy="21" rx="11" ry="4.5" fill="url(#m3d-rev-23)"/>
+        <ellipse cx="16" cy="16" rx="11" ry="4.5" fill="#b45309"/>
+        <ellipse cx="16" cy="14" rx="11" ry="4.5" fill="url(#m3d-rev-23)"/>
+        <ellipse cx="16" cy="9" rx="11" ry="4.5" fill="#b45309"/>
+        <ellipse cx="16" cy="7" rx="11" ry="4.5" fill="url(#m3d-rev-23)"/>
+        <path d="M12 7C14 6 18 6 20 7" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
+      </svg></div>
             </div>
 
             <div class="kpi-box amber">
@@ -307,7 +557,28 @@
                 <small>حجوزات اليوم</small>
                 <b id="kpiBookingsCount">0</b>
               </div>
-              <div class="kpi-box-icon">📅</div>
+              <div class="kpi-box-icon"><svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-cal1-24" x1="16" y1="4" x2="16" y2="11" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="100%" stop-color="#059669"/>
+          </linearGradient>
+          <linearGradient id="m3d-cal2-25" x1="16" y1="11" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#f3f4f6"/>
+          </linearGradient>
+        </defs>
+        <rect x="4" y="6" width="24" height="22" rx="4" fill="url(#m3d-cal2-25)" stroke="#e5e7eb" stroke-width="1"/>
+        <path d="M4 10C4 7.8 5.8 6 8 6H24C26.2 6 28 7.8 28 10V12H4V10Z" fill="url(#m3d-cal1-24)"/>
+        <rect x="9" y="3.5" width="2.5" height="5" rx="1.25" fill="#fde047"/>
+        <rect x="20.5" y="3.5" width="2.5" height="5" rx="1.25" fill="#fde047"/>
+        <circle cx="10" cy="17" r="1.5" fill="#10b981"/>
+        <circle cx="16" cy="17" r="1.5" fill="#10b981"/>
+        <circle cx="22" cy="17" r="1.5" fill="#9ca3af"/>
+        <circle cx="10" cy="22" r="1.5" fill="#9ca3af"/>
+        <circle cx="16" cy="22" r="1.5" fill="#3b82f6"/>
+        <circle cx="22" cy="22" r="1.5" fill="#10b981"/>
+      </svg></div>
             </div>
 
             <div class="kpi-box blue">
@@ -315,7 +586,18 @@
                 <small>نسبة الإشغال</small>
                 <b id="kpiOccupancy">0%</b>
               </div>
-              <div class="kpi-box-icon">📊</div>
+              <div class="kpi-box-icon"><svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-pie-26" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="50%" stop-color="#2563eb"/>
+            <stop offset="100%" stop-color="#1d4ed8"/>
+          </linearGradient>
+        </defs>
+        <circle cx="16" cy="16" r="12" stroke="#e5e7eb" stroke-width="3" fill="none"/>
+        <path d="M16 4A12 12 0 1 1 6.5 23.5L16 16Z" fill="url(#m3d-pie-26)"/>
+        <circle cx="16" cy="16" r="4" fill="#ffffff"/>
+      </svg></div>
             </div>
 
             <div class="kpi-box purple">
@@ -323,7 +605,19 @@
                 <small>الملاعب النشطة</small>
                 <b id="kpiActiveFields">0</b>
               </div>
-              <div class="kpi-box-icon">🏟️</div>
+              <div class="kpi-box-icon"><svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-stad-27" x1="16" y1="5" x2="16" y2="27" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="45%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="16" cy="16" rx="13" ry="10" fill="url(#m3d-stad-27)" stroke="#34d399" stroke-width="1.2"/>
+        <ellipse cx="16" cy="16" rx="9" ry="6" fill="#059669" stroke="#ffffff" stroke-width="1"/>
+        <line x1="16" y1="10" x2="16" y2="22" stroke="#ffffff" stroke-width="1"/>
+        <circle cx="16" cy="16" r="2.5" stroke="#ffffff" stroke-width="1" fill="none"/>
+      </svg></div>
             </div>
           </div>
 
@@ -396,7 +690,25 @@
           <!-- Recent Bookings Table -->
           <div class="section-card">
             <div class="section-title-row">
-              <h3><span>📋 آخر الحجوزات اليوم</span></h3>
+              <h3><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-clip-17" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="50%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+          <linearGradient id="m3d-paper-18" x1="8" y1="8" x2="24" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#e2e8f0"/>
+          </linearGradient>
+        </defs>
+        <rect x="5" y="6" width="22" height="22" rx="4" fill="url(#m3d-clip-17)"/>
+        <rect x="8" y="9" width="16" height="17" rx="2" fill="url(#m3d-paper-18)"/>
+        <rect x="12" y="3" width="8" height="5" rx="1.5" fill="#047857"/>
+        <line x1="11" y1="14" x2="21" y2="14" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="11" y1="18" x2="21" y2="18" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="11" y1="22" x2="17" y2="22" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+      </svg> آخر الحجوزات اليوم</span></h3>
               <button type="button" class="btn-outline" onclick="MalaebiApp.switchView('bookings')">عرض كل الحجوزات ←</button>
             </div>
             <div class="table-responsive">
@@ -500,7 +812,19 @@
         <section id="viewWalkin" class="view-section">
           <div class="section-card" style="max-width:700px; margin:0 auto;">
             <div class="section-title-row">
-              <h3><span>🏟️ تسجيل حجز خارجي (حضوري / هاتفي)</span></h3>
+              <h3><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-stad-19" x1="16" y1="5" x2="16" y2="27" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="45%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="16" cy="16" rx="13" ry="10" fill="url(#m3d-stad-19)" stroke="#34d399" stroke-width="1.2"/>
+        <ellipse cx="16" cy="16" rx="9" ry="6" fill="#059669" stroke="#ffffff" stroke-width="1"/>
+        <line x1="16" y1="10" x2="16" y2="22" stroke="#ffffff" stroke-width="1"/>
+        <circle cx="16" cy="16" r="2.5" stroke="#ffffff" stroke-width="1" fill="none"/>
+      </svg> تسجيل حجز خارجي (حضوري / هاتفي)</span></h3>
             </div>
 
             <form id="externalBookingForm" onsubmit="return false;">
@@ -575,7 +899,22 @@
 
           <!-- Fields List Header -->
           <div class="section-title-row" style="margin-top:20px;">
-            <h3><span>⚽ الملاعب التابعة للمنشأة</span></h3>
+            <h3><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="m3d-ball-20" cx="14" cy="12" r="13" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="65%" stop-color="#e5e7eb"/>
+            <stop offset="100%" stop-color="#9ca3af"/>
+          </radialGradient>
+        </defs>
+        <circle cx="16" cy="16" r="13" fill="url(#m3d-ball-20)" stroke="#1f2937" stroke-width="0.8"/>
+        <polygon points="16,11 20,14 18.5,19 13.5,19 12,14" fill="#1f2937"/>
+        <line x1="16" y1="11" x2="16" y2="4" stroke="#1f2937" stroke-width="1.2"/>
+        <line x1="20" y1="14" x2="27" y2="12" stroke="#1f2937" stroke-width="1.2"/>
+        <line x1="18.5" y1="19" x2="24" y2="25" stroke="#1f2937" stroke-width="1.2"/>
+        <line x1="13.5" y1="19" x2="8" y2="25" stroke="#1f2937" stroke-width="1.2"/>
+        <line x1="12" y1="14" x2="5" y2="12" stroke="#1f2937" stroke-width="1.2"/>
+      </svg> الملاعب التابعة للمنشأة</span></h3>
             <button type="button" class="btn-primary" id="openAddFieldBtn">+ إضافة ملعب جديد</button>
           </div>
 
@@ -667,7 +1006,19 @@
         <section id="viewCustomers" class="view-section">
           <div class="section-card">
             <div class="section-title-row">
-              <h3><span>👥 قائمة العملاء واللاعبين</span></h3>
+              <h3><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-cust-21" x1="6" y1="6" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="50%" stop-color="#0284c7"/>
+            <stop offset="100%" stop-color="#0369a1"/>
+          </linearGradient>
+        </defs>
+        <circle cx="21" cy="11" r="3.5" fill="#94a3b8"/>
+        <path d="M17 24C17 21 19 19 22 19C25 19 27 21 27 24" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="12" cy="11" r="4.5" fill="url(#m3d-cust-21)"/>
+        <path d="M5 26C5 21.5 8 18.5 12 18.5C16 18.5 19 21.5 19 26" fill="url(#m3d-cust-21)"/>
+      </svg> قائمة العملاء واللاعبين</span></h3>
               <input type="text" id="customerSearchInput" class="form-input" style="height:38px; width:220px;" placeholder="🔍 بحث باسم العميل...">
             </div>
 
@@ -715,7 +1066,20 @@
           <div class="section-card">
             <div class="section-title-row">
               <div>
-                <h3><span>👔 فريق العمل والمشرفين</span></h3>
+                <h3><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-stf-22" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#a78bfa"/>
+            <stop offset="50%" stop-color="#7c3aed"/>
+            <stop offset="100%" stop-color="#5b21b6"/>
+          </linearGradient>
+        </defs>
+        <rect x="6" y="5" width="20" height="23" rx="3.5" fill="url(#m3d-stf-22)"/>
+        <rect x="13" y="3.5" width="6" height="3" rx="1" fill="#fde047"/>
+        <circle cx="16" cy="12" r="3.5" fill="#ffffff"/>
+        <line x1="10" y1="19" x2="22" y2="19" stroke="#ddd6fe" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="12" y1="23" x2="20" y2="23" stroke="#ddd6fe" stroke-width="1.8" stroke-linecap="round"/>
+      </svg> فريق العمل والمشرفين</span></h3>
                 <small style="color:var(--muted);">المصرح لهم بإدارة الحجوزات والمواعيد والتقارير</small>
               </div>
               <button type="button" class="btn-primary" id="openAddStaffModalBtn">+ إضافة موظف جديد</button>
@@ -750,7 +1114,23 @@
                 <small>إجمالي الإيرادات (آخر 30 يوم)</small>
                 <b id="repTotalRev">420,000 <span style="font-size:13px; font-weight:700;">ريال</span></b>
               </div>
-              <div class="kpi-box-icon">💰</div>
+              <div class="kpi-box-icon"><svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-rev-28" x1="16" y1="4" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="35%" stop-color="#fbbf24"/>
+            <stop offset="75%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="16" cy="23" rx="11" ry="4.5" fill="#b45309"/>
+        <ellipse cx="16" cy="21" rx="11" ry="4.5" fill="url(#m3d-rev-28)"/>
+        <ellipse cx="16" cy="16" rx="11" ry="4.5" fill="#b45309"/>
+        <ellipse cx="16" cy="14" rx="11" ry="4.5" fill="url(#m3d-rev-28)"/>
+        <ellipse cx="16" cy="9" rx="11" ry="4.5" fill="#b45309"/>
+        <ellipse cx="16" cy="7" rx="11" ry="4.5" fill="url(#m3d-rev-28)"/>
+        <path d="M12 7C14 6 18 6 20 7" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
+      </svg></div>
             </div>
 
             <div class="kpi-box amber">
@@ -758,7 +1138,28 @@
                 <small>متوسط الإيراد اليومي</small>
                 <b id="repAvgDaily">26,250 <span style="font-size:13px; font-weight:700;">ريال</span></b>
               </div>
-              <div class="kpi-box-icon">📈</div>
+              <div class="kpi-box-icon"><svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-b1-29" x1="8" y1="14" x2="8" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#6ee7b7"/>
+            <stop offset="100%" stop-color="#10b981"/>
+          </linearGradient>
+          <linearGradient id="m3d-b2-30" x1="16" y1="8" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="100%" stop-color="#0284c7"/>
+          </linearGradient>
+          <linearGradient id="m3d-b3-31" x1="24" y1="4" x2="24" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fde047"/>
+            <stop offset="100%" stop-color="#f59e0b"/>
+          </linearGradient>
+        </defs>
+        <rect x="5" y="15" width="6" height="12" rx="2" fill="url(#m3d-b1-29)"/>
+        <rect x="13" y="9" width="6" height="18" rx="2" fill="url(#m3d-b2-30)"/>
+        <rect x="21" y="5" width="6" height="22" rx="2" fill="url(#m3d-b3-31)"/>
+        <ellipse cx="8" cy="15" rx="3" ry="1.2" fill="#d1fae5"/>
+        <ellipse cx="16" cy="9" rx="3" ry="1.2" fill="#e0f2fe"/>
+        <ellipse cx="24" cy="5" rx="3" ry="1.2" fill="#fef9c3"/>
+      </svg></div>
             </div>
 
             <div class="kpi-box blue">
@@ -796,7 +1197,19 @@
             <!-- Settings Card 1 -->
             <div class="section-card">
               <div class="section-title-row">
-                <h3><span>🏢 معلومات المنشأة</span></h3>
+                <h3><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-stad-23" x1="16" y1="5" x2="16" y2="27" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="45%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="16" cy="16" rx="13" ry="10" fill="url(#m3d-stad-23)" stroke="#34d399" stroke-width="1.2"/>
+        <ellipse cx="16" cy="16" rx="9" ry="6" fill="#059669" stroke="#ffffff" stroke-width="1"/>
+        <line x1="16" y1="10" x2="16" y2="22" stroke="#ffffff" stroke-width="1"/>
+        <circle cx="16" cy="16" r="2.5" stroke="#ffffff" stroke-width="1" fill="none"/>
+      </svg> معلومات المنشأة</span></h3>
               </div>
               <div class="form-field">
                 <label>اسم المنشأة</label>
@@ -815,7 +1228,29 @@
             <!-- Settings Card 2 -->
             <div class="section-card">
               <div class="section-title-row">
-                <h3><span>🔔 إشعارات الحجوزات</span></h3>
+                <h3><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-bell-24" x1="16" y1="4" x2="16" y2="25" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef3c7"/>
+            <stop offset="25%" stop-color="#fbbf24"/>
+            <stop offset="70%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+          <linearGradient id="m3d-ring-26" x1="16" y1="2" x2="16" y2="7" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fde68a"/>
+            <stop offset="100%" stop-color="#d97706"/>
+          </linearGradient>
+          <radialGradient id="m3d-clap-25" cx="16" cy="27" r="3" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fbbf24"/>
+            <stop offset="100%" stop-color="#92400e"/>
+          </radialGradient>
+        </defs>
+        <circle cx="16" cy="5" r="3" stroke="url(#m3d-ring-26)" stroke-width="2" fill="none"/>
+        <circle cx="16" cy="26" r="3.2" fill="url(#m3d-clap-25)"/>
+        <path d="M16 6C10.5 6 8.5 11 8 16C7.5 21 5 22.5 5 24H27C27 22.5 24.5 21 24 16C23.5 11 21.5 6 16 6Z" fill="url(#m3d-bell-24)"/>
+        <rect x="4" y="22.5" width="24" height="2.5" rx="1.25" fill="#fef3c7" opacity="0.9"/>
+        <path d="M10 11C11.5 8 14 7 16 7" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+      </svg> إشعارات الحجوزات</span></h3>
               </div>
               <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
                 <label style="display:flex; align-items:center; gap:8px;">
@@ -836,7 +1271,25 @@
             <!-- Settings Card 3 -->
             <div class="section-card">
               <div class="section-title-row">
-                <h3><span>⚖️ سياسة الحجز والإلغاء</span></h3>
+                <h3><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-clip-27" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="50%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+          <linearGradient id="m3d-paper-28" x1="8" y1="8" x2="24" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#e2e8f0"/>
+          </linearGradient>
+        </defs>
+        <rect x="5" y="6" width="22" height="22" rx="4" fill="url(#m3d-clip-27)"/>
+        <rect x="8" y="9" width="16" height="17" rx="2" fill="url(#m3d-paper-28)"/>
+        <rect x="12" y="3" width="8" height="5" rx="1.5" fill="#047857"/>
+        <line x1="11" y1="14" x2="21" y2="14" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="11" y1="18" x2="21" y2="18" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="11" y1="22" x2="17" y2="22" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+      </svg> سياسة الحجز والإلغاء</span></h3>
               </div>
               <p style="font-size:12.5px; color:var(--muted); line-height:1.7;">
                 • مهلة استجابة المنشأة للطلب: <b>10 دقائق</b> قبل إلغاء الطلب تلقائياً.<br>
@@ -848,7 +1301,20 @@
             <!-- Settings Card 4 -->
             <div class="section-card">
               <div class="section-title-row">
-                <h3><span>🔒 الحساب والأمان</span></h3>
+                <h3><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-key-29" x1="6" y1="6" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="35%" stop-color="#fbbf24"/>
+            <stop offset="75%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+        <circle cx="12" cy="12" r="7" stroke="url(#m3d-key-29)" stroke-width="3" fill="none"/>
+        <circle cx="12" cy="12" r="3.2" fill="url(#m3d-key-29)"/>
+        <path d="M17 17L27 27M24 24L26.5 21.5M21 27L23.5 24.5" stroke="url(#m3d-key-29)" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="10" cy="10" r="1.2" fill="#ffffff" opacity="0.9"/>
+      </svg> الحساب والأمان</span></h3>
               </div>
               <div class="form-field">
                 <label>البريد الإلكتروني الحالي</label>
@@ -856,10 +1322,33 @@
               </div>
               <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
                 <button type="button" class="btn-outline" id="openChangePassBtn" style="color:var(--ink);">
-                  🔑 تغيير كلمة المرور
+                  <span style="display:inline-flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-key-30" x1="6" y1="6" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="35%" stop-color="#fbbf24"/>
+            <stop offset="75%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+        <circle cx="12" cy="12" r="7" stroke="url(#m3d-key-30)" stroke-width="3" fill="none"/>
+        <circle cx="12" cy="12" r="3.2" fill="url(#m3d-key-30)"/>
+        <path d="M17 17L27 27M24 24L26.5 21.5M21 27L23.5 24.5" stroke="url(#m3d-key-30)" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="10" cy="10" r="1.2" fill="#ffffff" opacity="0.9"/>
+      </svg> تغيير كلمة المرور</span>
                 </button>
                 <button type="button" class="btn-outline" style="color:var(--red); border-color:var(--red);" onclick="document.getElementById('logoutBtn').click()">
-                  🚪 تسجيل الخروج من البوابة
+                  <span style="display:inline-flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-door-31" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f87171"/>
+            <stop offset="50%" stop-color="#ef4444"/>
+            <stop offset="100%" stop-color="#b91c1c"/>
+          </linearGradient>
+        </defs>
+        <rect x="6" y="4" width="13" height="24" rx="2" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <path d="M19 16H29M25 12L29 16L25 20" stroke="url(#m3d-door-31)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg> تسجيل الخروج من البوابة</span>
                 </button>
               </div>
             </div>
@@ -872,28 +1361,93 @@
     <!-- Bottom Navigation Bar (5 Primary Sections) -->
     <nav class="bottom-nav">
       <button type="button" class="b-nav-item active" data-view="dashboard">
-        <span class="b-nav-icon">🏠</span>
+        <span class="b-nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-h1-32" x1="16" y1="3" x2="16" y2="17" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="40%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#059669"/>
+          </linearGradient>
+          <linearGradient id="m3d-h2-33" x1="16" y1="13" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ecfdf5"/>
+            <stop offset="100%" stop-color="#d1fae5"/>
+          </linearGradient>
+        </defs>
+        <path d="M16 3L4 14H8V27C8 27.5 8.5 28 9 28H23C23.5 28 24 27.5 24 27V14H28L16 3Z" fill="url(#m3d-h1-32)"/>
+        <path d="M13 28V19C13 18.5 13.5 18 14 18H18C18.5 18 19 18.5 19 19V28H13Z" fill="#047857"/>
+      </svg></span>
         <span class="b-nav-text">الرئيسية</span>
       </button>
 
       <button type="button" class="b-nav-item" data-view="bookings">
-        <span class="b-nav-icon">📋</span>
+        <span class="b-nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-clip-34" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="50%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+          <linearGradient id="m3d-paper-35" x1="8" y1="8" x2="24" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#e2e8f0"/>
+          </linearGradient>
+        </defs>
+        <rect x="5" y="6" width="22" height="22" rx="4" fill="url(#m3d-clip-34)"/>
+        <rect x="8" y="9" width="16" height="17" rx="2" fill="url(#m3d-paper-35)"/>
+        <rect x="12" y="3" width="8" height="5" rx="1.5" fill="#047857"/>
+        <line x1="11" y1="14" x2="21" y2="14" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="11" y1="18" x2="21" y2="18" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="11" y1="22" x2="17" y2="22" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/>
+      </svg></span>
         <span class="b-nav-text">الحجوزات</span>
         <span class="b-nav-badge" id="bottomNavPendingBadge" style="display:none;">0</span>
       </button>
 
       <button type="button" class="b-nav-item" data-view="schedule">
-        <span class="b-nav-icon">📅</span>
+        <span class="b-nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-cal1-36" x1="16" y1="4" x2="16" y2="11" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="100%" stop-color="#059669"/>
+          </linearGradient>
+          <linearGradient id="m3d-cal2-37" x1="16" y1="11" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#f3f4f6"/>
+          </linearGradient>
+        </defs>
+        <rect x="4" y="6" width="24" height="22" rx="4" fill="url(#m3d-cal2-37)" stroke="#e5e7eb" stroke-width="1"/>
+        <path d="M4 10C4 7.8 5.8 6 8 6H24C26.2 6 28 7.8 28 10V12H4V10Z" fill="url(#m3d-cal1-36)"/>
+        <rect x="9" y="3.5" width="2.5" height="5" rx="1.25" fill="#fde047"/>
+        <rect x="20.5" y="3.5" width="2.5" height="5" rx="1.25" fill="#fde047"/>
+        <circle cx="10" cy="17" r="1.5" fill="#10b981"/>
+        <circle cx="16" cy="17" r="1.5" fill="#10b981"/>
+        <circle cx="22" cy="17" r="1.5" fill="#9ca3af"/>
+        <circle cx="10" cy="22" r="1.5" fill="#9ca3af"/>
+        <circle cx="16" cy="22" r="1.5" fill="#3b82f6"/>
+        <circle cx="22" cy="22" r="1.5" fill="#10b981"/>
+      </svg></span>
         <span class="b-nav-text">التقويم</span>
       </button>
 
       <button type="button" class="b-nav-item" data-view="walkin">
-        <span class="b-nav-icon">🏟️</span>
+        <span class="b-nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m3d-stad-38" x1="16" y1="5" x2="16" y2="27" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="45%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="16" cy="16" rx="13" ry="10" fill="url(#m3d-stad-38)" stroke="#34d399" stroke-width="1.2"/>
+        <ellipse cx="16" cy="16" rx="9" ry="6" fill="#059669" stroke="#ffffff" stroke-width="1"/>
+        <line x1="16" y1="10" x2="16" y2="22" stroke="#ffffff" stroke-width="1"/>
+        <circle cx="16" cy="16" r="2.5" stroke="#ffffff" stroke-width="1" fill="none"/>
+      </svg></span>
         <span class="b-nav-text">حجز خارجي</span>
       </button>
 
       <button type="button" class="b-nav-item" id="bottomNavMoreBtn">
-        <span class="b-nav-icon">☰</span>
+        <span class="b-nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span>
         <span class="b-nav-text">المزيد</span>
       </button>
     </nav>
@@ -1126,8 +1680,9 @@
   <div id="toastBar" class="toast-bar"></div>
 
   <!-- Scripts -->
-  <script src="./config.js?v=1.1.3"></script>
-  <script src="./api-client.js?v=1.1.3"></script>
-  <script src="./app.js?v=1.1.3"></script>
+  <script src="./icons3d.js?v=1.1.4"></script>
+  <script src="./config.js?v=1.1.4"></script>
+  <script src="./api-client.js?v=1.1.4"></script>
+  <script src="./app.js?v=1.1.4"></script>
 </body>
 </html>
