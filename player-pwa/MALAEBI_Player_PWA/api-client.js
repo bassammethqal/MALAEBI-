@@ -4,9 +4,21 @@
  async function raw(path,options={},token=null){
   const headers={'Content-Type':'application/json',...(options.headers||{})};
   if(token) headers.Authorization=`Bearer ${token}`;
-  const response=await fetch(base+path,{...options,headers});
-  const body=response.status===204?null:await response.json().catch(()=>null);
-  return {response,body};
+  const controller = new AbortController();
+  const timeoutMs = options.timeout || 30000;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(base+path, {...options, headers, signal: options.signal || controller.signal});
+    const body = response.status===204 ? null : await response.json().catch(()=>null);
+    return {response, body};
+  } catch(err) {
+    if(err.name === 'AbortError') {
+      throw new Error('استغرق الخادم وقتاً أطول للاستجابة (جاري إيقاظ الخادم). يرجى المحاولة مجدداً.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
  }
  async function request(path,options={}) {
   if(!base) throw new Error('عنوان API غير مضبوط في config.js');

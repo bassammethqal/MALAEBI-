@@ -7,7 +7,7 @@
   <meta name="description" content="ملاعبي — اكتشف ملاعب كرة القدم واحجز ملعبك بسهولة في مأرب" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=12" />
+  <link rel="stylesheet" href="styles.css?v=13" />
   <title>ملاعبي | احجز ملعبك</title>
 </head>
 <body>
@@ -40,7 +40,7 @@
         <div class="page-title"><span class="section-kicker">اعثر على ملعبك</span><h1>ابحث عن ملعب</h1><p>اختر المنطقة والسعر والمرافق المناسبة لك.</p></div>
         <label class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="ابحث باسم الملعب أو المنطقة" /><button id="clearSearch" aria-label="مسح البحث">×</button></label>
         <div class="filter-row"><button class="filter-chip active" data-sort="recommended">الأقرب لك</button><button class="filter-chip" data-sort="price_asc">السعر الأقل</button><button class="filter-chip" data-sort="rating_desc">الأعلى تقييماً</button></div>
-        <div class="filter-panel"><div><b>نطاق السعر</b><strong id="priceLabel">حتى 15,000 ريال</strong></div><input id="priceRange" type="range" min="3000" max="20000" step="1000" value="15000" /></div>
+        <div class="filter-panel"><div><b>نطاق السعر</b><strong id="priceLabel">حتى 50,000 ريال</strong></div><input id="priceRange" type="range" min="3000" max="50000" step="1000" value="50000" /></div>
         <div class="section-head compact"><h2>النتائج <span class="result-count" id="resultCount"></span></h2><button class="text-btn" id="resetFilters">إعادة ضبط</button></div>
         <div class="venue-list" id="searchVenues"></div>
         <div class="empty-state hidden" id="emptySearch"><span>⌕</span><b>لم نعثر على ملاعب مطابقة</b><small>جرّب تغيير كلمات البحث أو نطاق السعر.</small></div>
@@ -433,7 +433,7 @@
 
   <div class="modal-backdrop hidden" id="modalBackdrop"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose">×</button><div id="modalContent"></div></div></div>
   <div class="toast" id="toast" role="status"></div>
-  <script src="assets/js/qrcode.min.js?v=12"></script>
-  <script src="config.js?v=12"></script><script src="api-client.js?v=12"></script><script src="app.js?v=12"></script>
+  <script src="assets/js/qrcode.min.js?v=13"></script>
+  <script src="config.js?v=13"></script><script src="api-client.js?v=13"></script><script src="app.js?v=13"></script>
 </body>
 </html>

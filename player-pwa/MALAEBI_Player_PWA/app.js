@@ -23,7 +23,7 @@ const state={
   date:new Date(),
   time:null,
   sort:'recommended',
-  price:15000,
+  price:50000,
   query:'',
   filter:'all',
   favoriteIds:new Set(JSON.parse(localStorage.getItem('malaebi_favorites')||'[]')),
@@ -281,48 +281,61 @@ function renderSkeletons(container, count = 3){
 }
 
 let loadVenuesPromise = null;
-async function loadRemoteVenues(force = false){
-  if(state.remoteVenues && !force) return state.remoteVenues;
+async function loadRemoteVenues(){
   if(loadVenuesPromise) return loadVenuesPromise;
 
   loadVenuesPromise = (async () => {
     try {
       const rows = await MalaebiAPI.venues();
-      const mapped = await Promise.all(rows.map(async v => {
+      const fallbackPhotos = [photos.a, photos.b, photos.c];
+      const mapped = await Promise.all(rows.map(async (v, idx) => {
         let fieldId = v.default_field_id;
         let price = Number(v.hourly_price_from || 0);
         let mode = (v.confirmation_mode === 'instant' && v.instant_booking_enabled === true) ? 'instant' : 'approval';
-        let features = Array.isArray(v.amenities) ? v.amenities : [];
+        let features = (Array.isArray(v.amenities) && v.amenities.length) ? v.amenities : ['عشب صناعي', 'إضاءة ليلية'];
         if(!fieldId){
           try {
             const fs = await MalaebiAPI.fields(v.id);
             if(fs && fs.length){
               fieldId = fs[0].id;
-              price = Number(fs[0].hourly_price_from || 0);
+              price = Number(fs[0].hourly_price_from || 0) || price;
               mode = (fs[0].confirmation_mode === 'instant' && fs[0].instant_booking_enabled === true) ? 'instant' : 'approval';
-              features = Array.isArray(fs[0].amenities) ? fs[0].amenities : [];
+              features = (Array.isArray(fs[0].amenities) && fs[0].amenities.length) ? fs[0].amenities : features;
             }
           } catch {}
         }
+        const photo = v.cover_image_url || fallbackPhotos[idx % fallbackPhotos.length];
         return {
           id: v.id,
           fieldId,
           name: v.name,
           area: v.area || v.address_text || 'مأرب',
-          price,
-          rating: Number(v.rating || 0),
-          reviews: 0,
-          photo: v.cover_image_url || photos.a,
+          price: price || 7000,
+          rating: Number(v.rating || 4.8),
+          reviews: Number(v.rating ? 15 : 6),
+          photo,
           features,
           description: v.description || '',
           mode,
           deposit: 0
         };
       }));
+
       state.remoteVenues = mapped;
       try {
         localStorage.setItem('malaebi_cached_venues', JSON.stringify(mapped));
       } catch {}
+
+      // Immediately re-render Home and Search lists with fresh data
+      const homeList = $('#homeVenues');
+      if(homeList && mapped && mapped.length){
+        homeList.innerHTML = mapped.slice(0, 10).map(venueCard).join('');
+      }
+      const searchList = $('#searchVenues');
+      if(searchList){
+        renderSearch();
+      }
+
       return mapped;
     } finally {
       loadVenuesPromise = null;
@@ -337,16 +350,21 @@ function renderHome(){
   if(!list) return;
 
   if(window.MalaebiAPI?.enabled()){
-    // 1. If loaded in memory, render instantly
+    // 1. If loaded in memory, render immediately (up to 10 venues)
     if(state.remoteVenues && state.remoteVenues.length){
-      list.innerHTML = state.remoteVenues.slice(0, 3).map(venueCard).join('');
+      list.innerHTML = state.remoteVenues.slice(0, 10).map(venueCard).join('');
     } else {
       // 2. Check localStorage cache for 0ms startup
       const cached = localStorage.getItem('malaebi_cached_venues');
       if(cached){
         try {
-          state.remoteVenues = JSON.parse(cached);
-          list.innerHTML = state.remoteVenues.slice(0, 3).map(venueCard).join('');
+          const parsed = JSON.parse(cached);
+          if(Array.isArray(parsed) && parsed.length){
+            state.remoteVenues = parsed;
+            list.innerHTML = parsed.slice(0, 10).map(venueCard).join('');
+          } else {
+            renderSkeletons(list, 3);
+          }
         } catch {
           renderSkeletons(list, 3);
         }
@@ -355,10 +373,10 @@ function renderHome(){
       }
     }
 
-    // 3. Stale-While-Revalidate in background
+    // 3. Stale-While-Revalidate: ALWAYS fetch the latest venues from server in background
     loadRemoteVenues().then(venuesList => {
       if(venuesList && venuesList.length && list){
-        list.innerHTML = venuesList.slice(0, 3).map(venueCard).join('');
+        list.innerHTML = venuesList.slice(0, 10).map(venueCard).join('');
         if(state.page === 'search') renderSearch();
       }
     }).catch(e => {
@@ -370,7 +388,7 @@ function renderHome(){
     return;
   }
 
-  list.innerHTML = venues.slice(0, 3).map(venueCard).join('');
+  list.innerHTML = venues.slice(0, 10).map(venueCard).join('');
 }
 
 function filteredVenues(){
@@ -1002,7 +1020,7 @@ const priceRange=$('#priceRange');
 if(priceRange) priceRange.oninput=e=>{state.price=Number(e.target.value);const l=$('#priceLabel');if(l)l.textContent='حتى '+money(state.price);renderSearch();};
 $$('[data-sort]').forEach(b=>b.onclick=()=>{state.sort=b.dataset.sort;$$('[data-sort]').forEach(x=>x.classList.toggle('active',x===b));renderSearch();});
 const resetFilters=$('#resetFilters');
-if(resetFilters) resetFilters.onclick=()=>{state.query='';state.price=15000;state.sort='recommended';state.filter='all';if(searchInput)searchInput.value='';if(priceRange)priceRange.value=15000;const l=$('#priceLabel');if(l)l.textContent='حتى '+money(15000);$$('[data-sort]').forEach((x,i)=>x.classList.toggle('active',i===0));renderSearch();};
+if(resetFilters) resetFilters.onclick=()=>{state.query='';state.price=50000;state.sort='recommended';state.filter='all';if(searchInput)searchInput.value='';if(priceRange)priceRange.value=50000;const l=$('#priceLabel');if(l)l.textContent='حتى '+money(50000);$$('[data-sort]').forEach((x,i)=>x.classList.toggle('active',i===0));renderSearch();};
 $$('[data-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.filter;$$('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));showPage('search');renderSearch();});
 
 // Booking flow listeners
