@@ -112,6 +112,232 @@ function render3DStars(score, size = 15) {
   return '★'.repeat(round) + '☆'.repeat(Math.max(0, 5 - round));
 }
 
+
+// ==================== MALAEBI CUSTOM CONFIRM & PWA INSTALL SYSTEM ====================
+function showConfirmDialog(options = {}) {
+  const {
+    title = 'تأكيد الإجراء',
+    message = 'هل أنت متأكد من المتابعة؟',
+    confirmText = 'تأكيد',
+    cancelText = 'تراجع',
+    danger = false,
+    icon = null
+  } = options;
+
+  return new Promise((resolve) => {
+    let dialog = document.getElementById('malaebiConfirmDialog');
+    if (!dialog) {
+      dialog = document.createElement('div');
+      dialog.id = 'malaebiConfirmDialog';
+      dialog.className = 'malaebi-confirm-backdrop hidden';
+      dialog.innerHTML = `
+        <div class="malaebi-confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitleText">
+          <div class="malaebi-confirm-icon-wrap" id="malaebiConfirmIcon"></div>
+          <h3 class="malaebi-confirm-title" id="confirmTitleText"></h3>
+          <p class="malaebi-confirm-message" id="malaebiConfirmMessage"></p>
+          <div class="malaebi-confirm-actions">
+            <button type="button" class="malaebi-confirm-btn ok-primary" id="malaebiConfirmOk"></button>
+            <button type="button" class="malaebi-confirm-btn btn-cancel" id="malaebiConfirmCancel"></button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(dialog);
+    }
+
+    const card = dialog.querySelector('.malaebi-confirm-card');
+    const iconEl = dialog.querySelector('#malaebiConfirmIcon');
+    const titleEl = dialog.querySelector('#confirmTitleText');
+    const msgEl = dialog.querySelector('#malaebiConfirmMessage');
+    const okBtn = dialog.querySelector('#malaebiConfirmOk');
+    const cancelBtn = dialog.querySelector('#malaebiConfirmCancel');
+
+    card.classList.toggle('is-danger', Boolean(danger));
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+    okBtn.textContent = confirmText;
+    cancelBtn.textContent = cancelText;
+
+    if (danger) {
+      okBtn.className = 'malaebi-confirm-btn ok-danger';
+    } else {
+      okBtn.className = 'malaebi-confirm-btn ok-primary';
+    }
+
+    if (icon) {
+      iconEl.innerHTML = icon;
+      iconEl.style.display = 'flex';
+    } else if (window.MalaebiIcons3D) {
+      iconEl.innerHTML = danger ? window.MalaebiIcons3D.door(28) : window.MalaebiIcons3D.checkBadge(28);
+      iconEl.style.display = 'flex';
+    } else {
+      iconEl.innerHTML = danger ? '⚠️' : '✓';
+      iconEl.style.display = 'flex';
+    }
+
+    dialog.classList.remove('hidden');
+    requestAnimationFrame(() => dialog.classList.add('visible'));
+
+    const cleanup = (result) => {
+      dialog.classList.remove('visible');
+      setTimeout(() => dialog.classList.add('hidden'), 220);
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      dialog.onclick = null;
+      document.removeEventListener('keydown', keyHandler);
+      resolve(result);
+    };
+
+    const keyHandler = (e) => {
+      if (e.key === 'Escape') cleanup(false);
+      if (e.key === 'Enter') cleanup(true);
+    };
+
+    okBtn.onclick = () => cleanup(true);
+    cancelBtn.onclick = () => cleanup(false);
+    dialog.onclick = (e) => {
+      if (e.target === dialog) cleanup(false);
+    };
+    document.addEventListener('keydown', keyHandler);
+  });
+}
+
+let deferredPwaPrompt = null;
+function setupPwaInstallPrompt(appName = 'ملاعبي', appSubtitle = 'وصول أسرع وحجز بضغطة واحدة') {
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+  const updateInstallButton = (canInstall) => {
+    const btn = document.getElementById('accountInstallBtn') || document.getElementById('drawerInstallBtn');
+    if (!btn) return;
+    if (isStandalone) {
+      const sub = btn.querySelector('small') || document.getElementById('accountInstallSubtitle');
+      if (sub) sub.textContent = 'التطبيق مثبت على جهازك ✓';
+      btn.style.opacity = '0.7';
+    } else {
+      btn.style.display = 'flex';
+    }
+  };
+
+  const showInstallBanner = (isIosPrompt = false) => {
+    let sheet = document.getElementById('malaebiInstallSheet');
+    if (!sheet) {
+      sheet = document.createElement('div');
+      sheet.id = 'malaebiInstallSheet';
+      sheet.className = 'malaebi-install-sheet';
+      document.body.appendChild(sheet);
+    }
+
+    if (isIosPrompt) {
+      sheet.innerHTML = `
+        <div class="malaebi-install-card">
+          <div class="malaebi-install-top">
+            <img src="assets/images/logo.svg" alt="${appName}" class="malaebi-install-logo" />
+            <div class="malaebi-install-info">
+              <h4 class="malaebi-install-title">ثبّت ${appName} على شاشة الآيفون</h4>
+              <p class="malaebi-install-desc">${appSubtitle}</p>
+            </div>
+          </div>
+          <div class="malaebi-ios-steps">
+            اضغط على زر المشاركة <b>(Share ⎋)</b> في شريط متصفح سفاري، ثم مرّر للأسفل واختر <b>«إضافة إلى الشاشة الرئيسية ⊞»</b>.
+          </div>
+          <div class="malaebi-install-actions">
+            <button type="button" class="malaebi-install-btn primary" id="pwaIosUnderstoodBtn">حسناً، فهمت</button>
+            <button type="button" class="malaebi-install-btn secondary" id="pwaDismissInstallBtn">إغلاق</button>
+          </div>
+        </div>
+      `;
+    } else {
+      sheet.innerHTML = `
+        <div class="malaebi-install-card">
+          <div class="malaebi-install-top">
+            <img src="assets/images/logo.svg" alt="${appName}" class="malaebi-install-logo" />
+            <div class="malaebi-install-info">
+              <h4 class="malaebi-install-title">ثبّت تطبيق ${appName} على هاتفك</h4>
+              <p class="malaebi-install-desc">${appSubtitle}</p>
+            </div>
+          </div>
+          <div class="malaebi-install-actions">
+            <button type="button" class="malaebi-install-btn primary" id="pwaInstallNowBtn">📲 تثبيت التطبيق</button>
+            <button type="button" class="malaebi-install-btn secondary" id="pwaDismissInstallBtn">لاحقاً</button>
+          </div>
+        </div>
+      `;
+    }
+
+    requestAnimationFrame(() => sheet.classList.add('visible'));
+
+    sheet.querySelector('#pwaInstallNowBtn')?.addEventListener('click', async () => {
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        const { outcome } = await deferredPwaPrompt.userChoice;
+        if (outcome === 'accepted') {
+          hideInstallBanner();
+        }
+        deferredPwaPrompt = null;
+      }
+    });
+
+    sheet.querySelector('#pwaIosUnderstoodBtn')?.addEventListener('click', () => {
+      localStorage.setItem('malaebi_ios_install_dismissed', 'true');
+      hideInstallBanner();
+    });
+
+    sheet.querySelector('#pwaDismissInstallBtn')?.addEventListener('click', () => {
+      localStorage.setItem('malaebi_install_dismissed_until', String(Date.now() + 7 * 86400000));
+      hideInstallBanner();
+    });
+  };
+
+  const hideInstallBanner = () => {
+    const sheet = document.getElementById('malaebiInstallSheet');
+    if (sheet) {
+      sheet.classList.remove('visible');
+    }
+  };
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPwaPrompt = e;
+    updateInstallButton(true);
+
+    const dismissedUntil = localStorage.getItem('malaebi_install_dismissed_until');
+    if (!dismissedUntil || Date.now() > Number(dismissedUntil)) {
+      setTimeout(() => showInstallBanner(false), 2000);
+    }
+  });
+
+  window.addEventListener('appinstalled', () => {
+    hideInstallBanner();
+    deferredPwaPrompt = null;
+    updateInstallButton(false);
+    if (typeof toast === 'function') toast('شكراً لك! تم تثبيت التطبيق بنجاح 🎉');
+    else if (typeof showToast === 'function') showToast('شكراً لك! تم تثبيت التطبيق بنجاح 🎉', 'success');
+  });
+
+  if (isIos && !isStandalone) {
+    const dismissedIos = localStorage.getItem('malaebi_ios_install_dismissed');
+    if (!dismissedIos) {
+      setTimeout(() => showInstallBanner(true), 2500);
+    }
+  }
+
+  const manualBtn = document.getElementById('accountInstallBtn') || document.getElementById('drawerInstallBtn');
+  if (manualBtn) {
+    manualBtn.addEventListener('click', () => {
+      if (deferredPwaPrompt) {
+        showInstallBanner(false);
+      } else if (isIos) {
+        showInstallBanner(true);
+      } else {
+        if (typeof toast === 'function') toast('التطبيق جاهز للتثبيت أو مثبت بالفعل على جهازك.');
+        else if (typeof showToast === 'function') showToast('التطبيق جاهز للتثبيت أو مثبت بالفعل على جهازك.', 'info');
+      }
+    });
+  }
+
+  updateInstallButton(Boolean(deferredPwaPrompt));
+}
+
 function updateThemeIcons(isDark){
   const moon = $('.theme-moon');
   const sun = $('.theme-sun');
@@ -1281,7 +1507,14 @@ async function renderBookingDetail(){
     btn.className='secondary-btn full';
     btn.textContent='إلغاء الحجز';
     btn.onclick=async()=>{
-      if(!confirm('هل تريد إلغاء هذا الحجز؟')) return;
+      const ok = await showConfirmDialog({
+        title: 'إلغاء الحجز',
+        message: 'هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟',
+        confirmText: 'نعم، إلغاء الحجز',
+        cancelText: 'الاحتفاظ بالحجز',
+        danger: true
+      });
+      if(!ok) return;
       if(window.MalaebiAPI?.enabled()&&b.serverId){
         try{
           const r=await MalaebiAPI.cancelBooking(b.serverId);
@@ -1555,19 +1788,29 @@ if(submitReview){
 // Account Logout Button
 const accountLogoutBtn=$('#accountLogoutBtn');
 if(accountLogoutBtn){
-  accountLogoutBtn.onclick=()=>{
-    if(confirm('هل أنت متأكد من رغبتك في تسجيل الخروج؟')){
-      performLogout();
-    }
+  accountLogoutBtn.onclick=async()=>{
+    const ok = await showConfirmDialog({
+      title: 'تسجيل الخروج',
+      message: 'هل أنت متأكد من رغبتك في تسجيل الخروج وإنهاء جلستك الحالية؟',
+      confirmText: 'تسجيل الخروج',
+      cancelText: 'إلغاء',
+      danger: true
+    });
+    if(ok) performLogout();
   };
 }
 
 const settingsLogout=$('#settingsLogout');
 if(settingsLogout){
-  settingsLogout.onclick=()=>{
-    if(confirm('هل أنت متأكد من رغبتك في تسجيل الخروج؟')){
-      performLogout();
-    }
+  settingsLogout.onclick=async()=>{
+    const ok = await showConfirmDialog({
+      title: 'تسجيل الخروج',
+      message: 'هل أنت متأكد من رغبتك في تسجيل الخروج وإنهاء جلستك الحالية؟',
+      confirmText: 'تسجيل الخروج',
+      cancelText: 'إلغاء',
+      danger: true
+    });
+    if(ok) performLogout();
   };
 }
 
@@ -1609,7 +1852,14 @@ if(settingMatchReminder){
 const settingClearCache=$('#settingClearCache');
 if(settingClearCache){
   settingClearCache.onclick=async()=>{
-    if(!confirm('هل تريد مسح ملفات الكاش وتحديث التطبيق لأحدث نسخة؟')) return;
+    const ok = await showConfirmDialog({
+      title: 'تحديث بيانات التطبيق',
+      message: 'هل ترغب بإعادة تنزيل أحدث ملفات الواجهة ومسح الذاكرة المؤقتة لضمان الحصول على آخر التحديثات؟',
+      confirmText: 'تحديث الآن',
+      cancelText: 'إلغاء',
+      danger: false
+    });
+    if(!ok) return;
     if('caches' in window){
       try{
         const keys = await caches.keys();
@@ -1722,3 +1972,5 @@ document.addEventListener('keydown',e=>{
   const el=e.target;
   if(el.matches('.otp-inputs input')&&e.key==='Backspace'&&!el.value&&el.previousElementSibling) el.previousElementSibling.focus();
 });
+
+setupPwaInstallPrompt('ملاعبي', 'وصول أسرع وحجز بضغطة واحدة');
