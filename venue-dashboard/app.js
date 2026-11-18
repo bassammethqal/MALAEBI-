@@ -2218,6 +2218,20 @@ function initTheme() {
       .replace(/'/g, '&#039;');
   }
 
+  // Admin Contact Information
+  const ADMIN_CONTACT = {
+    phone: '773461637',
+    intlPhone: '967773461637',
+    email: 'malaebi12@gmail.com',
+    whatsappMessage: 'السلام عليكم إدارة منصة ملاعبي، أرغب في تسجيل منشأتي الرياضية وإضافتها في التطبيق.'
+  };
+
+  function contactAdmin(customMessage) {
+    const text = encodeURIComponent(customMessage || ADMIN_CONTACT.whatsappMessage);
+    const url = 'https://wa.me/' + ADMIN_CONTACT.intlPhone + '?text=' + text;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
   // Global API exposure
   window.MalaebiApp = {
     switchView: switchView,
@@ -2225,7 +2239,9 @@ function initTheme() {
     approveBooking: handleApprove,
     openRejectModal: openRejectModal,
     completeBooking: handleComplete,
-    removeMember: handleRemoveMember
+    removeMember: handleRemoveMember,
+    contactAdmin: contactAdmin,
+    ADMIN_CONTACT: ADMIN_CONTACT
   };
 
   // Run on load
