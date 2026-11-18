@@ -99,8 +99,11 @@ a { text-decoration: none; color: inherit; }
   inset: 0;
   z-index: 100;
   display: flex;
-  background: #ffffff;
+  background: var(--card);
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .login-left-banner {
@@ -1223,8 +1226,82 @@ body.dark-mode .time-slot-card.available {
 
 /* Responsive Overrides */
 @media (max-width: 860px) {
-  .login-screen-split { flex-direction: column; }
-  .login-left-banner { padding: 32px 20px; flex: auto; }
+  .login-screen-split {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    position: fixed;
+    inset: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--card);
+  }
+  .login-left-banner {
+    flex: none;
+    padding: 24px 16px 20px;
+    min-height: auto;
+    justify-content: center;
+  }
+  .login-left-banner::before {
+    display: none;
+  }
+  .login-banner-logo {
+    width: 68px;
+    height: 68px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+  .login-banner-logo img {
+    width: 46px;
+    height: 46px;
+  }
+  .login-banner-title {
+    font-size: 26px;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .login-banner-badge {
+    padding: 4px 14px;
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  .login-banner-subtitle {
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 320px;
+  }
+  .login-right-form {
+    flex: 1;
+    padding: 20px 18px 28px;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .login-box {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .login-box h2 {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  .login-box p {
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .form-field {
+    margin-bottom: 14px;
+  }
+  .form-input {
+    height: 44px;
+    font-size: 13.5px;
+  }
+  .login-btn {
+    height: 46px;
+    font-size: 14.5px;
+  }
 }
 @media (max-width: 480px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
