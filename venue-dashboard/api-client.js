@@ -1,14 +1,21 @@
 /* MALAEBI Venue Ops Dashboard — API Client */
 (function(window){
-  const CONFIG = window.MALAEBI_OWNER_CONFIG || { API_BASE_URL: 'http://localhost:3000/api/v1' };
-  const BASE_URL = CONFIG.API_BASE_URL.replace(/\/+$/, '');
+  function getBaseUrl(){
+    const cfg = window.MALAEBI_OWNER_CONFIG;
+    if (cfg && cfg.API_BASE_URL) return cfg.API_BASE_URL.replace(/\/+$/, '');
+    if (typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+      return 'http://localhost:3001/api/v1';
+    }
+    return 'https://malaebi-api.onrender.com/api/v1';
+  }
 
   const TOKEN_KEY = 'malaebi_owner_access_token';
   const REFRESH_KEY = 'malaebi_owner_refresh_token';
   const USER_KEY = 'malaebi_owner_user';
 
   async function request(endpoint, options = {}){
-    const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+    const base = getBaseUrl();
+    const url = `${base}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
     const token = localStorage.getItem(TOKEN_KEY);
     const headers = {
       'Content-Type': 'application/json',
@@ -16,11 +23,20 @@
       ...(options.headers || {})
     };
 
+    const controller = new AbortController();
+    const timeoutMs = options.timeout || 35000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
     let res;
     try {
-      res = await fetch(url, { ...options, headers });
+      res = await fetch(url, { ...options, headers, signal: options.signal || controller.signal });
     } catch (netErr) {
+      if (netErr.name === 'AbortError') {
+        throw new Error('استغرق الخادم وقتاً أطول للاستجابة أثناء الاستيقاظ. يرجى إعادة المحاولة.');
+      }
       throw new Error('تعذر الاتصال بالخادم، تحقق من اتصال الإنترنت أو حالة الخدمة');
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     let data;

@@ -19,6 +19,7 @@ async function bootstrap() {
         envOrigins.includes(origin) ||
         /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
         /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin) ||
+        /\.vercel\.app$/.test(origin) ||
         (process.env.PUBLIC_APP_URL && origin === process.env.PUBLIC_APP_URL)
       ) {
         callback(null, true);
