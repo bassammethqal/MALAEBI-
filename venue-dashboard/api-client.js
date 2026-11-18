@@ -18,7 +18,7 @@
     const url = `${base}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
     const token = localStorage.getItem(TOKEN_KEY);
     const headers = {
-      'Content-Type': 'application/json',
+      ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...(options.headers || {})
     };
@@ -251,6 +251,26 @@
       return request(`/venues/${venueId}/fields`, {
         method: 'POST',
         body: JSON.stringify(dto)
+      });
+    },
+
+    async getVenueImages(venueId){
+      return request(`/venues/${venueId}/images`);
+    },
+
+    async uploadVenueImage(venueId, file){
+      const fd = new FormData();
+      fd.append('file', file);
+      return request(`/venues/${venueId}/images`, {
+        method: 'POST',
+        body: fd,
+        timeout: 60000
+      });
+    },
+
+    async deleteVenueImage(venueId, imageId){
+      return request(`/venues/${venueId}/images/${imageId}`, {
+        method: 'DELETE'
       });
     },
 

@@ -12,6 +12,7 @@ export class PlayerService {
   if(q.q){values.push(`%${String(q.q).slice(0,100)}%`);where.push(`(v.name ILIKE $${values.length} OR COALESCE(v.description,'') ILIKE $${values.length} OR COALESCE(v.address_text,'') ILIKE $${values.length})`)}
   const r=await this.db.query<any>(`SELECT v.id,v.name,v.description,v.address_text,v.status,a.name area,
     (SELECT image_url FROM venue_images vi WHERE vi.venue_id=v.id ORDER BY sort_order LIMIT 1) cover_image_url,
+    COALESCE((SELECT json_agg(json_build_object('id', vi.id, 'image_url', vi.image_url, 'sort_order', vi.sort_order)) FROM venue_images vi WHERE vi.venue_id=v.id), '[]'::json) images,
     (SELECT round(avg(rv.rating)::numeric,1) FROM reviews rv JOIN bookings b ON b.id=rv.booking_id JOIN field_occupancies o ON o.booking_id=b.id JOIN fields f ON f.id=o.field_id WHERE f.venue_id=v.id) rating,
     df.id default_field_id,
     df.hourly_price_from,
@@ -36,7 +37,10 @@ export class PlayerService {
   return {data:r.rows,meta:{page:1,page_size:50,total:r.rowCount||0}};
  }
  async venue(id:string) {
-  const r=await this.db.query<any>(`SELECT v.*,a.name area FROM venues v LEFT JOIN areas a ON a.id=v.area_id WHERE v.id=$1 AND v.status='active'`,[id]);
+  const r=await this.db.query<any>(`SELECT v.*,a.name area,
+    (SELECT image_url FROM venue_images vi WHERE vi.venue_id=v.id ORDER BY sort_order LIMIT 1) cover_image_url,
+    COALESCE((SELECT json_agg(json_build_object('id', vi.id, 'image_url', vi.image_url, 'sort_order', vi.sort_order)) FROM venue_images vi WHERE vi.venue_id=v.id), '[]'::json) images
+    FROM venues v LEFT JOIN areas a ON a.id=v.area_id WHERE v.id=$1 AND v.status='active'`,[id]);
   if(!r.rowCount) throw new NotFoundException(); return r.rows[0];
  }
  async venueReviews(venueId:string) {

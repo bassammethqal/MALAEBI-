@@ -405,6 +405,7 @@
         break;
       case 'venues':
         renderVenuesView();
+        loadVenueImages();
         break;
       case 'pricing':
         await loadPricingView();
@@ -1016,6 +1017,46 @@
         </div>
       `;
     }).join('');
+  }
+
+  async function loadVenueImages() {
+    const grid = document.getElementById('venueImagesGrid');
+    if (!grid || !state.activeVenue) return;
+
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:18px;color:var(--muted);font-size:12px;">جاري تحميل الصور...</div>';
+
+    let images = [];
+    try {
+      if (window.MalaebiOwnerAPI) {
+        const res = await MalaebiOwnerAPI.getVenueImages(state.activeVenue.id);
+        images = res.data || [];
+        state.activeVenue.images = images;
+      }
+    } catch (e) {
+      console.warn('Could not load venue images:', e);
+      images = state.activeVenue?.images || [];
+    }
+
+    if (images.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:26px 16px;color:var(--muted);background:var(--bg);border-radius:12px;border:1px dashed var(--card-border);">
+          <div style="font-size:28px;margin-bottom:6px;">📷</div>
+          <b style="font-size:13px;display:block;color:var(--ink);">لا توجد صور مضافة للمنشأة بعد</b>
+          <p style="font-size:11.5px;margin:4px 0 0;color:var(--muted);">اضغط على «+ رفع صورة جديدة» لإضافة صور عالية الدقة لملعبك ومرافقه لتظهر للاعبين.</p>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = images.map((img, idx) => `
+      <div class="venue-image-card" style="position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/3;background:#e2e8f0;border:1px solid var(--card-border);box-shadow:var(--shadow-sm);">
+        <img src="${escapeHtml(img.image_url)}" alt="صورة الملعب" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
+        <button type="button" class="btn-delete-venue-image" data-image-id="${img.id}" title="حذف الصورة" style="position:absolute;top:6px;left:6px;width:28px;height:28px;border-radius:50%;background:rgba(220,38,38,0.85);color:#fff;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,0.3);transition:0.18s;">
+          ✕
+        </button>
+        ${idx === 0 ? '<span style="position:absolute;bottom:6px;right:6px;background:var(--green);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.25);">الغلاف</span>' : ''}
+      </div>
+    `).join('');
   }
 
   // ==================== 6. PRICING & SETTINGS VIEW ====================
@@ -1815,6 +1856,94 @@
     document.querySelectorAll('[data-close-modal]').forEach((btn) => {
       btn.addEventListener('click', () => closeModal(btn.dataset.closeModal));
     });
+
+    // 18. Venue Images Upload & Delete
+    const btnTriggerUpload = document.getElementById('btnTriggerUploadImage');
+    const fileInput = document.getElementById('venueImageFileInput');
+    const statusEl = document.getElementById('imageUploadStatus');
+
+    if (btnTriggerUpload && fileInput) {
+      btnTriggerUpload.addEventListener('click', () => {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || !state.activeVenue) return;
+
+        fileInput.value = '';
+
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+          showToast('يرجى اختيار صورة بصيغة JPEG أو PNG أو WEBP', 'error');
+          return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          showToast('حجم الصورة كبير جداً، الحد الأقصى 5 ميجابايت', 'error');
+          return;
+        }
+
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.style.background = 'var(--mint)';
+          statusEl.style.color = 'var(--mint-text)';
+          statusEl.textContent = 'جاري رفع الصورة إلى التخزين السحابي... ⏳';
+        }
+
+        try {
+          btnTriggerUpload.disabled = true;
+          btnTriggerUpload.textContent = 'جاري الرفع...';
+
+          const res = await MalaebiOwnerAPI.uploadVenueImage(state.activeVenue.id, file);
+          showToast('تم رفع الصورة بنجاح! ستظهر فوراً في تطبيق اللاعب 📸', 'success');
+
+          if (statusEl) {
+            statusEl.style.display = 'none';
+          }
+
+          await loadVenueImages();
+          if (res.image_url && !state.activeVenue.cover_image_url) {
+            state.activeVenue.cover_image_url = res.image_url;
+          }
+        } catch (err) {
+          console.error('Image upload failed:', err);
+          showToast(err.message || 'فشل رفع الصورة، يرجى المحاولة مرة أخرى', 'error');
+          if (statusEl) {
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#fee2e2';
+            statusEl.style.color = '#b91c1c';
+            statusEl.textContent = `فشل الرفع: ${err.message}`;
+          }
+        } finally {
+          btnTriggerUpload.disabled = false;
+          btnTriggerUpload.innerHTML = '<span>+</span> رفع صورة جديدة';
+        }
+      });
+    }
+
+    const imagesGrid = document.getElementById('venueImagesGrid');
+    if (imagesGrid) {
+      imagesGrid.addEventListener('click', async (e) => {
+        const delBtn = e.target.closest('.btn-delete-venue-image');
+        if (!delBtn) return;
+        const imageId = delBtn.dataset.imageId;
+        if (!imageId || !state.activeVenue) return;
+
+        if (!confirm('هل أنت متأكد من رغبتك في حذف هذه الصورة؟')) return;
+
+        try {
+          delBtn.disabled = true;
+          await MalaebiOwnerAPI.deleteVenueImage(state.activeVenue.id, imageId);
+          showToast('تم حذف الصورة بنجاح', 'success');
+          await loadVenueImages();
+        } catch (err) {
+          console.error('Delete image failed:', err);
+          showToast(err.message || 'تعذر حذف الصورة', 'error');
+          delBtn.disabled = false;
+        }
+      });
+    }
   }
 
   function escapeHtml(str) {

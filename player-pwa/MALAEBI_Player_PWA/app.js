@@ -328,6 +328,7 @@ async function loadRemoteVenues(){
           rating: Number(v.rating || 4.8),
           reviews: Number(v.rating ? 15 : 6),
           photo,
+          images: (Array.isArray(v.images) && v.images.length) ? v.images.map(img => typeof img === 'string' ? img : img.image_url).filter(Boolean) : [photo],
           features,
           description: v.description || '',
           mode,

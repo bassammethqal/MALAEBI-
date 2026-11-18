@@ -18,4 +18,18 @@ export class SupabaseService implements OnModuleInit {
     if(error || !data.user) throw new UnauthorizedException('Invalid or expired Supabase access token');
     return data.user;
   }
+  async ensureBucket(bucketName = 'venue-images', isPublic = true) {
+    try {
+      const { data: bucket, error } = await this.adminClient.storage.getBucket(bucketName);
+      if (error || !bucket) {
+        await this.adminClient.storage.createBucket(bucketName, {
+          public: isPublic,
+          fileSizeLimit: 5242880,
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
+        });
+      }
+    } catch (e) {
+      // Ignored if already created or permission
+    }
+  }
 }

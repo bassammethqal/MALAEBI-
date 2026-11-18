@@ -1,13 +1,13 @@
 /* MALAEBI Venue Ops Service Worker */
-const CACHE_NAME = 'malaebi-venue-ops-v1.1.4';
+const CACHE_NAME = 'malaebi-venue-ops-v1.1.5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './styles.css?v=1.1.4',
-  './icons3d.js?v=1.1.4',
-  './config.js?v=1.1.4',
-  './api-client.js?v=1.1.4',
-  './app.js?v=1.1.4',
+  './styles.css?v=1.1.5',
+  './icons3d.js?v=1.1.5',
+  './config.js?v=1.1.5',
+  './api-client.js?v=1.1.5',
+  './app.js?v=1.1.5',
   './manifest.webmanifest',
   './assets/images/logo.svg',
   './assets/images/icon.svg',

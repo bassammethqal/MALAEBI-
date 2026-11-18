@@ -7,11 +7,12 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { DbService } from './db.service';
+import { SupabaseService } from './supabase.service';
 import { ExternalBookingDto, BlockSlotDto, UpdateBookingSettingsDto, AddVenueMemberDto, CreateVenueDto, UpdateVenueDto, CreateFieldDto } from './dto';
 
 @Injectable()
 export class VenueOpsService {
-  constructor(private db: DbService) {}
+  constructor(private db: DbService, private supabase: SupabaseService) {}
 
   async assertVenueAccess(userId: string, venueId: string, allowedRoles: string[] = ['owner', 'manager', 'receptionist']) {
     const r = await this.db.query<any>(
@@ -401,7 +402,8 @@ export class VenueOpsService {
       `SELECT v.id, v.owner_user_id, v.name, v.description, v.address_text, v.status,
               a.name as area_name,
               CASE WHEN v.owner_user_id = $1 THEN 'owner' ELSE vm.role::text END as user_role,
-              (SELECT image_url FROM venue_images vi WHERE vi.venue_id = v.id ORDER BY vi.sort_order LIMIT 1) as cover_image_url
+              (SELECT image_url FROM venue_images vi WHERE vi.venue_id = v.id ORDER BY vi.sort_order LIMIT 1) as cover_image_url,
+              COALESCE((SELECT json_agg(json_build_object('id', vi.id, 'image_url', vi.image_url, 'sort_order', vi.sort_order)) FROM venue_images vi WHERE vi.venue_id = v.id), '[]'::json) as images
        FROM venues v
        LEFT JOIN areas a ON a.id = v.area_id
        LEFT JOIN venue_members vm ON vm.venue_id = v.id AND vm.user_id = $1 AND vm.status = 'active'
@@ -1041,5 +1043,104 @@ export class VenueOpsService {
         hourly_price_from: price
       };
     });
+  }
+
+  async getVenueImages(userId: string, venueId: string) {
+    await this.assertVenueAccess(userId, venueId);
+    const res = await this.db.query<any>(
+      `SELECT id, venue_id, image_url, sort_order, created_at 
+       FROM venue_images 
+       WHERE venue_id = $1 
+       ORDER BY sort_order ASC, created_at ASC`,
+      [venueId]
+    );
+    return { data: res.rows };
+  }
+
+  async uploadVenueImage(userId: string, venueId: string, file: any) {
+    await this.assertVenueAccess(userId, venueId);
+
+    if (!file || !file.buffer) {
+      throw new BadRequestException('ملف الصورة غير موجود أو تالف');
+    }
+
+    await this.supabase.ensureBucket('venue-images', true);
+
+    const ext = file.originalname?.split('.').pop()?.toLowerCase() || 'jpg';
+    const cleanExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
+    const fileName = `${Date.now()}-${randomUUID()}.${cleanExt}`;
+    const storagePath = `venues/${venueId}/${fileName}`;
+
+    const { data: uploadData, error: uploadError } = await this.supabase.adminClient.storage
+      .from('venue-images')
+      .upload(storagePath, file.buffer, {
+        contentType: file.mimetype || 'image/jpeg',
+        upsert: true
+      });
+
+    if (uploadError) {
+      throw new BadRequestException(`فشل رفع الصورة إلى الخادم: ${uploadError.message}`);
+    }
+
+    const { data: pubData } = this.supabase.adminClient.storage
+      .from('venue-images')
+      .getPublicUrl(storagePath);
+
+    const publicUrl = pubData?.publicUrl;
+    if (!publicUrl) {
+      throw new BadRequestException('تعذر الحصول على الرابط العام للصورة');
+    }
+
+    const maxSortRes = await this.db.query<any>(
+      `SELECT COALESCE(MAX(sort_order), 0) + 1 as next_sort FROM venue_images WHERE venue_id = $1`,
+      [venueId]
+    );
+    const nextSort = maxSortRes.rows[0]?.next_sort || 1;
+
+    const insertRes = await this.db.query<any>(
+      `INSERT INTO venue_images (id, venue_id, image_url, sort_order, created_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       RETURNING id, venue_id, image_url, sort_order, created_at`,
+      [randomUUID(), venueId, publicUrl, nextSort]
+    );
+
+    const imageRecord = insertRes.rows[0];
+    return {
+      success: true,
+      id: imageRecord.id,
+      image_url: imageRecord.image_url,
+      data: imageRecord
+    };
+  }
+
+  async deleteVenueImage(userId: string, venueId: string, imageId: string) {
+    await this.assertVenueAccess(userId, venueId);
+
+    const imgRes = await this.db.query<any>(
+      `SELECT id, image_url FROM venue_images WHERE id = $1 AND venue_id = $2`,
+      [imageId, venueId]
+    );
+    if (!imgRes.rowCount) {
+      throw new NotFoundException('الصورة غير موجودة أو تم حذفها مسبقاً');
+    }
+
+    const imageUrl = imgRes.rows[0].image_url;
+    try {
+      const marker = '/venue-images/';
+      const idx = imageUrl.indexOf(marker);
+      if (idx !== -1) {
+        const storagePath = imageUrl.slice(idx + marker.length);
+        await this.supabase.adminClient.storage.from('venue-images').remove([storagePath]);
+      }
+    } catch (e) {
+      console.warn('Could not remove file from Supabase storage:', e);
+    }
+
+    await this.db.query(
+      `DELETE FROM venue_images WHERE id = $1 AND venue_id = $2`,
+      [imageId, venueId]
+    );
+
+    return { success: true, message: 'تم حذف الصورة بنجاح' };
   }
 }

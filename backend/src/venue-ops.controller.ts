@@ -1,4 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtGuard } from './jwt.guard';
 import { VenueOpsService } from './venue-ops.service';
 import {
@@ -50,6 +66,42 @@ export class VenueOpsController {
     @Body() dto: UpdateVenueDto
   ) {
     return this.venueOps.updateVenue(req.user.sub, venueId, dto);
+  }
+
+  @Get('images')
+  getImages(@Req() req: any, @Param('venueId') venueId: string) {
+    return this.venueOps.getVenueImages(req.user.sub, venueId);
+  }
+
+  @Post('images')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+    fileFilter: (req: any, file: any, cb: any) => {
+      const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowed.includes(file.mimetype)) {
+        return cb(new BadRequestException('صيغة الصورة غير مدعومة. الصيغ المسموحة: JPEG, PNG, WEBP'), false);
+      }
+      cb(null, true);
+    }
+  }))
+  uploadImage(
+    @Req() req: any,
+    @Param('venueId') venueId: string,
+    @UploadedFile() file: any
+  ) {
+    if (!file) {
+      throw new BadRequestException('يرجى اختيار ملف صورة للرفع');
+    }
+    return this.venueOps.uploadVenueImage(req.user.sub, venueId, file);
+  }
+
+  @Delete('images/:imageId')
+  deleteImage(
+    @Req() req: any,
+    @Param('venueId') venueId: string,
+    @Param('imageId') imageId: string
+  ) {
+    return this.venueOps.deleteVenueImage(req.user.sub, venueId, imageId);
   }
 
   @Post('fields')
