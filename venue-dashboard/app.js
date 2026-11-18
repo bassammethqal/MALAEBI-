@@ -335,14 +335,29 @@
     if (subEl) {
       subEl.textContent = formatDateAr(state.activeDate);
     }
+    const dName = document.getElementById('drawerVenueName');
+    const dArea = document.getElementById('drawerVenueArea');
+    if (dName && state.activeVenue) dName.textContent = state.activeVenue.name;
+    if (dArea && state.activeVenue) dArea.textContent = `${state.activeVenue.area_name || 'مأرب'} — ${state.activeVenue.address_text || ''}`;
+  }
+
+  // Drawer helpers
+  function openDrawer() {
+    document.getElementById('opsDrawer')?.classList.add('open');
+    document.getElementById('drawerBackdrop')?.classList.add('open');
+  }
+
+  function closeDrawer() {
+    document.getElementById('opsDrawer')?.classList.remove('open');
+    document.getElementById('drawerBackdrop')?.classList.remove('open');
   }
 
   // ==================== VIEW SWITCHING ====================
   function switchView(viewName) {
     state.currentView = viewName;
 
-    // Toggle active class on sidebar items and mobile items
-    document.querySelectorAll('.nav-item, .m-nav-item').forEach((item) => {
+    // Toggle active class on sidebar items, drawer items, and bottom nav items
+    document.querySelectorAll('.nav-item, .drawer-nav-item, .b-nav-item, .m-nav-item').forEach((item) => {
       item.classList.toggle('active', item.dataset.view === viewName);
     });
 
@@ -353,6 +368,8 @@
 
     const targetSec = document.getElementById(`view${capitalize(viewName)}`);
     if (targetSec) targetSec.classList.add('active');
+
+    closeDrawer();
 
     refreshCurrentView();
   }
@@ -436,12 +453,17 @@
 
     // Badges
     const navBadge = document.getElementById('navPendingBadge');
+    const bottomNavBadge = document.getElementById('bottomNavPendingBadge');
     const countBadge = document.getElementById('pendingBadgeCount');
     const pCount = s?.pending_approval || 0;
 
     if (navBadge) {
       navBadge.textContent = pCount;
       navBadge.style.display = pCount > 0 ? 'inline-block' : 'none';
+    }
+    if (bottomNavBadge) {
+      bottomNavBadge.textContent = pCount;
+      bottomNavBadge.style.display = pCount > 0 ? 'inline-block' : 'none';
     }
     if (countBadge) countBadge.textContent = `${pCount} طلب`;
   }
@@ -1475,12 +1497,18 @@
   // Event Listeners
   function setupEventListeners() {
     // 1. Navigation items click
-    document.querySelectorAll('.nav-item, .m-nav-item').forEach((btn) => {
+    document.querySelectorAll('.nav-item, .drawer-nav-item, .b-nav-item, .m-nav-item').forEach((btn) => {
       btn.addEventListener('click', () => {
         const view = btn.dataset.view;
         if (view) switchView(view);
       });
     });
+
+    // Drawer Open & Close Controls
+    document.getElementById('drawerOpenBtn')?.addEventListener('click', openDrawer);
+    document.getElementById('bottomNavMoreBtn')?.addEventListener('click', openDrawer);
+    document.getElementById('drawerCloseBtn')?.addEventListener('click', closeDrawer);
+    document.getElementById('drawerBackdrop')?.addEventListener('click', closeDrawer);
 
     // 2. Auth Tabs (Login vs Register)
     const tabLogin = document.getElementById('tabAuthLogin');

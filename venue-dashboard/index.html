@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#072b1c">
   <link rel="icon" type="image/svg+xml" href="./assets/images/logo.svg">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=1.1.0">
 </head>
 <body>
 
@@ -195,79 +195,93 @@
   <!-- ==================== 2. APP SHELL LAYOUT ==================== -->
   <div id="opsAppShell" class="ops-app" style="display:none;">
 
-    <!-- Sidebar (Right side, Dark Green #072b1c) -->
-    <aside class="ops-sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">
-          <img src="./assets/images/logo.svg" alt="ملاعبي">
+    <!-- Drawer Backdrop -->
+    <div id="drawerBackdrop" class="drawer-backdrop"></div>
+
+    <!-- Drawer Navigation (Slide-Over from right, Dark Green #072b1c) -->
+    <aside id="opsDrawer" class="ops-drawer">
+      <div class="drawer-header">
+        <div class="drawer-brand">
+          <div class="sidebar-logo">
+            <img src="./assets/images/logo.svg" alt="ملاعبي">
+          </div>
+          <div class="sidebar-brand-info">
+            <b>ملاعبي</b>
+            <small>بوابة المنشأة</small>
+          </div>
         </div>
-        <div class="sidebar-brand-info">
-          <b>ملاعبي</b>
-          <small>بوابة المنشأة</small>
+        <button type="button" id="drawerCloseBtn" class="drawer-close-btn" title="إغلاق القائمة">✕</button>
+      </div>
+
+      <div class="drawer-venue-badge">
+        <span class="live-dot"></span>
+        <div class="drawer-venue-info">
+          <b id="drawerVenueName">ملعب الأبطال الرياضي</b>
+          <small id="drawerVenueArea">مأرب - الروضة</small>
         </div>
       </div>
 
       <!-- Navigation (11 items) -->
-      <nav class="sidebar-nav">
-        <button type="button" class="nav-item active" data-view="dashboard">
+      <nav class="drawer-nav">
+        <button type="button" class="drawer-nav-item nav-item active" data-view="dashboard">
           <span class="icon">🏠</span>
           <span>الرئيسية</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="bookings">
+        <button type="button" class="drawer-nav-item nav-item" data-view="bookings">
           <span class="icon">📋</span>
           <span>الحجوزات</span>
           <span class="badge" id="navPendingBadge" style="display:none;">0</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="schedule">
+        <button type="button" class="drawer-nav-item nav-item" data-view="schedule">
           <span class="icon">📅</span>
           <span>تقويم الحجوزات</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="walkin">
+        <button type="button" class="drawer-nav-item nav-item" data-view="walkin">
           <span class="icon">🏟️</span>
           <span>الحجز الخارجي</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="venues">
+        <button type="button" class="drawer-nav-item nav-item" data-view="venues">
           <span class="icon">⚽</span>
           <span>المنشآت والملاعب</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="pricing">
+        <button type="button" class="drawer-nav-item nav-item" data-view="pricing">
           <span class="icon">⏱️</span>
           <span>الجدولة والأسعار</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="customers">
+        <button type="button" class="drawer-nav-item nav-item" data-view="customers">
           <span class="icon">👥</span>
           <span>العملاء</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="reviews">
+        <button type="button" class="drawer-nav-item nav-item" data-view="reviews">
           <span class="icon">⭐</span>
           <span>التقييمات</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="staff">
+        <button type="button" class="drawer-nav-item nav-item" data-view="staff">
           <span class="icon">👔</span>
           <span>الموظفون</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="reports">
+        <button type="button" class="drawer-nav-item nav-item" data-view="reports">
           <span class="icon">📊</span>
           <span>التقارير</span>
         </button>
 
-        <button type="button" class="nav-item" data-view="settings">
+        <button type="button" class="drawer-nav-item nav-item" data-view="settings">
           <span class="icon">⚙️</span>
           <span>الإعدادات</span>
         </button>
       </nav>
 
-      <!-- Sidebar User Profile -->
-      <div class="sidebar-user">
+      <!-- Drawer User Profile -->
+      <div class="drawer-user">
         <div class="sidebar-avatar" id="userAvatar">م</div>
         <div class="sidebar-user-text">
           <b id="userName">مالك المنشأة</b>
@@ -280,26 +294,18 @@
     <!-- Main Content Area -->
     <main class="ops-main">
 
-      <!-- Topbar Header -->
+      <!-- Topbar Header (Compact 60px, Mobile-First) -->
       <header class="ops-topbar">
         <div class="topbar-right">
-          <div class="topbar-greeting">
-            <h2 id="topbarTitle">مرحباً، جاري التحميل... 👋</h2>
-            <small id="topbarSubtitle">الخميس 16 يناير 2025</small>
+          <button type="button" class="topbar-menu-btn" id="drawerOpenBtn" title="القائمة الرئيسية" aria-label="فتح القائمة">☰</button>
+          <div class="topbar-venue-select-wrap">
+            <select id="venueSelect" class="topbar-venue-select" title="اختر المنشأة"></select>
           </div>
         </div>
 
         <div class="topbar-left">
-          <!-- Venue Switcher -->
-          <select id="venueSelect" class="topbar-pill-select" title="اختر المنشأة"></select>
-
-          <!-- Refresh Data -->
           <button type="button" class="topbar-icon-btn" id="refreshBtn" title="تحديث البيانات">🔄</button>
-
-          <!-- Notifications Button -->
           <button type="button" class="topbar-icon-btn" id="notifBtn" title="الإشعارات">🔔</button>
-
-          <!-- Theme Toggle -->
           <button type="button" class="topbar-icon-btn" id="themeToggleBtn" title="تبديل الوضع">🌙</button>
         </div>
       </header>
@@ -309,6 +315,15 @@
 
         <!-- ==================== VIEW 1: الرئيسية (DASHBOARD) ==================== -->
         <section id="viewDashboard" class="view-section active">
+
+          <!-- Dashboard Hero Greeting Banner -->
+          <div class="dashboard-hero-card">
+            <div class="hero-text">
+              <h2 id="topbarTitle">مرحباً، جاري التحميل... 👋</h2>
+              <small id="topbarSubtitle">الخميس 16 يناير 2025</small>
+            </div>
+            <span class="dashboard-hero-pill"><span class="live-dot"></span> منشأة نشطة</span>
+          </div>
 
           <!-- 4 KPI Boxes -->
           <div class="kpi-row">
@@ -481,29 +496,34 @@
 
         <!-- ==================== VIEW 3: تقويم الحجوزات (SCHEDULE) ==================== -->
         <section id="viewSchedule" class="view-section">
-          <div class="section-card">
-            <div class="section-title-row" style="flex-wrap:wrap; gap:12px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <button type="button" class="btn-outline" id="prevDayBtn">◀</button>
-                <b id="scheduleDateLabel" style="font-size:14px; padding:0 8px;">اليوم</b>
-                <button type="button" class="btn-outline" id="nextDayBtn">▶</button>
-                <button type="button" class="btn-outline" id="todayScheduleBtn">اليوم</button>
-                <input type="date" id="scheduleDateInput" class="form-input" style="height:36px; width:auto;">
+          <div class="section-card schedule-head-card">
+            <!-- Row 1: Date Stepper & Picker -->
+            <div class="schedule-nav-row">
+              <div class="schedule-date-stepper">
+                <button type="button" class="btn-outline schedule-step-btn" id="prevDayBtn">◀</button>
+                <b id="scheduleDateLabel" class="schedule-date-label">اليوم</b>
+                <button type="button" class="btn-outline schedule-step-btn" id="nextDayBtn">▶</button>
+                <button type="button" class="btn-outline schedule-today-btn" id="todayScheduleBtn">اليوم</button>
               </div>
+              <input type="date" id="scheduleDateInput" class="form-input schedule-date-input">
+            </div>
 
-              <div style="display:flex; align-items:center; gap:12px; font-size:12px; color:var(--muted);">
-                <span><span class="status-pill active" style="padding:2px 8px;"></span> مؤكد</span>
-                <span><span class="status-pill pending" style="padding:2px 8px;"></span> بانتظار</span>
-                <span><span class="status-pill maintenance" style="padding:2px 8px;"></span> صيانة / محظور</span>
-                <span><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#86efac;"></span> متاح</span>
-              </div>
+            <!-- Row 2: Field Selector -->
+            <div class="schedule-field-row">
+              <label for="scheduleFieldSelect" class="schedule-field-label">الملعب:</label>
+              <select id="scheduleFieldSelect" class="form-input schedule-field-select"></select>
+            </div>
 
-              <!-- Field Selector for Schedule -->
-              <select id="scheduleFieldSelect" class="topbar-pill-select"></select>
+            <!-- Row 3: Organized Legend Bar -->
+            <div class="schedule-legend-bar">
+              <span class="legend-item"><span class="legend-dot available"></span> متاح</span>
+              <span class="legend-item"><span class="legend-dot confirmed"></span> مؤكد</span>
+              <span class="legend-item"><span class="legend-dot pending"></span> بانتظار</span>
+              <span class="legend-item"><span class="legend-dot maintenance"></span> صيانة</span>
             </div>
 
             <!-- 18 Slots Timeline Grid -->
-            <div id="scheduleSlotsGrid" class="timeline-grid" style="margin-top:20px;">
+            <div id="scheduleSlotsGrid" class="timeline-grid" style="margin-top:16px;">
               <!-- Rendered via JS -->
             </div>
           </div>
@@ -877,27 +897,32 @@
       </div>
     </main>
 
-    <!-- Mobile Navigation Bar -->
-    <nav class="mobile-nav">
-      <button type="button" class="m-nav-item active" data-view="dashboard">
-        <span class="m-icon">🏠</span>
-        <span>الرئيسية</span>
+    <!-- Bottom Navigation Bar (5 Primary Sections) -->
+    <nav class="bottom-nav">
+      <button type="button" class="b-nav-item active" data-view="dashboard">
+        <span class="b-nav-icon">🏠</span>
+        <span class="b-nav-text">الرئيسية</span>
       </button>
-      <button type="button" class="m-nav-item" data-view="bookings">
-        <span class="m-icon">📋</span>
-        <span>الحجوزات</span>
+
+      <button type="button" class="b-nav-item" data-view="bookings">
+        <span class="b-nav-icon">📋</span>
+        <span class="b-nav-text">الحجوزات</span>
+        <span class="b-nav-badge" id="bottomNavPendingBadge" style="display:none;">0</span>
       </button>
-      <button type="button" class="m-nav-item" data-view="schedule">
-        <span class="m-icon">📅</span>
-        <span>التقويم</span>
+
+      <button type="button" class="b-nav-item" data-view="schedule">
+        <span class="b-nav-icon">📅</span>
+        <span class="b-nav-text">التقويم</span>
       </button>
-      <button type="button" class="m-nav-item" data-view="walkin">
-        <span class="m-icon">🏟️</span>
-        <span>حجز خارجي</span>
+
+      <button type="button" class="b-nav-item" data-view="walkin">
+        <span class="b-nav-icon">🏟️</span>
+        <span class="b-nav-text">حجز خارجي</span>
       </button>
-      <button type="button" class="m-nav-item" data-view="settings">
-        <span class="m-icon">⚙️</span>
-        <span>الإعدادات</span>
+
+      <button type="button" class="b-nav-item" id="bottomNavMoreBtn">
+        <span class="b-nav-icon">☰</span>
+        <span class="b-nav-text">المزيد</span>
       </button>
     </nav>
 
@@ -1069,8 +1094,8 @@
   <div id="toastBar" class="toast-bar"></div>
 
   <!-- Scripts -->
-  <script src="./config.js"></script>
-  <script src="./api-client.js"></script>
-  <script src="./app.js"></script>
+  <script src="./config.js?v=1.1.0"></script>
+  <script src="./api-client.js?v=1.1.0"></script>
+  <script src="./app.js?v=1.1.0"></script>
 </body>
 </html>
