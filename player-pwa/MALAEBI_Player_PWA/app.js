@@ -452,12 +452,56 @@ async function renderVenueTab(tab){
         const reviews=data.reviews||[];
         const avg=data.average_rating||v.rating||0;
         const total=data.total_reviews||reviews.length||0;
+
+        let eligibleBooking = null;
+        if(localStorage.getItem('malaebi_access_token')){
+          try{
+            let myB = state.bookings;
+            if(!myB || !myB.length){
+              myB = await MalaebiAPI.myBookings();
+              state.bookings = myB;
+            }
+            eligibleBooking = myB.find(b => {
+              const matchesVenue = (b.venue_id && b.venue_id === v.id) || (b.venue_name && b.venue_name === v.name);
+              return matchesVenue && b.status === 'completed';
+            });
+          }catch(bErr){
+            console.warn('Could not check player bookings for review banner:', bErr);
+          }
+        }
+
+        const addReviewBanner = eligibleBooking ? `
+          <div style="background:var(--mint);border:1px solid #bfe5cb;border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div>
+              <b style="font-size:12.5px;color:var(--green);display:block;">لديك حجز مكتمل في هذا الملعب! ⭐</b>
+              <small style="color:var(--ink);font-size:10.5px;">شارك تجربتك وساعد اللاعبين الآخرين في معرفة رأيك.</small>
+            </div>
+            <button class="primary-btn" id="openReviewFromTabBtn" data-booking-id="${eligibleBooking.id || eligibleBooking.serverId}" type="button" style="padding:8px 12px;font-size:11px;white-space:nowrap;box-shadow:none;">
+              أضف تقييمك الآن
+            </button>
+          </div>
+        ` : '';
+
         if(!reviews.length){
-          container.innerHTML=`<div class="tab-empty">لا توجد تقييمات بعد لهذا الملعب. كن أول من يقيّمه بعد إتمام حجزك!</div>`;
+          container.innerHTML=`${addReviewBanner}<div class="tab-empty">لا توجد تقييمات بعد لهذا الملعب. كن أول من يقيّمه بعد إتمام حجزك!</div>`;
+          const reviewBtn = $('#openReviewFromTabBtn');
+          if(reviewBtn){
+            reviewBtn.onclick = () => {
+              state.selectedBookingId = reviewBtn.dataset.bookingId;
+              showPage('rating');
+            };
+          }
           return;
         }
         const fullStars=Math.round(avg);
-        container.innerHTML=`<div class="reviews-summary"><div class="reviews-score">${avg}</div><div class="reviews-score-meta"><div class="reviews-score-stars">${'★'.repeat(fullStars)}${'☆'.repeat(Math.max(0,5-fullStars))}</div><small>بناءً على ${total} تقييم</small></div></div><div class="reviews-list">${reviews.map(r=>`<div class="review-item"><div class="review-item-head"><span class="review-player">⚽ ${r.player_name||'لاعب ملاعبي'}</span><span class="review-date">${r.created_at?new Intl.DateTimeFormat('ar-YE',{dateStyle:'medium'}).format(new Date(r.created_at)):''}</span></div><div class="review-stars">${'★'.repeat(r.rating||5)}${'☆'.repeat(Math.max(0,5-(r.rating||5)))}</div>${r.comment?`<p class="review-comment">${r.comment}</p>`:''}</div>`).join('')}</div>`;
+        container.innerHTML=`${addReviewBanner}<div class="reviews-summary"><div class="reviews-score">${avg}</div><div class="reviews-score-meta"><div class="reviews-score-stars">${'★'.repeat(fullStars)}${'☆'.repeat(Math.max(0,5-fullStars))}</div><small>بناءً على ${total} تقييم</small></div></div><div class="reviews-list">${reviews.map(r=>`<div class="review-item"><div class="review-item-head"><span class="review-player">⚽ ${r.player_name||'لاعب ملاعبي'}</span><span class="review-date">${r.created_at?new Intl.DateTimeFormat('ar-YE',{dateStyle:'medium'}).format(new Date(r.created_at)):''}</span></div><div class="review-stars">${'★'.repeat(r.rating||5)}${'☆'.repeat(Math.max(0,5-(r.rating||5)))}</div>${r.comment?`<p class="review-comment">${r.comment}</p>`:''}</div>`).join('')}</div>`;
+        const reviewBtn = $('#openReviewFromTabBtn');
+        if(reviewBtn){
+          reviewBtn.onclick = () => {
+            state.selectedBookingId = reviewBtn.dataset.bookingId;
+            showPage('rating');
+          };
+        }
         return;
       }catch(e){
         container.innerHTML=`<div class="tab-empty">تعذر تحميل التقييمات: ${e.message}</div>`;
@@ -725,10 +769,75 @@ function renderAccount(){
   if(profileName) profileName.textContent = fullName || (displayEmail ? 'لاعب ملاعبي' : 'مستخدم ضيف');
   if(loginBtn) loginBtn.textContent = (hasToken || u) ? 'تبديل الحساب' : 'تسجيل الدخول';
   if(logoutWrap) logoutWrap.classList.toggle('hidden', !hasToken && !u);
+  const changePassBtn = $('#accountChangePassBtn');
+  if(changePassBtn) changePassBtn.classList.toggle('hidden', !hasToken && !u);
 }
 
 function openModal(){ const m=$('#modalBackdrop'); if(m) m.classList.remove('hidden'); }
 function closeModal(){ const m=$('#modalBackdrop'); if(m) m.classList.add('hidden'); }
+
+function openChangePasswordModal(){
+  if(!localStorage.getItem('malaebi_access_token')){
+    toast('يرجى تسجيل الدخول أولاً لتغيير كلمة المرور');
+    showPage('login');
+    return;
+  }
+  $('#modalContent').innerHTML = `
+    <h2 id="modalTitle">تغيير كلمة المرور</h2>
+    <p>أدخل كلمة المرور الجديدة لحسابك (6 أحرف على الأقل):</p>
+    <div id="playerChangePassError" style="display:none;background:#fee2e2;color:#dc2626;padding:10px 14px;border-radius:10px;font-size:12.5px;font-weight:700;margin:12px 0;text-align:right;"></div>
+    <div style="display:grid;gap:12px;margin:16px 0;">
+      <div>
+        <label class="field-label" style="margin:0 0 5px;">كلمة المرور الجديدة (6 أحرف على الأقل) *</label>
+        <input type="password" id="playerNewPass" class="review-input" placeholder="••••••••" minlength="6" autocomplete="new-password" dir="ltr" style="margin:0;height:46px;width:100%;" />
+      </div>
+      <div>
+        <label class="field-label" style="margin:0 0 5px;">تأكيد كلمة المرور الجديدة *</label>
+        <input type="password" id="playerConfirmPass" class="review-input" placeholder="••••••••" minlength="6" autocomplete="new-password" dir="ltr" style="margin:0;height:46px;width:100%;" />
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="primary-btn full" id="submitPlayerChangePassBtn" type="button">حفظ كلمة المرور</button>
+      <button class="outline-btn" style="color:var(--muted);border-color:var(--line);padding:11px 18px;border-radius:14px;" type="button" onclick="closeModal()">إلغاء</button>
+    </div>
+  `;
+  openModal();
+
+  $('#submitPlayerChangePassBtn').onclick = async () => {
+    const p1 = $('#playerNewPass')?.value || '';
+    const p2 = $('#playerConfirmPass')?.value || '';
+    const errEl = $('#playerChangePassError');
+    const btn = $('#submitPlayerChangePassBtn');
+
+    if (errEl) errEl.style.display = 'none';
+
+    if (!p1 || p1.length < 6) {
+      if (errEl) { errEl.textContent = 'كلمة المرور يجب ألا تقل عن 6 أحرف.'; errEl.style.display = 'block'; }
+      return;
+    }
+    if (p1 !== p2) {
+      if (errEl) { errEl.textContent = 'كلمتا المرور غير متطابقتين، يرجى التأكد.'; errEl.style.display = 'block'; }
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'جاري الحفظ...';
+
+    try {
+      await MalaebiAPI.changePassword(p1);
+      closeModal();
+      toast('تم تغيير كلمة المرور بنجاح!');
+    } catch (err) {
+      if (errEl) {
+        errEl.textContent = err.message || 'فشل تغيير كلمة المرور';
+        errEl.style.display = 'block';
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'حفظ كلمة المرور';
+    }
+  };
+}
 
 function openPersonalInfoModal(){
   const u = state.user || JSON.parse(localStorage.getItem('malaebi_user') || 'null');
@@ -853,6 +962,10 @@ async function openNotificationsModal(){
   if(window.MalaebiAPI?.enabled() && localStorage.getItem('malaebi_access_token')){
     try{
       notifs = await MalaebiAPI.notifications();
+      // Mark notifications as read and clear dot
+      MalaebiAPI.markNotificationsRead().catch(() => {});
+      const dot = $('#headerNotificationDot');
+      if(dot) dot.classList.remove('active');
     }catch(err){
       $('#modalContent').innerHTML = `
         <h2 id="modalTitle">الإشعارات والتنبيهات</h2>
@@ -885,13 +998,33 @@ async function openNotificationsModal(){
         <div class="notif-item">
           <div class="notif-item-head">
             <span class="notif-item-title">⚽ ${n.title || 'إشعار ملاعبي'}</span>
-            <span class="notif-item-time">${n.created_at ? new Intl.DateTimeFormat('ar-YE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(n.created_at)) : ''}</span>
+            <span class="notif-item-time">${n.created_at ? new Intl.DateTimeFormat('ar-YE', { dateStyle: 'short', timeStyle: 'short', hour12: true }).format(new Date(n.created_at)) : ''}</span>
           </div>
           <p class="notif-item-body">${n.body || n.message || ''}</p>
         </div>
       `).join('')}
     </div>
   `;
+}
+
+async function updateNotificationBadge(){
+  const dot = $('#headerNotificationDot');
+  if(!dot) return;
+  if(!localStorage.getItem('malaebi_access_token') || !window.MalaebiAPI?.enabled()){
+    dot.classList.remove('active');
+    return;
+  }
+  try {
+    const list = await MalaebiAPI.notifications();
+    const hasUnread = Array.isArray(list) && list.some(n => !n.read_at && n.status !== 'read');
+    if(hasUnread) {
+      dot.classList.add('active');
+    } else {
+      dot.classList.remove('active');
+    }
+  } catch(e) {
+    dot.classList.remove('active');
+  }
 }
 
 function openContactModal(){
@@ -984,6 +1117,7 @@ function performLogout(){
   localStorage.removeItem('malaebi_refresh_token');
   renderAccount();
   renderBookings();
+  updateNotificationBadge();
   showPage('home');
   toast('تم تسجيل الخروج بنجاح');
 }
@@ -994,6 +1128,7 @@ $('#mainContent')?.addEventListener('click',e=>{
   if(act){
     const a=act.dataset.action;
     if(a==='personal'){ openPersonalInfoModal(); return; }
+    if(a==='change-password'){ openChangePasswordModal(); return; }
     if(a==='favorites'){ openFavoritesModal(); return; }
     if(a==='notifications'){ openNotificationsModal(); return; }
     if(a==='help'){ openContactModal(); return; }
@@ -1079,18 +1214,7 @@ if(modalBackdrop) modalBackdrop.addEventListener('click',e=>{if(e.target.id==='m
 const loginBtn=$('#loginBtn');
 if(loginBtn) loginBtn.onclick=()=>showPage('login');
 const notificationsBtn=$('#notificationsBtn');
-if(notificationsBtn) notificationsBtn.onclick=async()=>{
-  if(window.MalaebiAPI?.enabled()&&localStorage.getItem('malaebi_access_token')){
-    try{
-      const rows=await MalaebiAPI.notifications();
-      toast(rows.length?`لديك ${rows.length} إشعاراً`:'لا توجد إشعارات جديدة');
-    }catch(e){
-      toast(e.message);
-    }
-  }else{
-    toast('لا توجد إشعارات جديدة');
-  }
-};
+if(notificationsBtn) notificationsBtn.onclick=()=>openNotificationsModal();
 const locationBtn=$('#locationBtn');
 if(locationBtn) locationBtn.onclick=()=>toast('نطاق الإطلاق الحالي: مدينة مأرب والمناطق القريبة');
 
@@ -1187,6 +1311,7 @@ if(submitLogin){
         localStorage.setItem('malaebi_user',JSON.stringify(r.user));
         localStorage.setItem('malaebi_email',state.email);
         renderAccount();
+        updateNotificationBadge();
         showPage('home');
         toast(`مرحباً بك مجدداً يا ${r.user?.full_name||'لاعبنا'}`);
       }catch(e){
@@ -1524,9 +1649,11 @@ if(window.MalaebiAPI?.enabled()&&localStorage.getItem('malaebi_access_token')){
       localStorage.setItem('malaebi_user',JSON.stringify(me));
       if(me.email) localStorage.setItem('malaebi_email',me.email);
       renderAccount();
+      updateNotificationBadge();
     }
   }).catch(()=>{});
   loadMyBookings();
+  updateNotificationBadge();
 }
 
 if (isEmailVerificationRedirect) {

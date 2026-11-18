@@ -53,6 +53,8 @@
   createBooking:(fieldId,startsAt)=>request('/bookings',{method:'POST',headers:{'Idempotency-Key':crypto.randomUUID()},body:JSON.stringify({field_id:fieldId,starts_at:startsAt})}),
   myBookings:()=>request('/bookings/mine'),
   notifications:()=>request('/notifications'),
+  markNotificationsRead:()=>request('/notifications/read',{method:'POST'}),
+  changePassword:newPassword=>request('/auth/change-password',{method:'POST',body:JSON.stringify({new_password:newPassword})}),
   bookingDetail:id=>request(`/bookings/${encodeURIComponent(id)}`),
   cancelBooking:id=>request(`/bookings/${encodeURIComponent(id)}/cancel`,{method:'POST'}),
   review:(id,rating,comment)=>request(`/bookings/${encodeURIComponent(id)}/reviews`,{method:'POST',body:JSON.stringify({rating,comment})}),

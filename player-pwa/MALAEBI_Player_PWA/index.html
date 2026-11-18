@@ -7,7 +7,7 @@
   <meta name="description" content="ملاعبي — اكتشف ملاعب كرة القدم واحجز ملعبك بسهولة في مأرب" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=13" />
+  <link rel="stylesheet" href="styles.css?v=14" />
   <title>ملاعبي | احجز ملعبك</title>
 </head>
 <body>
@@ -20,7 +20,7 @@
           <svg class="theme-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           <svg class="theme-sun hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
         </button>
-        <button class="icon-btn" id="notificationsBtn" aria-label="الإشعارات">♧<i class="notification-dot"></i></button>
+        <button class="icon-btn" id="notificationsBtn" aria-label="الإشعارات" type="button" style="font-size:18px;">🔔<i class="notification-dot" id="headerNotificationDot"></i></button>
       </div>
     </header>
 
@@ -78,6 +78,7 @@
         <div class="profile-card"><div class="avatar" id="profileAvatar" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><div><b id="profileName">لاعب ملاعبي</b><small id="profilePhone">سجّل الدخول لإدارة حسابك</small></div><button class="outline-btn" id="loginBtn">تسجيل الدخول</button></div>
         <div class="account-menu">
           <button data-action="personal"><span>👤</span><span><b>البيانات الشخصية</b><small>الاسم والبريد ورقم الهاتف</small></span><i>‹</i></button>
+          <button data-action="change-password" id="accountChangePassBtn" class="hidden"><span>🔑</span><span><b>تغيير كلمة المرور</b><small>تحديث كلمة مرور حسابك</small></span><i>‹</i></button>
           <button data-action="favorites"><span>♥</span><span><b>الملاعب المفضلة</b><small>الملاعب التي حفظتها</small></span><i>‹</i></button>
           <button data-action="notifications"><span>🔔</span><span><b>الإشعارات</b><small>تنبيهات وتحديثات حجوزاتك</small></span><i>‹</i></button>
           <button data-go="wallet"><span>💳</span><span><b>محفظتي</b><small>الرصيد والمعاملات</small></span><i>‹</i></button>
@@ -433,7 +434,7 @@
 
   <div class="modal-backdrop hidden" id="modalBackdrop"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose">×</button><div id="modalContent"></div></div></div>
   <div class="toast" id="toast" role="status"></div>
-  <script src="assets/js/qrcode.min.js?v=13"></script>
-  <script src="config.js?v=13"></script><script src="api-client.js?v=13"></script><script src="app.js?v=13"></script>
+  <script src="assets/js/qrcode.min.js?v=14"></script>
+  <script src="config.js?v=14"></script><script src="api-client.js?v=14"></script><script src="app.js?v=14"></script>
 </body>
 </html>

@@ -19,6 +19,7 @@ export class PlayerController {
  @Get('fields/:fieldId/availability') availability(@Param('fieldId') id:string,@Query('date') date:string){ return this.player.availability(id,date); }
  @Post('bookings') @UseGuards(JwtGuard) create(@Req() req:any,@Body() dto:CreateBookingDto,@Headers('idempotency-key') key:string){ return this.player.createBooking(req.user.sub,dto,key); }
  @Get('notifications') @UseGuards(JwtGuard) notifications(@Req() req:any){return this.player.notifications(req.user.sub);}
+ @Post('notifications/read') @UseGuards(JwtGuard) markNotificationsRead(@Req() req:any){return this.player.markNotificationsRead(req.user.sub);}
  @Get('bookings/mine') @UseGuards(JwtGuard) mine(@Req() req:any){ return this.player.myBookings(req.user.sub); }
  @Get('bookings/:bookingId') @UseGuards(JwtGuard) detail(@Req() req:any,@Param('bookingId') id:string){ return this.player.bookingDetail(req.user.sub,id); }
  @Post('bookings/:bookingId/cancel') @UseGuards(JwtGuard) cancel(@Req() req:any,@Param('bookingId') id:string){ return this.player.cancelBooking(req.user.sub,id); }
