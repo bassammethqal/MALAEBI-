@@ -841,13 +841,17 @@
   }
 
   function showLoginScreen() {
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('adminAppShell').style.display = 'none';
+    const login = document.getElementById('loginScreen');
+    const app = document.getElementById('adminApp');
+    if (login) login.style.display = 'flex';
+    if (app) app.style.display = 'none';
   }
 
   function showAdminApp() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminAppShell').style.display = 'flex';
+    const login = document.getElementById('loginScreen');
+    const app = document.getElementById('adminApp');
+    if (login) login.style.display = 'none';
+    if (app) app.style.display = 'flex';
 
     // Populate admin profile info
     const storedUser = window.MalaebiAdminAPI.getStoredUser();
@@ -952,20 +956,25 @@
   }
 
   async function init() {
-    initTheme();
-    bindEvents();
+    try {
+      initTheme();
+      bindEvents();
 
-    // Check if already authenticated
-    if (window.MalaebiAdminAPI.isLoggedIn()) {
-      try {
-        showAdminApp();
-        await loadDashboardData();
-      } catch (err) {
-        console.warn('Session expired or unauthorized:', err);
-        window.MalaebiAdminAPI.logout();
+      // Check if already authenticated
+      if (window.MalaebiAdminAPI.isLoggedIn()) {
+        try {
+          showAdminApp();
+          await loadDashboardData();
+        } catch (err) {
+          console.warn('Session expired or unauthorized:', err);
+          window.MalaebiAdminAPI.logout();
+          showLoginScreen();
+        }
+      } else {
         showLoginScreen();
       }
-    } else {
+    } catch (topErr) {
+      console.error('Fatal initialization error:', topErr);
       showLoginScreen();
     }
 
