@@ -1,13 +1,13 @@
 /* MALAEBI Admin Dashboard Service Worker */
-const CACHE_NAME = 'malaebi-admin-v1.1.1';
+const CACHE_NAME = 'malaebi-admin-v1.1.2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './styles.css?v=1.1.1',
-  './icons3d.js?v=1.1.1',
-  './config.js?v=1.1.1',
-  './api-client.js?v=1.1.1',
-  './app.js?v=1.1.1',
+  './styles.css?v=1.1.2',
+  './icons3d.js?v=1.1.2',
+  './config.js?v=1.1.2',
+  './api-client.js?v=1.1.2',
+  './app.js?v=1.1.2',
   './manifest.webmanifest',
   './assets/images/logo.svg',
   './assets/images/icon.svg',

@@ -69,9 +69,9 @@
       if (icon) {
         iconEl.innerHTML = icon;
       } else if (window.MalaebiIcons3D) {
-        iconEl.innerHTML = danger ? window.MalaebiIcons3D.door(28) : window.MalaebiIcons3D.checkBadge(28);
+        iconEl.innerHTML = danger ? window.MalaebiIcons3D.trash(28) : window.MalaebiIcons3D.checkBadge(28);
       } else {
-        iconEl.innerHTML = danger ? '⚠️' : '✓';
+        iconEl.innerHTML = danger ? (window.MalaebiIcons3D ? window.MalaebiIcons3D.trash(28) : '✕') : (window.MalaebiIcons3D ? window.MalaebiIcons3D.checkBadge(28) : '✓');
       }
 
       dialog.classList.remove('hidden');
@@ -140,9 +140,82 @@
 
   function updateThemeIcon() {
     const icon = document.getElementById('themeIcon');
-    if (icon) {
-      icon.textContent = state.currentTheme === 'dark' ? '☀️' : '🌙';
+    if (icon && window.MalaebiIcons3D) {
+      icon.innerHTML = state.currentTheme === 'dark'
+        ? window.MalaebiIcons3D.sun(20)
+        : window.MalaebiIcons3D.moon(20);
     }
+  }
+
+  // Render Static 3D Icons Across The Dashboard
+  function renderStaticIcons() {
+    if (!window.MalaebiIcons3D) return;
+    const I = window.MalaebiIcons3D;
+
+    // Topbar
+    const refreshEl = document.getElementById('refreshIcon');
+    if (refreshEl) refreshEl.innerHTML = I.refresh(20);
+    const logoutEl = document.getElementById('logoutIcon');
+    if (logoutEl) logoutEl.innerHTML = I.door(20);
+    updateThemeIcon();
+
+    // Headers
+    const kpiStadEl = document.getElementById('kpiStadIcon');
+    if (kpiStadEl) kpiStadEl.innerHTML = I.chart(22);
+    const secVenuesEl = document.getElementById('sectionVenuesIcon');
+    if (secVenuesEl) secVenuesEl.innerHTML = I.stadium(22);
+    const secBookingsEl = document.getElementById('sectionBookingsIcon');
+    if (secBookingsEl) secBookingsEl.innerHTML = I.clipboard(22);
+    const secAccountEl = document.getElementById('sectionAccountIcon');
+    if (secAccountEl) secAccountEl.innerHTML = I.crown(22);
+
+    // Subtabs
+    const subVenuesIcon = document.getElementById('subtabVenuesIcon');
+    if (subVenuesIcon) subVenuesIcon.innerHTML = I.stadium(16);
+    const subOwnersIcon = document.getElementById('subtabOwnersIcon');
+    if (subOwnersIcon) subOwnersIcon.innerHTML = I.user(16);
+
+    // KPI stat icons
+    const kpiV = document.getElementById('kpiIconVenues');
+    if (kpiV) kpiV.innerHTML = I.stadium(24);
+    const kpiF = document.getElementById('kpiIconFields');
+    if (kpiF) kpiF.innerHTML = I.ball(24);
+    const kpiU = document.getElementById('kpiIconUsers');
+    if (kpiU) kpiU.innerHTML = I.user(24);
+    const kpiB = document.getElementById('kpiIconBookings');
+    if (kpiB) kpiB.innerHTML = I.clipboard(24);
+
+    // Account quick links
+    const linkPwa = document.getElementById('linkPlayerPwaIcon');
+    if (linkPwa) linkPwa.innerHTML = I.phone(18);
+    const linkVenue = document.getElementById('linkVenueDashIcon');
+    if (linkVenue) linkVenue.innerHTML = I.stadium(18);
+    const accLogout = document.getElementById('accountLogoutIcon');
+    if (accLogout) accLogout.innerHTML = I.door(18);
+
+    // Bottom Navigation
+    const bOverview = document.getElementById('bnavIconOverview');
+    if (bOverview) bOverview.innerHTML = I.chart(22);
+    const bVenues = document.getElementById('bnavIconVenues');
+    if (bVenues) bVenues.innerHTML = I.stadium(22);
+    const bBookings = document.getElementById('bnavIconBookings');
+    if (bBookings) bBookings.innerHTML = I.clipboard(22);
+    const bAccount = document.getElementById('bnavIconAccount');
+    if (bAccount) bAccount.innerHTML = I.crown(22);
+
+    // Modal static icons
+    const genPw = document.getElementById('genPwIcon');
+    if (genPw) genPw.innerHTML = I.dice(16);
+    const subOwner = document.getElementById('submitOwnerIcon');
+    if (subOwner) subOwner.innerHTML = I.rocket(18);
+    const credSucc = document.getElementById('credSuccessIcon');
+    if (credSucc) credSucc.innerHTML = I.celebrate(22);
+    const waShare = document.getElementById('waShareIcon');
+    if (waShare) waShare.innerHTML = I.whatsapp(18);
+    const copyCred = document.getElementById('copyCredIcon');
+    if (copyCred) copyCred.innerHTML = I.copy(18);
+    const noteEl = document.getElementById('ownerNoteIcon');
+    if (noteEl) noteEl.innerHTML = I.about(16);
   }
 
   // Format YER Currency
@@ -304,18 +377,20 @@
         const name = (v.name || '').toLowerCase();
         const owner = (v.owner_name || '').toLowerCase();
         const area = (v.area_name || '').toLowerCase();
-        const phone = (v.owner_phone || v.phone || '').toLowerCase();
-        return name.includes(searchTerm) || owner.includes(searchTerm) || area.includes(searchTerm) || phone.includes(searchTerm);
+        return name.includes(searchTerm) || owner.includes(searchTerm) || area.includes(searchTerm);
       });
     }
 
     const badge = document.getElementById('venuesCountBadge');
     if (badge) badge.textContent = (state.venues || []).length;
 
+    const I = window.MalaebiIcons3D;
+
     if (list.length === 0) {
+      const emptyIcon = I ? I.stadium(36) : '';
       container.innerHTML = `
         <div style="text-align:center; padding:36px 16px; color:var(--muted); font-size:13px; background:var(--card); border-radius:16px; border:1px solid var(--line);">
-          <div style="font-size:32px; margin-bottom:8px;">🏟️</div>
+          <div class="icon-3d-wrap lg" style="margin:0 auto 10px;">${emptyIcon}</div>
           <b>لا توجد منشآت مطابقة للبحث أو الفلتر</b>
           <p style="margin-top:6px; font-size:11.5px;">تظهر هنا المنشآت التي أنشأها الملاك بأنفسهم في بوابة المنشأة.</p>
         </div>
@@ -334,11 +409,12 @@
 
       const thumbImg = v.cover_image_url
         ? `<img src="${escapeHtml(v.cover_image_url)}" alt="${escapeHtml(v.name)}" loading="lazy">`
-        : `<div style="font-size:24px;">🏟️</div>`;
+        : `<div class="icon-3d-wrap lg">${I ? I.stadium(26) : ''}</div>`;
 
       const ownerPhoneClean = (v.owner_phone || v.phone || '').replace(/[^0-9]/g, '');
       const whatsappBtn = ownerPhoneClean
-        ? `<a href="https://wa.me/967${ownerPhoneClean.slice(-9)}?text=${encodeURIComponent('السلام عليكم أخي ' + (v.owner_name || '') + '، بخصوص منشأتكم ' + v.name + ' في منصة ملاعبي.')}" target="_blank" rel="noopener" class="btn-outline btn-sm" style="text-decoration:none; color:#10b981; border-color:rgba(16,185,129,0.3);">
+        ? `<a href="https://wa.me/967${ownerPhoneClean.slice(-9)}?text=${encodeURIComponent('السلام عليكم أخي ' + (v.owner_name || '') + '، بخصوص منشأتكم ' + v.name + ' في منصة ملاعبي.')}" target="_blank" rel="noopener" class="btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:5px; text-decoration:none; color:#10b981; border-color:rgba(16,185,129,0.3);">
+            ${I ? I.whatsapp(15) : ''}
             <span>واتساب</span>
            </a>`
         : '';
@@ -352,7 +428,8 @@
             <div class="venue-card-meta">
               <h3 class="venue-card-title">${escapeHtml(v.name)}</h3>
               <div class="venue-card-area">
-                <span>📍 ${escapeHtml(v.area_name || 'مأرب')}</span>
+                <span class="icon-3d-wrap sm">${I ? I.pin(13) : ''}</span>
+                <span>${escapeHtml(v.area_name || 'مأرب')}</span>
                 <span>·</span>
                 ${statusBadge}
               </div>
@@ -369,20 +446,23 @@
           </div>
 
           <div class="venue-stats-row">
-            <span>⚽ <b>${v.fields_count || 1}</b> ملاعب</span>
-            <span>📋 <b>${v.bookings_count || 0}</b> حجز</span>
-            <span>📅 مسجلة منذ: ${v.created_at ? v.created_at.slice(0, 10) : '-'}</span>
+            <span><span class="icon-3d-wrap sm">${I ? I.ball(13) : ''}</span> <b>${v.fields_count || 1}</b> ملاعب</span>
+            <span><span class="icon-3d-wrap sm">${I ? I.clipboard(13) : ''}</span> <b>${v.bookings_count || 0}</b> حجز</span>
+            <span><span class="icon-3d-wrap sm">${I ? I.calendar(13) : ''}</span> مسجلة منذ: ${v.created_at ? v.created_at.slice(0, 10) : '-'}</span>
           </div>
 
           <div class="venue-actions-row">
-            <button type="button" class="btn-outline btn-sm btn-upload-image" data-venue-id="${v.id}">
-              <span>📷 رفع صورة غلاف</span>
+            <button type="button" class="btn-outline btn-sm btn-upload-image" data-venue-id="${v.id}" style="display:inline-flex; align-items:center; gap:5px;">
+              ${I ? I.camera(15) : ''}
+              <span>رفع صورة غلاف</span>
             </button>
-            <button type="button" class="btn-outline btn-sm btn-toggle-status" data-venue-id="${v.id}" data-next-status="${toggleActionStatus}">
+            <button type="button" class="btn-outline btn-sm btn-toggle-status" data-venue-id="${v.id}" data-next-status="${toggleActionStatus}" style="display:inline-flex; align-items:center; gap:5px;">
+              ${I ? I.checkBadge(15) : ''}
               <span>${toggleActionText}</span>
             </button>
-            <button type="button" class="btn-outline btn-danger-outline btn-sm btn-delete-venue" data-venue-id="${v.id}" data-venue-name="${escapeHtml(v.name)}">
-              <span>🗑️ حذف المنشأة</span>
+            <button type="button" class="btn-outline btn-danger-outline btn-sm btn-delete-venue" data-venue-id="${v.id}" data-venue-name="${escapeHtml(v.name)}" style="display:inline-flex; align-items:center; gap:5px;">
+              ${I ? I.trash(15) : ''}
+              <span>حذف المنشأة</span>
             </button>
           </div>
         </article>
@@ -420,10 +500,13 @@
     const badge = document.getElementById('ownersCountBadge');
     if (badge) badge.textContent = (state.owners || []).length;
 
+    const I = window.MalaebiIcons3D;
+
     if (list.length === 0) {
+      const emptyIcon = I ? I.user(36) : '';
       container.innerHTML = `
         <div style="text-align:center; padding:36px 16px; color:var(--muted); font-size:13px; background:var(--card); border-radius:16px; border:1px solid var(--line);">
-          <div style="font-size:32px; margin-bottom:8px;">👤</div>
+          <div class="icon-3d-wrap lg" style="margin:0 auto 10px;">${emptyIcon}</div>
           <b>لا توجد حسابات ملاك مطابقة للبحث أو الفلتر</b>
           <p style="margin-top:6px; font-size:11.5px;">يمكنك إضافة مالك ملعب جديد بالضغط على زر «+ إضافة حساب مالك ملعب».</p>
         </div>
@@ -434,16 +517,17 @@
     container.innerHTML = list.map(o => {
       const isTempPass = o.must_change_password;
       const passBadge = isTempPass
-        ? '<span class="venue-badge suspended" style="background:rgba(245,158,11,0.12); color:#d97706; border-color:rgba(245,158,11,0.3);">🔑 كلمة مرور مؤقتة</span>'
-        : '<span class="venue-badge active">✓ تم تغيير كلمة المرور</span>';
+        ? `<span class="venue-badge suspended" style="display:inline-flex; align-items:center; gap:5px; background:rgba(245,158,11,0.12); color:#d97706; border-color:rgba(245,158,11,0.3);">${I ? I.key(13) : ''}<span>كلمة مرور مؤقتة</span></span>`
+        : `<span class="venue-badge active" style="display:inline-flex; align-items:center; gap:5px;">${I ? I.checkBadge(13) : ''}<span>تم تغيير كلمة المرور</span></span>`;
 
       const venueInfo = o.venues_count > 0
-        ? `<div style="font-size:12px; color:var(--primary); font-weight:700; margin-top:6px;">🏟️ المنشآت (${o.venues_count}): ${o.venues.map(v => escapeHtml(v.name)).join('، ')}</div>`
-        : `<div style="font-size:12px; color:var(--muted); font-weight:600; margin-top:6px;">⏳ حساب جديد — لم يُضف منشأة بعد</div>`;
+        ? `<div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--primary); font-weight:700; margin-top:6px;"><span class="icon-3d-wrap sm">${I ? I.stadium(13) : ''}</span><span>المنشآت (${o.venues_count}): ${o.venues.map(v => escapeHtml(v.name)).join('، ')}</span></div>`
+        : `<div style="font-size:12px; color:var(--muted); font-weight:600; margin-top:6px;">حساب جديد — لم يُضف منشأة بعد</div>`;
 
       const cleanPhone = (o.phone || '').replace(/[^0-9]/g, '');
       const whatsappBtn = cleanPhone
-        ? `<a href="https://wa.me/967${cleanPhone.slice(-9)}?text=${encodeURIComponent('السلام عليكم أخي ' + (o.full_name || '') + '، إدارة منصة ملاعبي ترحب بك. يمكنك الدخول لبوابة المنشأة عبر: https://malaebi-venue-dashboard.vercel.app')}" target="_blank" rel="noopener" class="btn-outline btn-sm" style="text-decoration:none; color:#10b981; border-color:rgba(16,185,129,0.3);">
+        ? `<a href="https://wa.me/967${cleanPhone.slice(-9)}?text=${encodeURIComponent('السلام عليكم أخي ' + (o.full_name || '') + '، إدارة منصة ملاعبي ترحب بك. يمكنك الدخول لبوابة المنشأة عبر: https://malaebi-venue-dashboard.vercel.app')}" target="_blank" rel="noopener" class="btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:5px; text-decoration:none; color:#10b981; border-color:rgba(16,185,129,0.3);">
+            ${I ? I.whatsapp(15) : ''}
             <span>واتساب</span>
            </a>`
         : '';
@@ -451,8 +535,8 @@
       return `
         <article class="venue-card" data-owner-id="${o.id}">
           <div class="venue-card-header">
-            <div class="venue-thumbnail" style="background:var(--primary-dark); color:#ffffff; font-size:18px; font-weight:900;">
-              👤
+            <div class="venue-thumbnail" style="display:grid; place-items:center; background:linear-gradient(135deg, rgba(8,123,67,0.12), rgba(8,123,67,0.22));">
+              ${I ? I.user(26) : ''}
             </div>
             <div class="venue-card-meta">
               <h3 class="venue-card-title">${escapeHtml(o.full_name)}</h3>
@@ -472,8 +556,8 @@
           </div>
 
           <div class="venue-stats-row">
-            <span>📅 مسجل منذ: ${o.created_at ? o.created_at.slice(0, 10) : '-'}</span>
-            <span>🏟️ المنشآت: <b>${o.venues_count}</b></span>
+            <span><span class="icon-3d-wrap sm">${I ? I.calendar(13) : ''}</span> مسجل منذ: ${o.created_at ? o.created_at.slice(0, 10) : '-'}</span>
+            <span><span class="icon-3d-wrap sm">${I ? I.stadium(13) : ''}</span> المنشآت: <b>${o.venues_count}</b></span>
           </div>
         </article>
       `;
@@ -508,10 +592,13 @@
     const badge = document.getElementById('bookingsCountBadge');
     if (badge) badge.textContent = `${list.length} حجز`;
 
+    const I = window.MalaebiIcons3D;
+
     if (list.length === 0) {
+      const emptyIcon = I ? I.clipboard(36) : '';
       container.innerHTML = `
         <div style="text-align:center; padding:36px 16px; color:var(--muted); font-size:13px; background:var(--card); border-radius:16px; border:1px solid var(--line);">
-          <div style="font-size:32px; margin-bottom:8px;">📋</div>
+          <div class="icon-3d-wrap lg" style="margin:0 auto 10px;">${emptyIcon}</div>
           <b>لا توجد حجوزات مطابقة للبحث أو الفلتر</b>
         </div>
       `;
@@ -540,16 +627,22 @@
 
           <div class="booking-item-body">
             <div class="booking-meta-line">
-              <span>🏟️ <b>${escapeHtml(b.venue_name || 'المنشأة')}</b> (${escapeHtml(b.field_name || 'الملعب')})</span>
+              <span class="icon-3d-wrap sm">${I ? I.stadium(13) : ''}</span>
+              <span><b>${escapeHtml(b.venue_name || 'المنشأة')}</b> (${escapeHtml(b.field_name || 'الملعب')})</span>
             </div>
             <div class="booking-meta-line">
-              <span>👤 اللاعب: ${escapeHtml(b.player_name || 'لاعب')} · <span dir="ltr">${escapeHtml(b.player_phone || '-')}</span></span>
+              <span class="icon-3d-wrap sm">${I ? I.user(13) : ''}</span>
+              <span>اللاعب: ${escapeHtml(b.player_name || 'لاعب')} · <span dir="ltr">${escapeHtml(b.player_phone || '-')}</span></span>
             </div>
             <div class="booking-meta-line">
-              <span>🕒 الموعد: ${dateStr} الساعة ${timeStr} (${b.duration_minutes || 60} دقيقة)</span>
+              <span class="icon-3d-wrap sm">${I ? I.clock(13) : ''}</span>
+              <span>الموعد: ${dateStr} الساعة ${timeStr} (${b.duration_minutes || 60} دقيقة)</span>
             </div>
             <div class="booking-meta-line" style="justify-content:space-between; margin-top:6px; padding-top:6px; border-top:1px dashed var(--line);">
-              <span>💰 المبلغ الإجمالي:</span>
+              <span style="display:inline-flex; align-items:center; gap:6px;">
+                <span class="icon-3d-wrap sm">${I ? I.cash(13) : ''}</span>
+                <span>المبلغ الإجمالي:</span>
+              </span>
               <b style="color:var(--primary); font-size:13.5px;">${formatMoney(b.total_price)}</b>
             </div>
           </div>
@@ -638,7 +731,7 @@
       renderCredentialsBox(state.lastCreatedCredentials);
       document.getElementById('credentialsModal').classList.add('visible');
 
-      showToast('تم إنشاء حساب المالك بنجاح 🎉', 'success');
+      showToast('تم إنشاء حساب المالك بنجاح', 'success');
       await loadDashboardData();
 
     } catch (err) {
@@ -649,7 +742,7 @@
       }
     } finally {
       submitBtn.disabled = false;
-      submitBtn.innerHTML = '<span>إنشاء حساب المالك وتوليد بيانات الدخول 🚀</span>';
+      submitBtn.innerHTML = '<span>إنشاء حساب المالك وتوليد بيانات الدخول</span> <span id="submitOwnerIcon">' + (window.MalaebiIcons3D ? window.MalaebiIcons3D.rocket(18) : '') + '</span>';
     }
   }
 
@@ -674,8 +767,9 @@
         <span class="credential-label">رابط بوابة المنشأة:</span>
         <span class="credential-value" dir="ltr"><a href="${c.portalUrl}" target="_blank" style="color:var(--accent); text-decoration:underline;">${c.portalUrl}</a></span>
       </div>
-      <div style="background:var(--input-bg); border-radius:10px; padding:10px 12px; margin-top:8px; font-size:12px; color:var(--muted); line-height:1.5; border:1px solid var(--line);">
-        💡 <b>ملاحظة للمالك:</b> سيُطلب منك تغيير كلمة المرور وإدخال بيانات منشأتك وملعبك عند أول تسجيل دخول.
+      <div style="display:flex; align-items:flex-start; gap:8px; background:var(--input-bg); border-radius:10px; padding:10px 12px; margin-top:8px; font-size:12px; color:var(--muted); line-height:1.5; border:1px solid var(--line);">
+        <span class="icon-3d-wrap sm" style="flex-shrink:0;">${window.MalaebiIcons3D ? window.MalaebiIcons3D.about(14) : ''}</span>
+        <span><b>ملاحظة للمالك:</b> سيُطلب منك تغيير كلمة المرور وإدخال بيانات منشأتك وملعبك عند أول تسجيل دخول.</span>
       </div>
     `;
   }
@@ -711,7 +805,7 @@
     const text = getWhatsAppShareText(c);
     try {
       await navigator.clipboard.writeText(text);
-      showToast('تم نسخ بيانات الاعتماد بنجاح إلى الحافظة 📋', 'success');
+      showToast('تم نسخ بيانات الاعتماد بنجاح إلى الحافظة', 'success');
     } catch {
       showToast('تعذر النسخ التلقائي، يمكنك تحديد النص ونسخه يدوياً', 'error');
     }
@@ -774,7 +868,7 @@
     showToast('جاري رفع صورة المنشأة إلى السحابة... ⏳');
     try {
       await window.MalaebiAdminAPI.uploadVenueImage(venueId, file);
-      showToast('تم رفع صورة الغلاف بنجاح 📷', 'success');
+      showToast('تم رفع صورة الغلاف بنجاح', 'success');
       await loadDashboardData();
     } catch (err) {
       showToast(err.message || 'فشل رفع الصورة', 'error');
@@ -876,7 +970,7 @@
 
     // Refresh button
     document.getElementById('refreshBtn')?.addEventListener('click', async () => {
-      showToast('جاري تحديث البيانات... 🔄');
+      showToast('جاري تحديث البيانات...');
       await loadDashboardData();
       showToast('تم تحديث البيانات بنجاح', 'success');
     });
@@ -958,6 +1052,7 @@
   async function init() {
     try {
       initTheme();
+      renderStaticIcons();
       bindEvents();
 
       // Check if already authenticated

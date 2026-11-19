@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#072b1c">
   <link rel="icon" type="image/svg+xml" href="./assets/images/logo.svg">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=1.1.1">
+  <link rel="stylesheet" href="./styles.css?v=1.1.2">
 </head>
 <body>
 
@@ -72,13 +72,13 @@
 
         <div class="topbar-actions">
           <button type="button" class="icon-btn" id="refreshBtn" title="تحديث البيانات" aria-label="تحديث">
-            <span id="refreshIcon">🔄</span>
+            <span id="refreshIcon"></span>
           </button>
           <button type="button" class="icon-btn" id="themeToggleBtn" title="تبديل المظهر" aria-label="تبديل الوضع">
-            <span id="themeIcon">🌙</span>
+            <span id="themeIcon"></span>
           </button>
           <button type="button" class="icon-btn" id="logoutBtn" title="تسجيل الخروج" aria-label="تسجيل الخروج" style="color:var(--red);">
-            <span>🚪</span>
+            <span id="logoutIcon"></span>
           </button>
         </div>
       </header>
@@ -90,7 +90,7 @@
         <section id="viewOverview" class="view-panel active">
           <div class="section-header">
             <h2 class="section-title">
-              <span id="kpiStadIcon">🏟️</span>
+              <span id="kpiStadIcon"></span>
               <span>مؤشرات منصة ملاعبي</span>
             </h2>
             <span style="font-size:12px; color:var(--muted);" id="todayDateStr"></span>
@@ -113,7 +113,7 @@
             <div class="kpi-card">
               <div class="kpi-top">
                 <span class="kpi-label">المنشآت المسجلة</span>
-                <div class="kpi-icon-wrap" id="kpiIconVenues">🏟️</div>
+                <div class="kpi-icon-wrap" id="kpiIconVenues"></div>
               </div>
               <div class="kpi-value" id="statVenuesTotal">0</div>
               <div class="kpi-sub" id="statVenuesActive">0 منشأة نشطة</div>
@@ -123,7 +123,7 @@
             <div class="kpi-card">
               <div class="kpi-top">
                 <span class="kpi-label">الملاعب الرياضية</span>
-                <div class="kpi-icon-wrap" id="kpiIconFields">⚽</div>
+                <div class="kpi-icon-wrap" id="kpiIconFields"></div>
               </div>
               <div class="kpi-value" id="statFieldsTotal">0</div>
               <div class="kpi-sub" id="statFieldsActive">0 ملعب نشط</div>
@@ -133,7 +133,7 @@
             <div class="kpi-card">
               <div class="kpi-top">
                 <span class="kpi-label">اللاعبون والمستخدمون</span>
-                <div class="kpi-icon-wrap" id="kpiIconUsers">👥</div>
+                <div class="kpi-icon-wrap" id="kpiIconUsers"></div>
               </div>
               <div class="kpi-value" id="statUsersTotal">0</div>
               <div class="kpi-sub">حسابات نشطة في مأرب</div>
@@ -143,7 +143,7 @@
             <div class="kpi-card">
               <div class="kpi-top">
                 <span class="kpi-label">إجمالي الحجوزات</span>
-                <div class="kpi-icon-wrap" id="kpiIconBookings">📋</div>
+                <div class="kpi-icon-wrap" id="kpiIconBookings"></div>
               </div>
               <div class="kpi-value" id="statBookingsTotal">0</div>
               <div class="kpi-sub" id="statRevenueTotal">0 ريال</div>
@@ -164,7 +164,7 @@
         <section id="viewVenues" class="view-panel">
           <div class="section-header">
             <h2 class="section-title">
-              <span>🏟️</span>
+              <span id="sectionVenuesIcon"></span>
               <span>المنشآت والملاك</span>
             </h2>
             <button type="button" class="btn-primary btn-sm" id="openNewOwnerBtn">
@@ -174,11 +174,15 @@
 
           <!-- Subtabs: Venues vs Owners -->
           <div class="venue-subtabs" style="display:flex; gap:8px; margin-bottom:14px; background:var(--input-bg); padding:4px; border-radius:12px; border:1px solid var(--line);">
-            <button type="button" class="subtab-btn active" id="subtabVenues" style="flex:1; padding:8px 12px; border-radius:8px; border:none; font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; background:var(--card-bg); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.06); transition:all 0.2s;">
-              🏟️ المنشآت والملاعب (<span id="venuesCountBadge">0</span>)
+            <button type="button" class="subtab-btn active" id="subtabVenues" style="flex:1; display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 12px; border-radius:8px; border:none; font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; background:var(--card-bg); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.06); transition:all 0.2s;">
+              <span id="subtabVenuesIcon"></span>
+              <span>المنشآت والملاعب</span>
+              (<span id="venuesCountBadge">0</span>)
             </button>
-            <button type="button" class="subtab-btn" id="subtabOwners" style="flex:1; padding:8px 12px; border-radius:8px; border:none; font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; background:transparent; color:var(--muted); transition:all 0.2s;">
-              👤 حسابات الملاك (<span id="ownersCountBadge">0</span>)
+            <button type="button" class="subtab-btn" id="subtabOwners" style="flex:1; display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 12px; border-radius:8px; border:none; font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; background:transparent; color:var(--muted); transition:all 0.2s;">
+              <span id="subtabOwnersIcon"></span>
+              <span>حسابات الملاك</span>
+              (<span id="ownersCountBadge">0</span>)
             </button>
           </div>
 
@@ -186,7 +190,7 @@
           <div id="venuesPanel">
             <!-- Filter & Search Bar -->
             <div style="display:flex; gap:8px; margin-bottom:14px;">
-              <input type="text" id="venueSearchInput" class="form-input" placeholder="🔍 ابحث بالاسم أو المالك أو المنطقة..." style="flex:1; padding:8px 12px; font-size:12.5px;">
+              <input type="text" id="venueSearchInput" class="form-input" placeholder="ابحث بالاسم أو المالك أو المنطقة..." style="flex:1; padding:8px 12px; font-size:12.5px;">
               <select id="venueStatusFilter" class="form-select" style="width:auto; padding:8px 10px; font-size:12.5px;">
                 <option value="all">كل الحالات</option>
                 <option value="active">نشطة فقط</option>
@@ -204,7 +208,7 @@
           <div id="ownersPanel" style="display:none;">
             <!-- Filter & Search Bar -->
             <div style="display:flex; gap:8px; margin-bottom:14px;">
-              <input type="text" id="ownerSearchInput" class="form-input" placeholder="🔍 ابحث بالاسم أو البريد أو الهاتف..." style="flex:1; padding:8px 12px; font-size:12.5px;">
+              <input type="text" id="ownerSearchInput" class="form-input" placeholder="ابحث بالاسم أو البريد أو الهاتف..." style="flex:1; padding:8px 12px; font-size:12.5px;">
               <select id="ownerStatusFilter" class="form-select" style="width:auto; padding:8px 10px; font-size:12.5px;">
                 <option value="all">كل الحسابات</option>
                 <option value="has_venues">لديهم منشأة</option>
@@ -224,7 +228,7 @@
         <section id="viewBookings" class="view-panel">
           <div class="section-header">
             <h2 class="section-title">
-              <span>📋</span>
+              <span id="sectionBookingsIcon"></span>
               <span>مراقبة الحجوزات</span>
             </h2>
             <span style="font-size:11.5px; color:var(--muted);" id="bookingsCountBadge">0 حجز</span>
@@ -232,7 +236,7 @@
 
           <!-- Bookings Filter Bar -->
           <div style="display:flex; gap:8px; margin-bottom:14px;">
-            <input type="text" id="bookingSearchInput" class="form-input" placeholder="🔍 بحث برقم الحجز، اللاعب، أو المنشأة..." style="flex:1; padding:8px 12px; font-size:12.5px;">
+            <input type="text" id="bookingSearchInput" class="form-input" placeholder="بحث برقم الحجز أو اللاعب أو المنشأة..." style="flex:1; padding:8px 12px; font-size:12.5px;">
             <select id="bookingStatusFilter" class="form-select" style="width:auto; padding:8px 10px; font-size:12.5px;">
               <option value="all">كل الحالات</option>
               <option value="confirmed">مؤكدة</option>
@@ -252,7 +256,7 @@
         <section id="viewAccount" class="view-panel">
           <div class="section-header">
             <h2 class="section-title">
-              <span>👑</span>
+              <span id="sectionAccountIcon"></span>
               <span>حساب الإدارة العليا</span>
             </h2>
           </div>
@@ -282,15 +286,15 @@
             <h4 style="font-size:14px; font-weight:800; color:var(--ink); margin-bottom:10px;">روابط سريعة للمنظومة</h4>
             <div style="display:flex; flex-direction:column; gap:8px;">
               <a href="https://malaebi-player-psi.vercel.app" target="_blank" rel="noopener" class="btn-outline" style="text-decoration:none; justify-content:space-between;">
-                <span>📱 فتح تطبيق اللاعب (Player PWA)</span>
+                <span style="display:inline-flex; align-items:center; gap:8px;"><span id="linkPlayerPwaIcon"></span><span>فتح تطبيق اللاعب (Player PWA)</span></span>
                 <span>↗</span>
               </a>
               <a href="https://malaebi-venue-dashboard.vercel.app" target="_blank" rel="noopener" class="btn-outline" style="text-decoration:none; justify-content:space-between;">
-                <span>🏟️ فتح بوابة أصحاب الملاعب (Venue Dashboard)</span>
+                <span style="display:inline-flex; align-items:center; gap:8px;"><span id="linkVenueDashIcon"></span><span>فتح بوابة أصحاب الملاعب (Venue Dashboard)</span></span>
                 <span>↗</span>
               </a>
               <button type="button" class="btn-outline btn-danger-outline" id="accountLogoutBtn" style="margin-top:8px;">
-                <span>🚪 تسجيل الخروج من لوحة الإدارة</span>
+                <span style="display:inline-flex; align-items:center; gap:8px;"><span id="accountLogoutIcon"></span><span>تسجيل الخروج من لوحة الإدارة</span></span>
               </button>
             </div>
           </div>
@@ -301,19 +305,19 @@
       <!-- Bottom Navigation Bar -->
       <nav class="admin-bottom-nav">
         <button type="button" class="bnav-btn active" data-view="viewOverview">
-          <span class="bnav-icon">📊</span>
+          <span class="bnav-icon" id="bnavIconOverview"></span>
           <span class="bnav-label">المؤشرات</span>
         </button>
         <button type="button" class="bnav-btn" data-view="viewVenues">
-          <span class="bnav-icon">🏟️</span>
+          <span class="bnav-icon" id="bnavIconVenues"></span>
           <span class="bnav-label">المنشآت</span>
         </button>
         <button type="button" class="bnav-btn" data-view="viewBookings">
-          <span class="bnav-icon">📋</span>
+          <span class="bnav-icon" id="bnavIconBookings"></span>
           <span class="bnav-label">الحجوزات</span>
         </button>
         <button type="button" class="bnav-btn" data-view="viewAccount">
-          <span class="bnav-icon">👑</span>
+          <span class="bnav-icon" id="bnavIconAccount"></span>
           <span class="bnav-label">الإدارة</span>
         </button>
       </nav>
@@ -352,18 +356,25 @@
             <div class="form-group">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <label class="form-label" style="margin-bottom:0;">كلمة المرور المؤقتة *</label>
-                <button type="button" class="btn-outline btn-sm" id="btnGenOwnerPassword" style="padding:2px 8px; font-size:11px;">🎲 توليد كلمة مرور</button>
+                <button type="button" class="btn-outline btn-sm" id="btnGenOwnerPassword" style="display:inline-flex; align-items:center; gap:6px; padding:3px 10px; font-size:11.5px;">
+                  <span id="genPwIcon"></span>
+                  <span>توليد كلمة مرور</span>
+                </button>
               </div>
               <input type="text" id="noTempPassword" class="form-input" placeholder="Malaebi123456!" required dir="ltr">
             </div>
           </div>
 
-          <div style="background:var(--card-bg); border:1px dashed var(--line); border-radius:12px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:var(--muted); line-height:1.5;">
-            💡 <b>ملاحظة:</b> سيُطلب من المالك تلقائياً تغيير كلمة المرور وإدخال اسم منشأته وتفاصيل ملعبه الأول بنفسه فور دخوله لبوابة المنشأة.
+          <div style="display:flex; align-items:flex-start; gap:8px; background:var(--card-bg); border:1px dashed var(--line); border-radius:12px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:var(--muted); line-height:1.5;">
+            <span id="ownerNoteIcon" style="flex-shrink:0; margin-top:2px;"></span>
+            <span><b>ملاحظة:</b> سيُطلب من المالك تلقائياً تغيير كلمة المرور وإدخال اسم منشأته وتفاصيل ملعبه الأول بنفسه فور دخوله لبوابة المنشأة.</span>
           </div>
 
           <button type="submit" id="btnSubmitNewOwner" class="btn-primary">
-            <span>إنشاء حساب المالك وتوليد بيانات الدخول 🚀</span>
+            <span style="display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+              <span>إنشاء حساب المالك وتوليد بيانات الدخول</span>
+              <span id="submitOwnerIcon"></span>
+            </span>
           </button>
         </form>
       </div>
@@ -374,7 +385,10 @@
   <div id="credentialsModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 class="modal-title" style="color:var(--primary);">🎉 تم إنشاء حساب المالك بنجاح!</h3>
+        <h3 class="modal-title" style="color:var(--primary); display:flex; align-items:center; gap:8px;">
+          <span id="credSuccessIcon"></span>
+          <span>تم إنشاء حساب المالك بنجاح!</span>
+        </h3>
         <button type="button" class="modal-close-btn" id="closeCredentialsModalBtn">✕</button>
       </div>
       <div class="modal-body">
@@ -388,10 +402,10 @@
 
         <div style="display:flex; flex-direction:column; gap:10px; margin-top:18px;">
           <button type="button" class="btn-primary" id="btnShareWhatsApp">
-            <span>📲 إرسال البيانات للمالك عبر واتساب</span>
+            <span style="display:inline-flex; align-items:center; justify-content:center; gap:8px;"><span id="waShareIcon"></span><span>إرسال البيانات للمالك عبر واتساب</span></span>
           </button>
           <button type="button" class="btn-outline" id="btnCopyCredentials">
-            <span>📋 نسخ بيانات الاعتماد كاملة</span>
+            <span style="display:inline-flex; align-items:center; justify-content:center; gap:8px;"><span id="copyCredIcon"></span><span>نسخ بيانات الاعتماد كاملة</span></span>
           </button>
         </div>
       </div>
@@ -405,9 +419,9 @@
   <div id="toastBar" class="toast-bar"></div>
 
   <!-- Scripts -->
-  <script src="./icons3d.js?v=1.1.1"></script>
-  <script src="./config.js?v=1.1.1"></script>
-  <script src="./api-client.js?v=1.1.1"></script>
-  <script src="./app.js?v=1.1.1"></script>
+  <script src="./icons3d.js?v=1.1.2"></script>
+  <script src="./config.js?v=1.1.2"></script>
+  <script src="./api-client.js?v=1.1.2"></script>
+  <script src="./app.js?v=1.1.2"></script>
 </body>
 </html>

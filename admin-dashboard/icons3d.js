@@ -75,19 +75,25 @@
     // 3. القمر 3D (Dark Mode Moon)
     moon: (s = 24) => {
       const gMoon = uid('moon');
+      const gGlow = uid('moonglow');
       return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="${gMoon}" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#a7f3d0"/>
-            <stop offset="40%" stop-color="#34d399"/>
-            <stop offset="85%" stop-color="#10b981"/>
-            <stop offset="100%" stop-color="#064e3b"/>
+            <stop offset="0%" stop-color="#fffbeb"/>
+            <stop offset="35%" stop-color="#fde047"/>
+            <stop offset="75%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
           </linearGradient>
+          <radialGradient id="${gGlow}" cx="14" cy="14" r="10" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+          </radialGradient>
         </defs>
-        <path d="M26 18.5C25.5 24.3 20.8 29 15 29C8.9 29 4 24.1 4 18C4 12.2 8.7 7.5 14.5 7C14 8.5 13.8 10.2 13.8 12C13.8 18.1 18.7 23 24.8 23C25.2 23 25.6 22.9 26 22.8V18.5Z" fill="url(#${gMoon})"/>
-        <path d="M25 18.5C24.5 23.5 20.2 27.5 15 27.5C9.7 27.5 5.5 23.3 5.5 18C5.5 13 9.3 8.8 14.2 8.5" stroke="#d1fae5" stroke-width="0.8" fill="none" opacity="0.7"/>
-        <circle cx="10" cy="16" r="1.5" fill="#064e3b" opacity="0.3"/>
-        <circle cx="13" cy="22" r="1.8" fill="#064e3b" opacity="0.25"/>
+        <circle cx="16" cy="16" r="13" fill="url(#${gGlow})"/>
+        <path d="M26 18.5C25.5 24.3 20.8 29 15 29C8.9 29 4 24.1 4 18C4 12.2 8.7 7.5 14.5 7C14 8.5 13.8 10.2 13.8 12C13.8 18.1 18.7 23 24.8 23C25.2 23 25.6 22.9 26 22.8V18.5Z" fill="url(#${gMoon})" filter="drop-shadow(0 2px 5px rgba(217, 119, 6, 0.45))"/>
+        <path d="M25 18.5C24.5 23.5 20.2 27.5 15 27.5C9.7 27.5 5.5 23.3 5.5 18C5.5 13 9.3 8.8 14.2 8.5" stroke="#fef9c3" stroke-width="0.8" fill="none" opacity="0.85"/>
+        <circle cx="11" cy="16" r="1.5" fill="#92400e" opacity="0.35"/>
+        <circle cx="14" cy="22" r="1.8" fill="#92400e" opacity="0.3"/>
       </svg>`;
     },
 
@@ -844,6 +850,222 @@
         </defs>
         <path d="M15 4H7C5.3 4 4 5.3 4 7V15L17 28L28 17L15 4Z" fill="url(#${gT})"/>
         <circle cx="9" cy="9" r="2.2" fill="#ffffff"/>
+      </svg>`;
+    },
+
+    // 38. التاج الذهبي للإدارة 3D (Golden Crown Super Admin)
+    crown: (s = 24) => {
+      const gC = uid('crown');
+      const gJewel = uid('jewel');
+      const gBase = uid('crownbase');
+      return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${gC}" x1="16" y1="5" x2="16" y2="27" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="25%" stop-color="#fbbf24"/>
+            <stop offset="70%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+          <radialGradient id="${gJewel}" cx="16" cy="18" r="4" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#6ee7b7"/>
+            <stop offset="70%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#064e3b"/>
+          </radialGradient>
+          <linearGradient id="${gBase}" x1="4" y1="23" x2="28" y2="27" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f59e0b"/>
+            <stop offset="50%" stop-color="#fef08a"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+        <path d="M4 23L7 9L12 16L16 6L20 16L25 9L28 23H4Z" fill="url(#${gC})" stroke="#fef08a" stroke-width="0.8"/>
+        <rect x="4" y="23" width="24" height="4" rx="2" fill="url(#${gBase})"/>
+        <circle cx="7" cy="9" r="2" fill="#fffbeb"/>
+        <circle cx="16" cy="6" r="2.4" fill="#fffbeb"/>
+        <circle cx="25" cy="9" r="2" fill="#fffbeb"/>
+        <circle cx="16" cy="18" r="3.2" fill="url(#${gJewel})" stroke="#d1fae5" stroke-width="0.6"/>
+        <circle cx="15.2" cy="17.2" r="1" fill="#ffffff" opacity="0.8"/>
+        <circle cx="8" cy="25" r="1.2" fill="#fffbeb"/>
+        <circle cx="16" cy="25" r="1.4" fill="#fffbeb"/>
+        <circle cx="24" cy="25" r="1.2" fill="#fffbeb"/>
+      </svg>`;
+    },
+
+    // 39. الكاميرا ورفع الصور 3D (Camera Image Upload)
+    camera: (s = 24) => {
+      const gCam = uid('cam');
+      const gLens = uid('camlens');
+      const gGlass = uid('camglass');
+      return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${gCam}" x1="4" y1="8" x2="28" y2="26" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="30%" stop-color="#10b981"/>
+            <stop offset="85%" stop-color="#059669"/>
+            <stop offset="100%" stop-color="#064e3b"/>
+          </linearGradient>
+          <linearGradient id="${gLens}" x1="16" y1="11" x2="16" y2="23" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0f172a"/>
+            <stop offset="100%" stop-color="#334155"/>
+          </linearGradient>
+          <radialGradient id="${gGlass}" cx="15" cy="16" r="4" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="50%" stop-color="#0284c7"/>
+            <stop offset="100%" stop-color="#0369a1"/>
+          </radialGradient>
+        </defs>
+        <path d="M11 9L13 6H19L21 9H11Z" fill="#059669"/>
+        <rect x="4" y="9" width="24" height="17" rx="4" fill="url(#${gCam})" stroke="#6ee7b7" stroke-width="0.8"/>
+        <circle cx="24" cy="13" r="1.8" fill="#fef08a"/>
+        <circle cx="16" cy="17.5" r="6" fill="url(#${gLens})" stroke="#6ee7b7" stroke-width="1"/>
+        <circle cx="16" cy="17.5" r="4.2" fill="url(#${gGlass})"/>
+        <circle cx="14.8" cy="16" r="1.4" fill="#ffffff" opacity="0.85"/>
+      </svg>`;
+    },
+
+    // 40. النرد وتوليد كلمة المرور 3D (Dice Password Generator)
+    dice: (s = 24) => {
+      const gD = uid('dice');
+      return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${gD}" x1="5" y1="5" x2="27" y2="27" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="35%" stop-color="#f8fafc"/>
+            <stop offset="70%" stop-color="#e2e8f0"/>
+            <stop offset="100%" stop-color="#cbd5e1"/>
+          </linearGradient>
+        </defs>
+        <rect x="5" y="5" width="22" height="22" rx="5" fill="url(#${gD})" stroke="#94a3b8" stroke-width="1.2"/>
+        <rect x="6.5" y="6.5" width="19" height="4" rx="2" fill="#ffffff" opacity="0.8"/>
+        <circle cx="10" cy="10" r="2.2" fill="#0f172a"/>
+        <circle cx="22" cy="10" r="2.2" fill="#0f172a"/>
+        <circle cx="16" cy="16" r="2.4" fill="#10b981"/>
+        <circle cx="10" cy="22" r="2.2" fill="#0f172a"/>
+        <circle cx="22" cy="22" r="2.2" fill="#0f172a"/>
+      </svg>`;
+    },
+
+    // 41. الصاروخ والانطلاق 3D (Rocket Launch)
+    rocket: (s = 24) => {
+      const gBody = uid('rbody');
+      const gFin = uid('rfin');
+      const gFlame = uid('rflame');
+      return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${gBody}" x1="16" y1="3" x2="26" y2="24" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="30%" stop-color="#f1f5f9"/>
+            <stop offset="75%" stop-color="#cbd5e1"/>
+            <stop offset="100%" stop-color="#94a3b8"/>
+          </linearGradient>
+          <linearGradient id="${gFin}" x1="6" y1="16" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f43f5e"/>
+            <stop offset="100%" stop-color="#be123c"/>
+          </linearGradient>
+          <radialGradient id="${gFlame}" cx="16" cy="27" r="5" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="50%" stop-color="#f97316"/>
+            <stop offset="100%" stop-color="#dc2626"/>
+          </radialGradient>
+        </defs>
+        <path d="M13 25C13 29 16 31 16 31C16 31 19 29 19 25H13Z" fill="url(#${gFlame})"/>
+        <path d="M8 24C8 18 11 16 11 16L12 24H8Z" fill="url(#${gFin})"/>
+        <path d="M24 24C24 18 21 16 21 16L20 24H24Z" fill="url(#${gFin})"/>
+        <path d="M16 3C12 8 11 15 11 24H21C21 15 20 8 16 3Z" fill="url(#${gBody})" stroke="#e2e8f0" stroke-width="0.8"/>
+        <path d="M16 3C14 6 13 9 13 11H19C19 9 18 6 16 3Z" fill="url(#${gFin})"/>
+        <circle cx="16" cy="15" r="3" fill="#0284c7" stroke="#38bdf8" stroke-width="0.8"/>
+        <circle cx="15.2" cy="14.2" r="1" fill="#ffffff" opacity="0.85"/>
+      </svg>`;
+    },
+
+    // 42. الواتساب والمراسلة 3D (WhatsApp Chat)
+    whatsapp: (s = 24) => {
+      const gWa = uid('wa');
+      return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${gWa}" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#4ade80"/>
+            <stop offset="35%" stop-color="#22c55e"/>
+            <stop offset="85%" stop-color="#16a34a"/>
+            <stop offset="100%" stop-color="#15803d"/>
+          </linearGradient>
+        </defs>
+        <circle cx="16" cy="16" r="13" fill="url(#${gWa})" stroke="#86efac" stroke-width="0.8"/>
+        <path d="M8 24L10.5 19.5L7 21L8 24Z" fill="#16a34a"/>
+        <path d="M21.5 18.5C21 18.2 19 17.2 18.7 17C18.4 16.8 18.2 16.7 18 17C17.8 17.3 17.2 18 17 18.2C16.8 18.4 16.6 18.4 16.3 18.2C15.7 17.9 14.5 17.2 13.5 16C12.7 15.1 12.2 14 12.2 13.7C12.2 13.4 12.4 13.2 12.6 13C12.8 12.8 13 12.5 13.1 12.3C13.2 12.1 13.1 11.9 13 11.7C12.9 11.5 12.2 9.8 11.9 9.1C11.6 8.4 11.3 8.5 11.1 8.5C10.9 8.5 10.7 8.5 10.5 8.5C10.3 8.5 9.9 8.6 9.6 8.9C9.3 9.2 8.5 10 8.5 11.5C8.5 13 9.6 14.4 9.8 14.6C10 14.8 12.2 18.2 15.6 19.6C18.4 20.8 19 20.5 19.6 20.4C20.2 20.3 21.5 19.6 21.8 18.8C22.1 18 22.1 17.3 22 17.1C21.9 17 21.8 16.9 21.5 18.5Z" fill="#ffffff"/>
+      </svg>`;
+    },
+
+    // 43. الساعة والوقت 3D (Clock Booking Time)
+    clock: (s = 24) => {
+      const gRim = uid('clockrim');
+      const gFace = uid('clockface');
+      return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${gRim}" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="45%" stop-color="#0284c7"/>
+            <stop offset="100%" stop-color="#0369a1"/>
+          </linearGradient>
+          <radialGradient id="${gFace}" cx="16" cy="14" r="10" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="70%" stop-color="#f8fafc"/>
+            <stop offset="100%" stop-color="#e2e8f0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="16" cy="16" r="13" fill="url(#${gRim})"/>
+        <circle cx="16" cy="16" r="10.5" fill="url(#${gFace})"/>
+        <line x1="16" y1="7" x2="16" y2="8.5" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="16" y1="23.5" x2="16" y2="25" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="7" y1="16" x2="8.5" y2="16" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="23.5" y1="16" x2="25" y2="16" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="16" y1="16" x2="16" y2="10" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="16" y1="16" x2="21" y2="16" stroke="#0284c7" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="1.5" fill="#0f172a"/>
+      </svg>`;
+    },
+
+    // 44. النسخ إلى الحافظة 3D (Copy Clipboard Sheets)
+    copy: (s = 24) => {
+      const gB = uid('copyback');
+      const gF = uid('copyfront');
+      return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${gB}" x1="6" y1="4" x2="20" y2="22" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#94a3b8"/>
+            <stop offset="100%" stop-color="#64748b"/>
+          </linearGradient>
+          <linearGradient id="${gF}" x1="11" y1="9" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="50%" stop-color="#f8fafc"/>
+            <stop offset="100%" stop-color="#cbd5e1"/>
+          </linearGradient>
+        </defs>
+        <rect x="6" y="4" width="14" height="18" rx="2.5" fill="url(#${gB})" opacity="0.7"/>
+        <rect x="11" y="9" width="15" height="19" rx="3" fill="url(#${gF})" stroke="#94a3b8" stroke-width="0.8"/>
+        <line x1="14" y1="14" x2="22" y2="14" stroke="#10b981" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="14" y1="18" x2="22" y2="18" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="14" y1="22" x2="19" y2="22" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>`;
+    },
+
+    // 45. الاحتفال والنجاح 3D (Party Confetti & Celebration)
+    celebrate: (s = 24) => {
+      const gC = uid('cel');
+      return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" class="svg-3d" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${gC}" x1="6" y1="26" x2="26" y2="6" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ec4899"/>
+            <stop offset="50%" stop-color="#8b5cf6"/>
+            <stop offset="100%" stop-color="#3b82f6"/>
+          </linearGradient>
+        </defs>
+        <path d="M4 28L10 14L18 22L4 28Z" fill="url(#${gC})"/>
+        <circle cx="24" cy="8" r="2.5" fill="#f59e0b"/>
+        <circle cx="16" cy="6" r="2" fill="#10b981"/>
+        <circle cx="27" cy="16" r="2" fill="#ec4899"/>
+        <circle cx="21" cy="14" r="1.5" fill="#3b82f6"/>
+        <path d="M14 10C16 7 20 8 22 5" stroke="#f59e0b" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        <path d="M19 19C23 18 25 21 27 19" stroke="#10b981" stroke-width="1.4" stroke-linecap="round" fill="none"/>
       </svg>`;
     }
   };
