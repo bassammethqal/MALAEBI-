@@ -190,6 +190,8 @@
     if (linkPwa) linkPwa.innerHTML = I.phone(18);
     const linkVenue = document.getElementById('linkVenueDashIcon');
     if (linkVenue) linkVenue.innerHTML = I.stadium(18);
+    const installPwaIcon = document.getElementById('adminInstallPwaIcon');
+    if (installPwaIcon) installPwaIcon.innerHTML = I.phone(18);
     const accLogout = document.getElementById('accountLogoutIcon');
     if (accLogout) accLogout.innerHTML = I.door(18);
 
@@ -1049,11 +1051,159 @@
     });
   }
 
+  
+  // ==================== CUSTOM PWA INSTALL PROMPT ====================
+  let deferredAdminPwaPrompt = null;
+  let showInstallBannerGlobal = null;
+
+  function initPwaInstallPrompt() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                         window.navigator.standalone === true ||
+                         document.referrer.includes('android-app://');
+    const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+
+    const manualBtn = document.getElementById('adminInstallPwaBtn');
+    const sheet = document.getElementById('malaebiInstallSheet');
+
+    function updateInstallButton(show) {
+      if (!manualBtn) return;
+      if (isStandalone) {
+        manualBtn.style.display = 'none';
+        return;
+      }
+      manualBtn.style.display = show ? 'flex' : 'none';
+    }
+
+    function showInstallBanner(isIosMode = false) {
+      if (!sheet || isStandalone) return;
+
+      const I = window.MalaebiIcons3D;
+      const phoneIcon = I ? I.phone(16) : '';
+
+      if (isIosMode) {
+        sheet.innerHTML = `
+          <div class="malaebi-install-card">
+            <div class="malaebi-install-top">
+              <div class="malaebi-install-logo-wrap">
+                <img src="./assets/images/logo.svg" alt="ملاعبي" class="malaebi-install-logo">
+              </div>
+              <div class="malaebi-install-info">
+                <h4 class="malaebi-install-title" id="pwaInstallTitle">ثبّت لوحة إدارة ملاعبي</h4>
+                <p class="malaebi-install-desc">وصول سريع لإدارة الملاك والمنشآت</p>
+              </div>
+            </div>
+            <div class="malaebi-ios-steps">
+              اضغط على زر المشاركة <b>(Share ⎋)</b> في شريط متصفح سفاري، ثم مرّر للأسفل واختر <b>«إضافة إلى الشاشة الرئيسية ⊞»</b>.
+            </div>
+            <div class="malaebi-install-actions">
+              <button type="button" class="malaebi-install-btn primary" id="pwaIosUnderstoodBtn">حسناً، فهمت</button>
+              <button type="button" class="malaebi-install-btn secondary" id="pwaDismissInstallBtn">إغلاق</button>
+            </div>
+          </div>
+        `;
+      } else {
+        sheet.innerHTML = `
+          <div class="malaebi-install-card">
+            <div class="malaebi-install-top">
+              <div class="malaebi-install-logo-wrap">
+                <img src="./assets/images/logo.svg" alt="ملاعبي" class="malaebi-install-logo">
+              </div>
+              <div class="malaebi-install-info">
+                <h4 class="malaebi-install-title" id="pwaInstallTitle">ثبّت لوحة إدارة ملاعبي</h4>
+                <p class="malaebi-install-desc">وصول سريع لإدارة الملاك والمنشآت</p>
+              </div>
+            </div>
+            <div class="malaebi-install-actions">
+              <button type="button" class="malaebi-install-btn primary" id="pwaInstallNowBtn">
+                ${phoneIcon}
+                <span>تثبيت التطبيق</span>
+              </button>
+              <button type="button" class="malaebi-install-btn secondary" id="pwaDismissInstallBtn">لاحقاً</button>
+            </div>
+          </div>
+        `;
+      }
+
+      requestAnimationFrame(() => sheet.classList.add('visible'));
+
+      sheet.querySelector('#pwaInstallNowBtn')?.addEventListener('click', async () => {
+        if (deferredAdminPwaPrompt) {
+          deferredAdminPwaPrompt.prompt();
+          const { outcome } = await deferredAdminPwaPrompt.userChoice;
+          if (outcome === 'accepted') {
+            hideInstallBanner();
+          }
+          deferredAdminPwaPrompt = null;
+          updateInstallButton(false);
+        } else {
+          hideInstallBanner();
+        }
+      });
+
+      sheet.querySelector('#pwaIosUnderstoodBtn')?.addEventListener('click', () => {
+        localStorage.setItem('malaebi_admin_ios_install_dismissed', 'true');
+        hideInstallBanner();
+      });
+
+      sheet.querySelector('#pwaDismissInstallBtn')?.addEventListener('click', () => {
+        localStorage.setItem('malaebi_admin_install_dismissed_until', String(Date.now() + 7 * 86400000));
+        hideInstallBanner();
+      });
+    }
+
+    showInstallBannerGlobal = showInstallBanner;
+
+    function hideInstallBanner() {
+      if (sheet) sheet.classList.remove('visible');
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredAdminPwaPrompt = e;
+      updateInstallButton(true);
+
+      const dismissedUntil = localStorage.getItem('malaebi_admin_install_dismissed_until');
+      if (!dismissedUntil || Date.now() > Number(dismissedUntil)) {
+        setTimeout(() => showInstallBanner(false), 2000);
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      hideInstallBanner();
+      deferredAdminPwaPrompt = null;
+      updateInstallButton(false);
+      showToast('شكراً لك! تم تثبيت لوحة إدارة ملاعبي بنجاح', 'success');
+    });
+
+    if (isIos && !isStandalone) {
+      const dismissedIos = localStorage.getItem('malaebi_admin_ios_install_dismissed');
+      if (!dismissedIos) {
+        setTimeout(() => showInstallBanner(true), 2500);
+      }
+      updateInstallButton(true);
+    }
+
+    if (manualBtn) {
+      manualBtn.addEventListener('click', () => {
+        if (deferredAdminPwaPrompt) {
+          showInstallBanner(false);
+        } else if (isIos) {
+          showInstallBanner(true);
+        } else {
+          showToast('لوحة الإدارة مثبتة بالفعل أو المتصفح لا يدعم التثبيت المباشر.', 'info');
+        }
+      });
+    }
+
+    updateInstallButton(Boolean(deferredAdminPwaPrompt || (isIos && !isStandalone)));
+  }
+
   async function init() {
     try {
       initTheme();
       renderStaticIcons();
       bindEvents();
+      initPwaInstallPrompt();
 
       // Check if already authenticated
       if (window.MalaebiAdminAPI.isLoggedIn()) {
@@ -1087,7 +1237,8 @@
     switchView,
     switchVenueSubtab,
     loadDashboardData,
-    showConfirmDialog
+    showConfirmDialog,
+    showInstallBanner: (ios = false) => { if (showInstallBannerGlobal) showInstallBannerGlobal(ios); }
   };
 
   if (document.readyState === 'loading') {
