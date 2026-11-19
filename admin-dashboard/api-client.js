@@ -127,6 +127,19 @@
       return res.data || res;
     },
 
+    // Owners Management
+    async getOwners() {
+      const res = await request('/admin/owners');
+      return res.data || [];
+    },
+
+    async createOwner(payload) {
+      return request('/admin/owners', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+    },
+
     // Venues Listing
     async getVenues() {
       const res = await request('/admin/venues');

@@ -99,11 +99,11 @@
           <!-- Highlight Action Banner -->
           <div class="action-banner">
             <div class="action-banner-text">
-              <h3>تسجيل منشأة ومالك جديد</h3>
-              <p>أنشئ حساب المالك والمنشأة والملعب الأول وولد بيانات الاعتماد بضغطة واحدة.</p>
+              <h3>إضافة حساب مالك ملعب جديد</h3>
+              <p>أنشئ حساب المالك بكلمة مرور مؤقتة، وسيقوم المالك بإدخال بيانات منشأته بنفسه عند الدخول.</p>
             </div>
-            <button type="button" class="btn-banner-action" id="openNewVenueFromBannerBtn">
-              <span>+ إضافة منشأة</span>
+            <button type="button" class="btn-banner-action" id="openNewOwnerFromBannerBtn">
+              <span>+ إضافة حساب مالك ملعب</span>
             </button>
           </div>
 
@@ -167,24 +167,56 @@
               <span>🏟️</span>
               <span>المنشآت والملاك</span>
             </h2>
-            <button type="button" class="btn-primary btn-sm" id="openNewVenueBtn">
-              <span>+ منشأة جديدة</span>
+            <button type="button" class="btn-primary btn-sm" id="openNewOwnerBtn">
+              <span>+ إضافة حساب مالك ملعب</span>
             </button>
           </div>
 
-          <!-- Filter & Search Bar -->
-          <div style="display:flex; gap:8px; margin-bottom:14px;">
-            <input type="text" id="venueSearchInput" class="form-input" placeholder="🔍 ابحث بالاسم أو المالك أو المنطقة..." style="flex:1; padding:8px 12px; font-size:12.5px;">
-            <select id="venueStatusFilter" class="form-select" style="width:auto; padding:8px 10px; font-size:12.5px;">
-              <option value="all">كل الحالات</option>
-              <option value="active">نشطة فقط</option>
-              <option value="suspended">معلقة</option>
-            </select>
+          <!-- Subtabs: Venues vs Owners -->
+          <div class="venue-subtabs" style="display:flex; gap:8px; margin-bottom:14px; background:var(--input-bg); padding:4px; border-radius:12px; border:1px solid var(--line);">
+            <button type="button" class="subtab-btn active" id="subtabVenues" style="flex:1; padding:8px 12px; border-radius:8px; border:none; font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; background:var(--card-bg); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.06); transition:all 0.2s;">
+              🏟️ المنشآت والملاعب (<span id="venuesCountBadge">0</span>)
+            </button>
+            <button type="button" class="subtab-btn" id="subtabOwners" style="flex:1; padding:8px 12px; border-radius:8px; border:none; font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; background:transparent; color:var(--muted); transition:all 0.2s;">
+              👤 حسابات الملاك (<span id="ownersCountBadge">0</span>)
+            </button>
           </div>
 
-          <!-- Venues Cards Container -->
-          <div id="venuesContainer" class="venues-list">
-            <div style="text-align:center; padding:30px; color:var(--muted); font-size:13px;">جاري تحميل المنشآت...</div>
+          <!-- Panel A: Venues List -->
+          <div id="venuesPanel">
+            <!-- Filter & Search Bar -->
+            <div style="display:flex; gap:8px; margin-bottom:14px;">
+              <input type="text" id="venueSearchInput" class="form-input" placeholder="🔍 ابحث بالاسم أو المالك أو المنطقة..." style="flex:1; padding:8px 12px; font-size:12.5px;">
+              <select id="venueStatusFilter" class="form-select" style="width:auto; padding:8px 10px; font-size:12.5px;">
+                <option value="all">كل الحالات</option>
+                <option value="active">نشطة فقط</option>
+                <option value="suspended">معلقة</option>
+              </select>
+            </div>
+
+            <!-- Venues Cards Container -->
+            <div id="venuesContainer" class="venues-list">
+              <div style="text-align:center; padding:30px; color:var(--muted); font-size:13px;">جاري تحميل المنشآت...</div>
+            </div>
+          </div>
+
+          <!-- Panel B: Owners List -->
+          <div id="ownersPanel" style="display:none;">
+            <!-- Filter & Search Bar -->
+            <div style="display:flex; gap:8px; margin-bottom:14px;">
+              <input type="text" id="ownerSearchInput" class="form-input" placeholder="🔍 ابحث بالاسم أو البريد أو الهاتف..." style="flex:1; padding:8px 12px; font-size:12.5px;">
+              <select id="ownerStatusFilter" class="form-select" style="width:auto; padding:8px 10px; font-size:12.5px;">
+                <option value="all">كل الحسابات</option>
+                <option value="has_venues">لديهم منشأة</option>
+                <option value="no_venues">حسابات جديدة</option>
+                <option value="temporary">كلمة المرور مؤقتة</option>
+              </select>
+            </div>
+
+            <!-- Owners Cards Container -->
+            <div id="ownersContainer" class="venues-list">
+              <div style="text-align:center; padding:30px; color:var(--muted); font-size:13px;">جاري تحميل حسابات الملاك...</div>
+            </div>
           </div>
         </section>
 
@@ -290,108 +322,48 @@
 
   </div>
 
-  <!-- ==================== MODAL 1: CREATE OWNER & VENUE ==================== -->
-  <div id="newVenueModal" class="modal-backdrop">
+  <!-- ==================== MODAL 1: CREATE OWNER ACCOUNT ==================== -->
+  <div id="newOwnerModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 class="modal-title">+ إضافة منشأة ومالك جديد</h3>
-        <button type="button" class="modal-close-btn" id="closeNewVenueModalBtn">✕</button>
+        <h3 class="modal-title">+ إضافة حساب مالك ملعب جديد</h3>
+        <button type="button" class="modal-close-btn" id="closeNewOwnerModalBtn">✕</button>
       </div>
       <div class="modal-body">
-        <form id="newVenueForm" onsubmit="return false;">
-          <div id="newVenueError" style="display:none; background:var(--red-light); color:var(--red); padding:10px 14px; border-radius:12px; font-size:12.5px; font-weight:700; margin-bottom:14px; text-align:right;"></div>
+        <form id="newOwnerForm" onsubmit="return false;">
+          <div id="newOwnerError" style="display:none; background:var(--red-light); color:var(--red); padding:10px 14px; border-radius:12px; font-size:12.5px; font-weight:700; margin-bottom:14px; text-align:right;"></div>
 
-          <!-- Section A: Owner Details -->
-          <div style="background:var(--input-bg); padding:12px; border-radius:14px; border:1px solid var(--line); margin-bottom:16px;">
-            <div style="font-size:13px; font-weight:800; color:var(--primary); margin-bottom:10px;">👤 1. بيانات المالك الجديد</div>
-            
+          <div style="background:var(--input-bg); padding:14px; border-radius:14px; border:1px solid var(--line); margin-bottom:16px;">
             <div class="form-group">
               <label class="form-label">الاسم الكامل للمالك *</label>
-              <input type="text" id="nvOwnerName" class="form-input" placeholder="مثال: يحيى صالح مرشد" required>
+              <input type="text" id="noFullName" class="form-input" placeholder="مثال: يحيى صالح مرشد" required>
             </div>
 
             <div class="form-group">
               <label class="form-label">البريد الإلكتروني للمالك *</label>
-              <input type="email" id="nvOwnerEmail" class="form-input" placeholder="owner@example.com" required dir="ltr">
+              <input type="email" id="noEmail" class="form-input" placeholder="owner@example.com" required dir="ltr">
             </div>
 
             <div class="form-group">
-              <label class="form-label">رقم الهاتف (واتساب المالك) *</label>
-              <input type="tel" id="nvOwnerPhone" class="form-input" placeholder="771234567" required dir="ltr">
+              <label class="form-label">رقم الهاتف (واتساب المالك - اختياري)</label>
+              <input type="tel" id="noPhone" class="form-input" placeholder="771234567" dir="ltr">
             </div>
 
             <div class="form-group">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <label class="form-label" style="margin-bottom:0;">كلمة المرور المؤقتة *</label>
-                <button type="button" class="btn-outline btn-sm" id="btnGenPassword" style="padding:2px 8px; font-size:11px;">توليد كلمة مرور</button>
+                <button type="button" class="btn-outline btn-sm" id="btnGenOwnerPassword" style="padding:2px 8px; font-size:11px;">🎲 توليد كلمة مرور</button>
               </div>
-              <input type="text" id="nvTempPassword" class="form-input" placeholder="Malaebi123456!" required dir="ltr">
-              <small style="font-size:11px; color:var(--muted); display:block; margin-top:4px;">* سيُجبر المالك تلقائياً على تغييرها عند أول دخول لبوابة المنشأة.</small>
+              <input type="text" id="noTempPassword" class="form-input" placeholder="Malaebi123456!" required dir="ltr">
             </div>
           </div>
 
-          <!-- Section B: Venue Details -->
-          <div style="background:var(--input-bg); padding:12px; border-radius:14px; border:1px solid var(--line); margin-bottom:16px;">
-            <div style="font-size:13px; font-weight:800; color:var(--primary); margin-bottom:10px;">🏟️ 2. بيانات المنشأة الرياضية</div>
-
-            <div class="form-group">
-              <label class="form-label">اسم المنشأة *</label>
-              <input type="text" id="nvVenueName" class="form-input" placeholder="مثال: مجمع النجوم الرياضي" required>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">المنطقة في مأرب *</label>
-              <select id="nvAreaSelect" class="form-select" required>
-                <!-- Populated dynamically -->
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">العنوان التفصيلي</label>
-              <input type="text" id="nvAddressText" class="form-input" placeholder="مثال: الروضة - جوار حديقة النصر">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">الوصف والخدمات</label>
-              <textarea id="nvDescription" class="form-textarea" rows="2" placeholder="ملاعب معشبة، إضاءة ليلية، مواقف سيارات، كافتيريا..."></textarea>
-            </div>
+          <div style="background:var(--card-bg); border:1px dashed var(--line); border-radius:12px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:var(--muted); line-height:1.5;">
+            💡 <b>ملاحظة:</b> سيُطلب من المالك تلقائياً تغيير كلمة المرور وإدخال اسم منشأته وتفاصيل ملعبه الأول بنفسه فور دخوله لبوابة المنشأة.
           </div>
 
-          <!-- Section C: First Field Details -->
-          <div style="background:var(--input-bg); padding:12px; border-radius:14px; border:1px solid var(--line); margin-bottom:16px;">
-            <div style="font-size:13px; font-weight:800; color:var(--primary); margin-bottom:10px;">⚽ 3. بيانات الملعب الأول والتسعير</div>
-
-            <div class="form-group">
-              <label class="form-label">اسم الملعب *</label>
-              <input type="text" id="nvFieldName" class="form-input" placeholder="مثال: الملعب الرئيسي A" value="الملعب الرئيسي" required>
-            </div>
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-              <div class="form-group">
-                <label class="form-label">سعر الساعة (ريال) *</label>
-                <input type="number" id="nvHourlyPrice" class="form-input" placeholder="8000" value="8000" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">سعة اللاعبين</label>
-                <select id="nvCapacity" class="form-select">
-                  <option value="10">10 لاعبين (5x5)</option>
-                  <option value="12" selected>12 لاعب (6x6)</option>
-                  <option value="14">14 لاعب (7x7)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">طريقة تأكيد الحجز</label>
-              <select id="nvConfirmMode" class="form-select">
-                <option value="approval" selected>موافقة يدوية من المالك (10 دقائق)</option>
-                <option value="instant">تأكيد فوري تلقائي</option>
-              </select>
-            </div>
-          </div>
-
-          <button type="submit" id="btnSubmitNewVenue" class="btn-primary">
-            <span>حفظ المنشأة وتوليد بيانات المالك 🚀</span>
+          <button type="submit" id="btnSubmitNewOwner" class="btn-primary">
+            <span>إنشاء حساب المالك وتوليد بيانات الدخول 🚀</span>
           </button>
         </form>
       </div>
@@ -402,7 +374,7 @@
   <div id="credentialsModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 class="modal-title" style="color:var(--primary);">🎉 تم إنشاء المنشأة والمالك بنجاح!</h3>
+        <h3 class="modal-title" style="color:var(--primary);">🎉 تم إنشاء حساب المالك بنجاح!</h3>
         <button type="button" class="modal-close-btn" id="closeCredentialsModalBtn">✕</button>
       </div>
       <div class="modal-body">
@@ -433,9 +405,9 @@
   <div id="toastBar" class="toast-bar"></div>
 
   <!-- Scripts -->
-  <script src="./icons3d.js?v=1.0.0"></script>
-  <script src="./config.js?v=1.0.0"></script>
-  <script src="./api-client.js?v=1.0.0"></script>
-  <script src="./app.js?v=1.0.0"></script>
+  <script src="./icons3d.js?v=1.1.0"></script>
+  <script src="./config.js?v=1.1.0"></script>
+  <script src="./api-client.js?v=1.1.0"></script>
+  <script src="./app.js?v=1.1.0"></script>
 </body>
 </html>

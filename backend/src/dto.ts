@@ -115,6 +115,13 @@ export class CreateFieldDto {
   @IsOptional() @IsIn(['instant', 'approval']) confirmation_mode?: 'instant' | 'approval';
 }
 
+export class AdminCreateOwnerDto {
+  @IsString() @MinLength(2) @MaxLength(120) full_name!: string;
+  @IsEmail() email!: string;
+  @IsOptional() @IsString() phone?: string;
+  @IsOptional() @IsString() @MinLength(6) @MaxLength(72) temp_password?: string;
+}
+
 export class AdminCreateVenueDto {
   @IsString() @MinLength(2) @MaxLength(120) owner_name!: string;
   @IsEmail() owner_email!: string;

@@ -1799,7 +1799,7 @@ function initTheme() {
   }
 
   function showMandatoryPasswordModal() {
-    showAppShell();
+    document.getElementById('loginScreen').style.display = 'none';
     openModal('mandatoryChangePasswordModal');
     const errEl = document.getElementById('mandatoryPassError');
     if (errEl) errEl.style.display = 'none';

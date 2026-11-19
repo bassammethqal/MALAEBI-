@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { randomUUID } from 'crypto';
 import { DbService } from './db.service';
 import { SupabaseService } from './supabase.service';
-import { AdminCreateVenueDto } from './dto';
+import { AdminCreateVenueDto, AdminCreateOwnerDto } from './dto';
 
 @Injectable()
 export class AdminService {
@@ -132,6 +132,178 @@ export class AdminService {
     return {
       success: true,
       data: res.rows
+    };
+  }
+
+  // ==================== 2.5 OWNERS MANAGEMENT ====================
+  async createOwner(adminUserId: string, dto: AdminCreateOwnerDto) {
+    const cleanEmail = dto.email.trim().toLowerCase();
+    const cleanName = dto.full_name.trim();
+    const cleanPhone = dto.phone?.trim() || null;
+    const tempPassword = dto.temp_password && dto.temp_password.trim().length >= 6
+      ? dto.temp_password.trim()
+      : `Malaebi${Math.floor(100000 + Math.random() * 900000)}!`;
+
+    let ownerUserId: string | null = null;
+
+    const { data: createdAuth, error: createAuthErr } = await this.supabase.adminClient.auth.admin.createUser({
+      email: cleanEmail,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: {
+        full_name: cleanName,
+        role: 'owner',
+        must_change_password: true
+      },
+      app_metadata: {
+        role: 'owner'
+      }
+    });
+
+    if (createAuthErr) {
+      const errMsg = createAuthErr.message || '';
+      if (errMsg.includes('already registered') || errMsg.includes('already exists') || errMsg.includes('duplicate')) {
+        const list = await this.supabase.adminClient.auth.admin.listUsers({ perPage: 1000 });
+        const existing = list.data?.users?.find((u) => u.email?.toLowerCase() === cleanEmail);
+        if (existing) {
+          ownerUserId = existing.id;
+          await this.supabase.adminClient.auth.admin.updateUserById(existing.id, {
+            password: tempPassword,
+            user_metadata: {
+              ...(existing.user_metadata || {}),
+              full_name: cleanName,
+              role: 'owner',
+              must_change_password: true
+            },
+            app_metadata: {
+              ...(existing.app_metadata || {}),
+              role: 'owner'
+            }
+          });
+        } else {
+          throw new BadRequestException('حساب البريد الإلكتروني مسجل مسبقاً في قاعدة المستخدمين');
+        }
+      } else {
+        throw new BadRequestException(errMsg || 'فشل إنشاء حساب المالك في نظام المصادقة');
+      }
+    } else if (createdAuth?.user) {
+      ownerUserId = createdAuth.user.id;
+    }
+
+    if (!ownerUserId) {
+      throw new BadRequestException('تعذر الحصول على معرّف حساب المالك');
+    }
+
+    // Ensure user record in public.users
+    await this.db.query(
+      `INSERT INTO users(id, email, phone, full_name, status)
+       VALUES ($1, $2, $3, $4, 'active')
+       ON CONFLICT (id) DO UPDATE SET
+         full_name = EXCLUDED.full_name,
+         phone = COALESCE(EXCLUDED.phone, users.phone),
+         status = 'active'`,
+      [ownerUserId, cleanEmail, cleanPhone, cleanName]
+    );
+
+    // Audit log
+    try {
+      await this.db.query(
+        `INSERT INTO audit_logs(actor_user_id, venue_id, action, entity_type, entity_id, metadata)
+         VALUES ($1, NULL, 'admin.owner_create', 'user', $2, $3::jsonb)`,
+        [adminUserId, ownerUserId, JSON.stringify({ email: cleanEmail, full_name: cleanName })]
+      );
+    } catch (auditErr) {
+      console.warn('Failed to insert audit log for owner creation:', auditErr);
+    }
+
+    return {
+      success: true,
+      message: 'تم إنشاء حساب المالك بنجاح',
+      data: {
+        id: ownerUserId,
+        full_name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        temp_password: tempPassword,
+        must_change_password: true,
+        portal_url: 'https://malaebi-venue-dashboard.vercel.app'
+      }
+    };
+  }
+
+  async getOwners() {
+    let authUsers: any[] = [];
+    try {
+      const list = await this.supabase.adminClient.auth.admin.listUsers({ perPage: 1000 });
+      authUsers = list.data?.users || [];
+    } catch (err) {
+      console.warn('Failed to list Supabase auth users:', err);
+    }
+
+    const authMap = new Map<string, any>();
+    const emailMap = new Map<string, any>();
+    for (const u of authUsers) {
+      if (u.id) authMap.set(u.id, u);
+      if (u.email) emailMap.set(u.email.toLowerCase(), u);
+    }
+
+    const res = await this.db.query<any>(`
+      SELECT 
+        u.id,
+        u.full_name,
+        u.email,
+        u.phone,
+        u.status,
+        u.created_at,
+        COUNT(DISTINCT v.id)::int as venues_count,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', v.id,
+              'name', v.name,
+              'status', v.status,
+              'created_at', v.created_at
+            ) ORDER BY v.created_at DESC
+          ) FILTER (WHERE v.id IS NOT NULL),
+          '[]'::json
+        ) as venues
+      FROM users u
+      LEFT JOIN venues v ON v.owner_user_id = u.id
+      GROUP BY u.id
+      ORDER BY u.created_at DESC
+    `);
+
+    const owners = res.rows
+      .filter((row) => {
+        const auth = authMap.get(row.id) || (row.email ? emailMap.get(row.email.toLowerCase()) : null);
+        const hasVenues = row.venues_count > 0;
+        const isOwnerRole = auth?.user_metadata?.role === 'owner' || auth?.app_metadata?.role === 'owner';
+        const hasTempPassword = auth?.user_metadata?.must_change_password !== undefined;
+        // Exclude system admin accounts
+        const isAdmin = auth?.app_metadata?.role === 'admin' || row.email === 'malaebi12@gmail.com';
+        if (isAdmin && !hasVenues) return false;
+        return hasVenues || isOwnerRole || hasTempPassword;
+      })
+      .map((row) => {
+        const auth = authMap.get(row.id) || (row.email ? emailMap.get(row.email.toLowerCase()) : null);
+        const mustChange = auth?.user_metadata?.must_change_password ?? false;
+        return {
+          id: row.id,
+          full_name: row.full_name || auth?.user_metadata?.full_name || 'مالك منشأة',
+          email: row.email || auth?.email,
+          phone: row.phone || auth?.phone,
+          status: row.status,
+          venues_count: row.venues_count,
+          venues: row.venues,
+          must_change_password: Boolean(mustChange),
+          password_status: mustChange ? 'temporary' : 'changed',
+          created_at: row.created_at
+        };
+      });
+
+    return {
+      success: true,
+      data: owners
     };
   }
 

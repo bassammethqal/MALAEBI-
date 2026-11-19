@@ -15,7 +15,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtGuard } from './jwt.guard';
 import { AdminGuard } from './admin.guard';
 import { AdminService } from './admin.service';
-import { AdminCreateVenueDto, AdminUpdateVenueStatusDto } from './dto';
+import { AdminCreateVenueDto, AdminUpdateVenueStatusDto, AdminCreateOwnerDto } from './dto';
 
 @Controller('admin')
 @UseGuards(JwtGuard, AdminGuard)
@@ -25,6 +25,16 @@ export class AdminController {
   @Get('overview')
   async getOverview() {
     return this.adminService.getOverview();
+  }
+
+  @Get('owners')
+  async getOwners() {
+    return this.adminService.getOwners();
+  }
+
+  @Post('owners')
+  async createOwner(@Req() req: any, @Body() dto: AdminCreateOwnerDto) {
+    return this.adminService.createOwner(req.user.id, dto);
   }
 
   @Get('venues')
