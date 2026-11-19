@@ -136,8 +136,9 @@ export class PlayerService {
  async createBooking(userId:string,dto:any,key:string) {
   if(!key || key.length<8 || key.length>128) throw new BadRequestException('Idempotency-Key header is required');
   const requestHash=createHash('sha256').update(JSON.stringify({field_id:dto.field_id,starts_at:dto.starts_at,player_note:dto.player_note||''})).digest('hex');
+  let result: any;
   try {
-   return await this.db.tx(async c=>{
+   result = await this.db.tx(async c=>{
     await c.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[userId+':'+key]);
     const old=await c.query<any>('SELECT request_hash,response_json FROM idempotency_keys WHERE user_id=$1 AND key=$2 FOR UPDATE',[userId,key]);
     if(old.rowCount){if(old.rows[0].request_hash!==requestHash) throw new ConflictException('Idempotency key reused with different request'); if(old.rows[0].response_json) return old.rows[0].response_json;}
@@ -180,24 +181,27 @@ export class PlayerService {
     await c.query(`INSERT INTO field_occupancies(field_id,starts_at,ends_at,occupancy_type,status,booking_id) VALUES($1,$2,$3,'booking','active',$4)`,[dto.field_id,start.toISOString(),end.toISOString(),b.rows[0].id]);
     const result={...b.rows[0],field_id:dto.field_id,venue_id:settings.venue_id,starts_at:start.toISOString(),ends_at:end.toISOString(),deposit_required:0,deposit_paid:0,remaining_amount:total};
 
-    try {
-      const notifTitle = instant ? 'تم تأكيد حجزك بنجاح ⚽' : 'طلب الحجز قيد المراجعة ⏳';
-      const notifBody = instant
-        ? `تم تأكيد حجزك رقم ${b.rows[0].booking_no} بمبلغ ${total} ريال بنجاح.`
-        : `تم استلام طلب حجزك رقم ${b.rows[0].booking_no} وهو بانتظار موافقة إدارة المنشأة.`;
-      await c.query(
-        `INSERT INTO notifications(user_id, channel, title, body, status, sent_at)
-         VALUES ($1, 'in_app', $2, $3, 'unread', now())`,
-        [userId, notifTitle, notifBody]
-      );
-    } catch (notifErr) {
-      console.warn('Failed to insert booking notification:', notifErr);
-    }
-
     await c.query('UPDATE idempotency_keys SET response_json=$3::jsonb WHERE user_id=$1 AND key=$2',[userId,key,JSON.stringify(result)]);
     return result;
    });
   } catch(e:any) { if(e.code==='23P01'||e.code==='23505') throw new ConflictException('The selected time is no longer available'); throw e; }
+
+  try {
+    const isConfirmed = result?.status === 'confirmed';
+    const notifTitle = isConfirmed ? 'تم تأكيد حجزك بنجاح ⚽' : 'طلب الحجز قيد المراجعة ⏳';
+    const notifBody = isConfirmed
+      ? `تم تأكيد حجزك رقم ${result?.booking_no} بمبلغ ${result?.total_price} ريال بنجاح.`
+      : `تم استلام طلب حجزك رقم ${result?.booking_no} وهو بانتظار موافقة إدارة المنشأة.`;
+    await this.db.query(
+      `INSERT INTO notifications(user_id, channel, title, body, status, sent_at)
+       VALUES ($1, 'in_app', $2, $3, 'sent', now())`,
+      [userId, notifTitle, notifBody]
+    );
+  } catch (notifErr) {
+    console.warn('Failed to insert booking notification:', notifErr);
+  }
+
+  return result;
  }
  async myBookings(userId:string) {
   const r=await this.db.query<any>(`SELECT b.id,b.booking_no,b.status,b.total_price,b.currency,b.duration_minutes,b.expires_at,b.created_at,
@@ -213,7 +217,7 @@ export class PlayerService {
   if(!r.rowCount) throw new NotFoundException('Booking not found'); return r.rows[0];
  }
  async cancelBooking(userId:string,bookingId:string) {
-  return this.db.tx(async c=>{
+  const cancelRes = await this.db.tx(async c=>{
    const r=await c.query<any>(`SELECT b.id,b.status,b.total_price,b.deposit_paid,o.starts_at,o.id occupancy_id
     FROM bookings b JOIN field_occupancies o ON o.booking_id=b.id
     WHERE b.id=$1 AND b.player_user_id=$2 FOR UPDATE OF b,o`,[bookingId,userId]);
@@ -225,17 +229,20 @@ export class PlayerService {
    await c.query(`UPDATE bookings SET status='cancelled',cancelled_at=now(),cancelled_by_user_id=$2,cancellation_actor_type='player',cancellation_reason='Player cancellation',updated_at=now() WHERE id=$1`,[bookingId,userId]);
    await c.query(`UPDATE field_occupancies SET status='released' WHERE id=$1`,[b.occupancy_id]);
 
-   try {
-     await c.query(
-       `INSERT INTO notifications(user_id, channel, title, body, status, sent_at)
-        VALUES ($1, 'in_app', 'تم إلغاء الحجز ❌', 'تم إلغاء حجزك بنجاح وفق سياسة الإلغاء المعتمدة.', 'unread', now())`,
-       [userId]
-     );
-   } catch (notifErr) {
-     console.warn('Failed to insert cancellation notification:', notifErr);
-   }
    return {success:true,booking_id:bookingId,cancellation_refund_eligible:eligible,refund_status:Number(b.deposit_paid)>0?(eligible?'manual_review_required':'not_eligible_under_6h'):'not_applicable',policy:'Player cancellation is free 6 hours or more before start. Within 6 hours, no automatic deposit refund.'};
   });
+
+  try {
+    await this.db.query(
+      `INSERT INTO notifications(user_id, channel, title, body, status, sent_at)
+       VALUES ($1, 'in_app', 'تم إلغاء الحجز ❌', 'تم إلغاء حجزك بنجاح وفق سياسة الإلغاء المعتمدة.', 'sent', now())`,
+      [userId]
+    );
+  } catch (notifErr) {
+    console.warn('Failed to insert cancellation notification:', notifErr);
+  }
+
+  return cancelRes;
  }
  async createReview(userId:string,bookingId:string,rating:number,comment?:string) {
   const r=await this.db.query<any>(`SELECT id FROM bookings WHERE id=$1 AND player_user_id=$2 AND status='completed'`,[bookingId,userId]);
@@ -253,7 +260,7 @@ export class PlayerService {
 
  async markNotificationsRead(userId: string) {
   await this.db.query(
-    `UPDATE notifications SET read_at = now(), status = 'read' WHERE user_id = $1 AND (read_at IS NULL OR status = 'unread')`,
+    `UPDATE notifications SET read_at = now(), status = 'read' WHERE user_id = $1 AND (read_at IS NULL OR status != 'read')`,
     [userId]
   );
   return { success: true };
