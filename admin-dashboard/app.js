@@ -1065,13 +1065,13 @@
     const manualBtn = document.getElementById('adminInstallPwaBtn');
     const sheet = document.getElementById('malaebiInstallSheet');
 
-    function updateInstallButton(show) {
+    function updateInstallButton() {
       if (!manualBtn) return;
       if (isStandalone) {
         manualBtn.style.display = 'none';
         return;
       }
-      manualBtn.style.display = show ? 'flex' : 'none';
+      manualBtn.style.display = 'flex';
     }
 
     function showInstallBanner(isIosMode = false) {
@@ -1134,9 +1134,9 @@
             hideInstallBanner();
           }
           deferredAdminPwaPrompt = null;
-          updateInstallButton(false);
         } else {
           hideInstallBanner();
+          showToast('لتثبيت التطبيق، افتح قائمة خيارات المتصفح (⋮) واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».', 'info');
         }
       });
 
@@ -1185,17 +1185,15 @@
 
     if (manualBtn) {
       manualBtn.addEventListener('click', () => {
-        if (deferredAdminPwaPrompt) {
-          showInstallBanner(false);
-        } else if (isIos) {
+        if (isIos) {
           showInstallBanner(true);
         } else {
-          showToast('لوحة الإدارة مثبتة بالفعل أو المتصفح لا يدعم التثبيت المباشر.', 'info');
+          showInstallBanner(false);
         }
       });
     }
 
-    updateInstallButton(Boolean(deferredAdminPwaPrompt || (isIos && !isStandalone)));
+    updateInstallButton();
   }
 
   async function init() {
