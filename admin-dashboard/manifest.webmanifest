@@ -1,0 +1,26 @@
+{
+  "name": "ملاعبي — لوحة الإدارة العليا",
+  "short_name": "إدارة ملاعبي",
+  "description": "لوحة تحكم الإدارة العليا لمنصة ملاعبي، إدارة المنشآت والملاك والملاعب ومراقبة الحجوزات",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#072b1c",
+  "theme_color": "#072b1c",
+  "orientation": "portrait",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "./assets/images/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/images/logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

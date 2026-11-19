@@ -114,3 +114,26 @@ export class CreateFieldDto {
   @IsOptional() @IsString() closes_at?: string;
   @IsOptional() @IsIn(['instant', 'approval']) confirmation_mode?: 'instant' | 'approval';
 }
+
+export class AdminCreateVenueDto {
+  @IsString() @MinLength(2) @MaxLength(120) owner_name!: string;
+  @IsEmail() owner_email!: string;
+  @IsOptional() @IsString() owner_phone?: string;
+  @IsOptional() @IsString() @MinLength(6) @MaxLength(72) temp_password?: string;
+
+  @IsString() @MinLength(2) @MaxLength(180) venue_name!: string;
+  @IsOptional() @IsString() area_id?: string;
+  @IsOptional() @IsString() @MaxLength(240) address_text?: string;
+  @IsOptional() @IsString() @MaxLength(1000) description?: string;
+
+  @IsString() @MinLength(2) @MaxLength(160) field_name!: string;
+  @IsOptional() capacity?: number;
+  @IsOptional() @IsString() surface_type?: string;
+  @IsOptional() hourly_price?: number;
+  @IsOptional() @IsIn(['instant', 'approval']) confirmation_mode?: 'instant' | 'approval';
+}
+
+export class AdminUpdateVenueStatusDto {
+  @IsIn(['active', 'suspended', 'archived']) status!: 'active' | 'suspended' | 'archived';
+}
+

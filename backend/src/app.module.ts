@@ -14,18 +14,32 @@ import { AppController } from './app.controller';
 import { BookingExpiryService } from './booking-expiry.service';
 import { VenueOpsController, OwnerVenuesController, AreasController } from './venue-ops.controller';
 import { VenueOpsService } from './venue-ops.service';
+import { AdminController } from './admin.controller';
+import { AdminService } from './admin.service';
+import { AdminGuard } from './admin.guard';
 
 @Module({
   imports: [ScheduleModule.forRoot(), ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }])],
-  controllers: [AppController, PlayerController, AuthController, HealthController, VenueOpsController, OwnerVenuesController, AreasController],
+  controllers: [
+    AppController,
+    PlayerController,
+    AuthController,
+    HealthController,
+    VenueOpsController,
+    OwnerVenuesController,
+    AreasController,
+    AdminController
+  ],
   providers: [
     DbService,
     PlayerService,
     AuthService,
     JwtGuard,
+    AdminGuard,
     SupabaseService,
     BookingExpiryService,
     VenueOpsService,
+    AdminService,
     { provide: APP_GUARD, useClass: ThrottlerGuard }
   ],
 })

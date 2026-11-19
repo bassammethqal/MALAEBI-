@@ -19,7 +19,9 @@ export class JwtGuard implements CanActivate {
       email: r.rows[0].email,
       phone: r.rows[0].phone,
       full_name: r.rows[0].full_name,
-      status: r.rows[0].status
+      status: r.rows[0].status,
+      app_metadata: authUser.app_metadata || {},
+      user_metadata: authUser.user_metadata || {}
     };
     return true;
   }

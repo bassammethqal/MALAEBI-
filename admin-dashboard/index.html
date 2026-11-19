@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ملاعبي — لوحة الإدارة العليا</title>
+  <meta name="description" content="لوحة تحكم الإدارة العليا لمنصة ملاعبي، إدارة المنشآت والملاك والملاعب ومراقبة الحجوزات">
+  <meta name="theme-color" content="#072b1c">
+  <link rel="icon" type="image/svg+xml" href="./assets/images/logo.svg">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+</head>
+<body>
+
+  <div class="app-shell">
+    
+    <!-- ==================== 1. ADMIN LOGIN SCREEN ==================== -->
+    <div id="loginScreen" class="login-screen">
+      <div class="login-banner">
+        <div class="login-banner-logo">
+          <img src="./assets/images/logo.svg" alt="ملاعبي">
+        </div>
+        <h1>ملاعبي</h1>
+        <span class="login-banner-badge">لوحة الإدارة العليا</span>
+        <p>بوابة إدارة المنصة لمؤسس ملاعبي، إضافة الملاك والمنشآت وتوليد بيانات الاعتماد ومتابعة النشاط الميداني.</p>
+      </div>
+
+      <div class="login-form-wrap">
+        <h2 class="login-form-title">تسجيل دخول الإدارة</h2>
+        <p class="login-form-subtitle">أدخل بيانات بريد الإدارة العليا للمتابعة</p>
+
+        <form id="loginForm" onsubmit="return false;">
+          <div id="loginError" style="display:none; background:var(--red-light); color:var(--red); padding:10px 14px; border-radius:12px; font-size:12.5px; font-weight:700; margin-bottom:14px; text-align:right;"></div>
+
+          <div class="form-group">
+            <label class="form-label" for="loginEmail">البريد الإلكتروني للإدارة</label>
+            <input type="email" id="loginEmail" class="form-input" placeholder="malaebi12@gmail.com" required autocomplete="username" dir="ltr">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="loginPassword">كلمة المرور</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password" dir="ltr">
+          </div>
+
+          <button type="submit" id="loginSubmitBtn" class="btn-primary" style="margin-top:10px;">
+            <span>تسجيل الدخول إلى لوحة الإدارة</span>
+            <span>←</span>
+          </button>
+        </form>
+
+        <div style="margin-top:28px; text-align:center; font-size:12px; color:var(--muted); line-height:1.6; border-top:1px solid var(--line); padding-top:16px;">
+          <span>منصة ملاعبي لحجز الملاعب الرياضية · مدينة مأرب</span><br>
+          <small>صلاحية الدخول مقتصرة على حسابات الإدارة المعتمدة</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 2. MAIN ADMIN APP INTERFACE ==================== -->
+    <div id="adminApp" style="display:none; flex-direction:column; min-height:100dvh;">
+
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="admin-brand">
+          <div class="admin-logo">
+            <img src="./assets/images/logo.svg" alt="ملاعبي">
+          </div>
+          <div class="admin-title-wrap">
+            <span class="admin-app-name">ملاعبي — الإدارة</span>
+            <span class="admin-badge-pill">الإدارة العليا</span>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button type="button" class="icon-btn" id="refreshBtn" title="تحديث البيانات" aria-label="تحديث">
+            <span id="refreshIcon">🔄</span>
+          </button>
+          <button type="button" class="icon-btn" id="themeToggleBtn" title="تبديل المظهر" aria-label="تبديل الوضع">
+            <span id="themeIcon">🌙</span>
+          </button>
+          <button type="button" class="icon-btn" id="logoutBtn" title="تسجيل الخروج" aria-label="تسجيل الخروج" style="color:var(--red);">
+            <span>🚪</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content Container -->
+      <main class="admin-main">
+
+        <!-- VIEW 1: OVERVIEW DASHBOARD -->
+        <section id="viewOverview" class="view-panel active">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span id="kpiStadIcon">🏟️</span>
+              <span>مؤشرات منصة ملاعبي</span>
+            </h2>
+            <span style="font-size:12px; color:var(--muted);" id="todayDateStr"></span>
+          </div>
+
+          <!-- Highlight Action Banner -->
+          <div class="action-banner">
+            <div class="action-banner-text">
+              <h3>تسجيل منشأة ومالك جديد</h3>
+              <p>أنشئ حساب المالك والمنشأة والملعب الأول وولد بيانات الاعتماد بضغطة واحدة.</p>
+            </div>
+            <button type="button" class="btn-banner-action" id="openNewVenueFromBannerBtn">
+              <span>+ إضافة منشأة</span>
+            </button>
+          </div>
+
+          <!-- 4 KPI Stat Cards -->
+          <div class="kpi-grid">
+            <!-- Venues Card -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">المنشآت المسجلة</span>
+                <div class="kpi-icon-wrap" id="kpiIconVenues">🏟️</div>
+              </div>
+              <div class="kpi-value" id="statVenuesTotal">0</div>
+              <div class="kpi-sub" id="statVenuesActive">0 منشأة نشطة</div>
+            </div>
+
+            <!-- Fields Card -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">الملاعب الرياضية</span>
+                <div class="kpi-icon-wrap" id="kpiIconFields">⚽</div>
+              </div>
+              <div class="kpi-value" id="statFieldsTotal">0</div>
+              <div class="kpi-sub" id="statFieldsActive">0 ملعب نشط</div>
+            </div>
+
+            <!-- Players / Users Card -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">اللاعبون والمستخدمون</span>
+                <div class="kpi-icon-wrap" id="kpiIconUsers">👥</div>
+              </div>
+              <div class="kpi-value" id="statUsersTotal">0</div>
+              <div class="kpi-sub">حسابات نشطة في مأرب</div>
+            </div>
+
+            <!-- Bookings & Revenue Card -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">إجمالي الحجوزات</span>
+                <div class="kpi-icon-wrap" id="kpiIconBookings">📋</div>
+              </div>
+              <div class="kpi-value" id="statBookingsTotal">0</div>
+              <div class="kpi-sub" id="statRevenueTotal">0 ريال</div>
+            </div>
+          </div>
+
+          <!-- Today's Snapshot -->
+          <div class="kpi-card" style="margin-bottom:20px; border-right:4px solid var(--primary);">
+            <div style="font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:8px;">نشاط اليوم في المنصة</div>
+            <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted);">
+              <span>حجوزات تم إنشاؤها اليوم: <b id="statTodayBookings" style="color:var(--ink);">0</b></span>
+              <span>إيرادات اليوم: <b id="statTodayRevenue" style="color:var(--primary);">0 ريال</b></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 2: VENUES & OWNERS -->
+        <section id="viewVenues" class="view-panel">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span>🏟️</span>
+              <span>المنشآت والملاك</span>
+            </h2>
+            <button type="button" class="btn-primary btn-sm" id="openNewVenueBtn">
+              <span>+ منشأة جديدة</span>
+            </button>
+          </div>
+
+          <!-- Filter & Search Bar -->
+          <div style="display:flex; gap:8px; margin-bottom:14px;">
+            <input type="text" id="venueSearchInput" class="form-input" placeholder="🔍 ابحث بالاسم أو المالك أو المنطقة..." style="flex:1; padding:8px 12px; font-size:12.5px;">
+            <select id="venueStatusFilter" class="form-select" style="width:auto; padding:8px 10px; font-size:12.5px;">
+              <option value="all">كل الحالات</option>
+              <option value="active">نشطة فقط</option>
+              <option value="suspended">معلقة</option>
+            </select>
+          </div>
+
+          <!-- Venues Cards Container -->
+          <div id="venuesContainer" class="venues-list">
+            <div style="text-align:center; padding:30px; color:var(--muted); font-size:13px;">جاري تحميل المنشآت...</div>
+          </div>
+        </section>
+
+        <!-- VIEW 3: GLOBAL BOOKINGS -->
+        <section id="viewBookings" class="view-panel">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span>📋</span>
+              <span>مراقبة الحجوزات</span>
+            </h2>
+            <span style="font-size:11.5px; color:var(--muted);" id="bookingsCountBadge">0 حجز</span>
+          </div>
+
+          <!-- Bookings Filter Bar -->
+          <div style="display:flex; gap:8px; margin-bottom:14px;">
+            <input type="text" id="bookingSearchInput" class="form-input" placeholder="🔍 بحث برقم الحجز، اللاعب، أو المنشأة..." style="flex:1; padding:8px 12px; font-size:12.5px;">
+            <select id="bookingStatusFilter" class="form-select" style="width:auto; padding:8px 10px; font-size:12.5px;">
+              <option value="all">كل الحالات</option>
+              <option value="confirmed">مؤكدة</option>
+              <option value="pending">بانتظار الموافقة</option>
+              <option value="completed">مكتملة</option>
+              <option value="cancelled">ملغاة</option>
+            </select>
+          </div>
+
+          <!-- Bookings Container -->
+          <div id="bookingsContainer" class="bookings-list">
+            <div style="text-align:center; padding:30px; color:var(--muted); font-size:13px;">جاري تحميل سجل الحجوزات...</div>
+          </div>
+        </section>
+
+        <!-- VIEW 4: ADMIN PROFILE & SYSTEM INFO -->
+        <section id="viewAccount" class="view-panel">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span>👑</span>
+              <span>حساب الإدارة العليا</span>
+            </h2>
+          </div>
+
+          <div class="venue-card" style="margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:14px; margin-bottom:12px;">
+              <div style="width:52px; height:52px; border-radius:16px; background:var(--primary-dark); color:#ffffff; display:grid; place-items:center; font-size:22px; font-weight:900;">
+                م
+              </div>
+              <div>
+                <h3 style="font-size:16px; font-weight:900; color:var(--ink);" id="adminDisplayName">إدارة ملاعبي</h3>
+                <span class="admin-badge-pill">مؤسس المنصة والمشرف العام</span>
+              </div>
+            </div>
+
+            <div class="credential-item">
+              <span class="credential-label">البريد الإلكتروني الحالي</span>
+              <span class="credential-value" id="adminDisplayEmail">malaebi12@gmail.com</span>
+            </div>
+            <div class="credential-item">
+              <span class="credential-label">حالة الصلاحية</span>
+              <span class="credential-value" style="color:var(--primary);">كامل الصلاحيات (Super Admin)</span>
+            </div>
+          </div>
+
+          <div class="venue-card">
+            <h4 style="font-size:14px; font-weight:800; color:var(--ink); margin-bottom:10px;">روابط سريعة للمنظومة</h4>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <a href="https://malaebi-player-psi.vercel.app" target="_blank" rel="noopener" class="btn-outline" style="text-decoration:none; justify-content:space-between;">
+                <span>📱 فتح تطبيق اللاعب (Player PWA)</span>
+                <span>↗</span>
+              </a>
+              <a href="https://malaebi-venue-dashboard.vercel.app" target="_blank" rel="noopener" class="btn-outline" style="text-decoration:none; justify-content:space-between;">
+                <span>🏟️ فتح بوابة أصحاب الملاعب (Venue Dashboard)</span>
+                <span>↗</span>
+              </a>
+              <button type="button" class="btn-outline btn-danger-outline" id="accountLogoutBtn" style="margin-top:8px;">
+                <span>🚪 تسجيل الخروج من لوحة الإدارة</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Bottom Navigation Bar -->
+      <nav class="admin-bottom-nav">
+        <button type="button" class="bnav-btn active" data-view="viewOverview">
+          <span class="bnav-icon">📊</span>
+          <span class="bnav-label">المؤشرات</span>
+        </button>
+        <button type="button" class="bnav-btn" data-view="viewVenues">
+          <span class="bnav-icon">🏟️</span>
+          <span class="bnav-label">المنشآت</span>
+        </button>
+        <button type="button" class="bnav-btn" data-view="viewBookings">
+          <span class="bnav-icon">📋</span>
+          <span class="bnav-label">الحجوزات</span>
+        </button>
+        <button type="button" class="bnav-btn" data-view="viewAccount">
+          <span class="bnav-icon">👑</span>
+          <span class="bnav-label">الإدارة</span>
+        </button>
+      </nav>
+
+    </div>
+
+  </div>
+
+  <!-- ==================== MODAL 1: CREATE OWNER & VENUE ==================== -->
+  <div id="newVenueModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">+ إضافة منشأة ومالك جديد</h3>
+        <button type="button" class="modal-close-btn" id="closeNewVenueModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="newVenueForm" onsubmit="return false;">
+          <div id="newVenueError" style="display:none; background:var(--red-light); color:var(--red); padding:10px 14px; border-radius:12px; font-size:12.5px; font-weight:700; margin-bottom:14px; text-align:right;"></div>
+
+          <!-- Section A: Owner Details -->
+          <div style="background:var(--input-bg); padding:12px; border-radius:14px; border:1px solid var(--line); margin-bottom:16px;">
+            <div style="font-size:13px; font-weight:800; color:var(--primary); margin-bottom:10px;">👤 1. بيانات المالك الجديد</div>
+            
+            <div class="form-group">
+              <label class="form-label">الاسم الكامل للمالك *</label>
+              <input type="text" id="nvOwnerName" class="form-input" placeholder="مثال: يحيى صالح مرشد" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">البريد الإلكتروني للمالك *</label>
+              <input type="email" id="nvOwnerEmail" class="form-input" placeholder="owner@example.com" required dir="ltr">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">رقم الهاتف (واتساب المالك) *</label>
+              <input type="tel" id="nvOwnerPhone" class="form-input" placeholder="771234567" required dir="ltr">
+            </div>
+
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">كلمة المرور المؤقتة *</label>
+                <button type="button" class="btn-outline btn-sm" id="btnGenPassword" style="padding:2px 8px; font-size:11px;">توليد كلمة مرور</button>
+              </div>
+              <input type="text" id="nvTempPassword" class="form-input" placeholder="Malaebi123456!" required dir="ltr">
+              <small style="font-size:11px; color:var(--muted); display:block; margin-top:4px;">* سيُجبر المالك تلقائياً على تغييرها عند أول دخول لبوابة المنشأة.</small>
+            </div>
+          </div>
+
+          <!-- Section B: Venue Details -->
+          <div style="background:var(--input-bg); padding:12px; border-radius:14px; border:1px solid var(--line); margin-bottom:16px;">
+            <div style="font-size:13px; font-weight:800; color:var(--primary); margin-bottom:10px;">🏟️ 2. بيانات المنشأة الرياضية</div>
+
+            <div class="form-group">
+              <label class="form-label">اسم المنشأة *</label>
+              <input type="text" id="nvVenueName" class="form-input" placeholder="مثال: مجمع النجوم الرياضي" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">المنطقة في مأرب *</label>
+              <select id="nvAreaSelect" class="form-select" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">العنوان التفصيلي</label>
+              <input type="text" id="nvAddressText" class="form-input" placeholder="مثال: الروضة - جوار حديقة النصر">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">الوصف والخدمات</label>
+              <textarea id="nvDescription" class="form-textarea" rows="2" placeholder="ملاعب معشبة، إضاءة ليلية، مواقف سيارات، كافتيريا..."></textarea>
+            </div>
+          </div>
+
+          <!-- Section C: First Field Details -->
+          <div style="background:var(--input-bg); padding:12px; border-radius:14px; border:1px solid var(--line); margin-bottom:16px;">
+            <div style="font-size:13px; font-weight:800; color:var(--primary); margin-bottom:10px;">⚽ 3. بيانات الملعب الأول والتسعير</div>
+
+            <div class="form-group">
+              <label class="form-label">اسم الملعب *</label>
+              <input type="text" id="nvFieldName" class="form-input" placeholder="مثال: الملعب الرئيسي A" value="الملعب الرئيسي" required>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div class="form-group">
+                <label class="form-label">سعر الساعة (ريال) *</label>
+                <input type="number" id="nvHourlyPrice" class="form-input" placeholder="8000" value="8000" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">سعة اللاعبين</label>
+                <select id="nvCapacity" class="form-select">
+                  <option value="10">10 لاعبين (5x5)</option>
+                  <option value="12" selected>12 لاعب (6x6)</option>
+                  <option value="14">14 لاعب (7x7)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">طريقة تأكيد الحجز</label>
+              <select id="nvConfirmMode" class="form-select">
+                <option value="approval" selected>موافقة يدوية من المالك (10 دقائق)</option>
+                <option value="instant">تأكيد فوري تلقائي</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" id="btnSubmitNewVenue" class="btn-primary">
+            <span>حفظ المنشأة وتوليد بيانات المالك 🚀</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: ONBOARDING CREDENTIALS CARD ==================== -->
+  <div id="credentialsModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color:var(--primary);">🎉 تم إنشاء المنشأة والمالك بنجاح!</h3>
+        <button type="button" class="modal-close-btn" id="closeCredentialsModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:12px;">
+          تم إنشاء حساب المالك وتعيين كلمة المرور المؤقتة. انسخ البيانات أدناه أو أرسلها للمالك عبر واتساب فوراً:
+        </p>
+
+        <div class="credentials-box" id="credentialsBoxContent">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:18px;">
+          <button type="button" class="btn-primary" id="btnShareWhatsApp">
+            <span>📲 إرسال البيانات للمالك عبر واتساب</span>
+          </button>
+          <button type="button" class="btn-outline" id="btnCopyCredentials">
+            <span>📋 نسخ بيانات الاعتماد كاملة</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Image File Input for Admin Upload -->
+  <input type="file" id="adminImageFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+
+  <!-- Toast Notification Bar -->
+  <div id="toastBar" class="toast-bar"></div>
+
+  <!-- Scripts -->
+  <script src="./icons3d.js?v=1.0.0"></script>
+  <script src="./config.js?v=1.0.0"></script>
+  <script src="./api-client.js?v=1.0.0"></script>
+  <script src="./app.js?v=1.0.0"></script>
+</body>
+</html>
